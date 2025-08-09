@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export enum BadRequestErrorCode {
   GENERAL_ERROR = 100,
@@ -6,10 +6,10 @@ export enum BadRequestErrorCode {
 }
 
 export class BadRequestErrorItem {
-  @ApiProperty({ example: 'invalid_enum_value' })
+  @ApiProperty({ example: "invalid_enum_value" })
   code!: string;
 
-  @ApiProperty({ example: ['brand'] })
+  @ApiProperty({ example: ["brand"] })
   path!: (string | number)[];
 
   @ApiProperty({
@@ -17,10 +17,10 @@ export class BadRequestErrorItem {
   })
   message!: string;
 
-  @ApiProperty({ example: 'Tesla', nullable: true })
+  @ApiProperty({ example: "Tesla", nullable: true })
   received?: any;
 
-  @ApiProperty({ example: ['BMW', 'Audi'], nullable: true })
+  @ApiProperty({ example: ["BMW", "Audi"], nullable: true })
   options?: any[];
 }
 
@@ -30,12 +30,12 @@ export class BadRequestErrorResponse {
 
   @ApiProperty({
     example: BadRequestErrorCode.GENERAL_ERROR,
-    description: 'Custom application error code',
+    description: "Custom application error code",
     enum: BadRequestErrorCode,
   })
   errorCode!: number;
 
-  @ApiProperty({ example: 'Validation failed' })
+  @ApiProperty({ example: "Validation failed" })
   message!: string;
 
   @ApiProperty({ type: [BadRequestErrorItem] })

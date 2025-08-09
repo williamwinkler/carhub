@@ -1,46 +1,42 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { ApiParam } from '@nestjs/swagger';
-import { z, ZodTypeAny } from 'zod';
-import { BadRequestErrorCode } from '../errors/bad-request-error.dto';
-import { BadRequestError } from '../errors/bad-request.exception';
+import {
+  BadRequestException,
+  createParamDecorator,
+  ExecutionContext,
+} from "@nestjs/common";
+import { ApiQuery } from "@nestjs/swagger";
+import { z, ZodTypeAny } from "zod";
+import {
+  BadRequestErrorCode,
+  BadRequestErrorResponse,
+} from "../errors/bad-request-error.dto";
 
-interface ZodParamOptions {
-  description?: string;
-}
-
-export function zParam<T extends ZodTypeAny>(
+export function zQuery<T extends ZodTypeAny>(
   name: string,
   schema: T,
-  options: ZodParamOptions = {},
 ): ParameterDecorator {
   return (target, propertyKey, parameterIndex) => {
     if (propertyKey === undefined) {
       throw new Error(
-        'ZodParam can only be used on method parameters, not constructor parameters.',
+        "ZodQuery can only be used on method parameters, not constructor parameters.",
       );
     }
 
-    const description =
-      options.description ?? (schema._def.description as string | undefined);
-
-    // Swagger param doc
-    ApiParam({
+    ApiQuery({
       name,
       required: !schema.isOptional?.(),
       type: mapZodTypeToSwaggerType(schema),
       enum: extractEnumValues(schema),
-      description,
+      description: schema._def.description,
     })(
       target,
       propertyKey,
       Object.getOwnPropertyDescriptor(target, propertyKey)!,
     );
 
-    // Actual param decorator
     const paramDecorator = createParamDecorator(
       (data: unknown, ctx: ExecutionContext) => {
         const request = ctx.switchToHttp().getRequest();
-        const value = request.params[name];
+        const value = request.query[name];
 
         const wrappedSchema = z.object({ [name]: schema });
         const parsed = wrappedSchema.safeParse({ [name]: value });
@@ -54,11 +50,12 @@ export function zParam<T extends ZodTypeAny>(
             message: issue.message,
           }));
 
-          throw new BadRequestError(
-            'Validation failed',
-            BadRequestErrorCode.VALIDATION_ERROR,
-            issues,
-          );
+          throw new BadRequestException({
+            statusCode: 400,
+            errorCode: BadRequestErrorCode.VALIDATION_ERROR,
+            message: "Validation failed",
+            errors: issues,
+          } satisfies BadRequestErrorResponse);
         }
 
         return parsed.data[name];
@@ -71,8 +68,8 @@ export function zParam<T extends ZodTypeAny>(
 
 function unwrapZodType(zodType: any): any {
   if (
-    zodType._def?.typeName === 'ZodOptional' ||
-    zodType._def?.typeName === 'ZodNullable'
+    zodType._def?.typeName === "ZodOptional" ||
+    zodType._def?.typeName === "ZodNullable"
   ) {
     return unwrapZodType(zodType._def.innerType);
   }
@@ -83,13 +80,13 @@ function mapZodTypeToSwaggerType(zodType: any) {
   const unwrapped = unwrapZodType(zodType);
   const typeName = unwrapped._def.typeName;
   switch (typeName) {
-    case 'ZodString':
+    case "ZodString":
       return String;
-    case 'ZodNumber':
+    case "ZodNumber":
       return Number;
-    case 'ZodBoolean':
+    case "ZodBoolean":
       return Boolean;
-    case 'ZodNativeEnum':
+    case "ZodNativeEnum":
       return String;
     default:
       return String;

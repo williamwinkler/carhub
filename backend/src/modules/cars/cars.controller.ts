@@ -7,84 +7,110 @@ import {
   HttpStatus,
   Post,
   Put,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
-} from '@nestjs/swagger';
-import { UUID } from 'crypto';
-import { BadRequest } from 'src/common/decorators/bad-request-error.decorator';
-import { NotFound } from 'src/common/decorators/not-found-error.decorator';
-import { zParam } from 'src/common/decorators/zod-param.decorator';
-import { zQuery } from 'src/common/decorators/zod-query.decorator';
+} from "@nestjs/swagger";
+import { UUID } from "crypto";
+import { BadRequest } from "src/common/decorators/bad-request-error.decorator";
+import { NotFound } from "src/common/decorators/not-found-error.decorator";
+import { zParam } from "src/common/decorators/z-param.decorator";
+import { zQuery } from "src/common/decorators/z-query.decorator";
+import { GeneralResponseDto } from "src/common/dto/general-response.dto";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 import {
   limitSchema,
   skipSchema,
   uuidSchema,
-} from 'src/common/schemas/query-params.schema';
-import z from 'zod';
-import { CarsService } from './cars.service';
-import { CarDto, CarListDto } from './dto/car.dto';
+} from "src/common/schemas/common.schema";
 import {
-  CarBrandSchema,
-  CarModelSchema,
+  createResponseDto,
+  createResponseListDto,
+  wrapResponse,
+} from "src/common/utils/common.utils";
+import { CarsAdapter } from "./cars.adapter";
+import { CarsService } from "./cars.service";
+import { CarDto } from "./dto/car.dto";
+import {
+  carBrandSchema,
+  carColorSchema,
+  carModelSchema,
   CreateCarDto,
-} from './dto/create-car.dto';
-import { UpdateCarDto } from './dto/update-car.dto';
-import { CarBrand } from './entities/car.entity';
+} from "./dto/create-car.dto";
+import { UpdateCarDto } from "./dto/update-car.dto";
+import { CarBrand } from "./entities/car.entity";
 
-@Controller({ path: 'cars', version: '1' })
+@Controller({ path: "cars", version: "1" })
 export class CarsController {
-  constructor(private readonly carsService: CarsService) {}
+  constructor(
+    private readonly carsService: CarsService,
+    private readonly carsAdapter: CarsAdapter,
+  ) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a car' })
+  @ApiOperation({ summary: "Create a car" })
   @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({ description: 'Car created successfully' })
-  create(@Body() dto: CreateCarDto) {
-    return this.carsService.create(dto);
+  @ApiCreatedResponse({
+    type: createResponseDto(CarDto),
+    description: "Car created successfully",
+  })
+  create(@Body() dto: CreateCarDto): GeneralResponseDto<CarDto> {
+    const car = this.carsService.create(dto);
+    const data = this.carsAdapter.getDto(car);
+    return wrapResponse(data);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List cars' })
-  @ApiOkResponse({ type: CarListDto })
+  @ApiOperation({ summary: "List cars" })
+  @ApiOkResponse({ type: createResponseListDto(CarDto) })
   @BadRequest()
   findAll(
-    @zQuery('brand', CarBrandSchema.optional()) brand?: CarBrand,
-    @zQuery('model', CarModelSchema.optional()) model?: string,
-    @zQuery('skip', skipSchema.optional()) skip = 0,
-    @zQuery('limit', limitSchema.optional()) limit = 10,
-  ): CarListDto {
-    return this.carsService.findAll({ brand, model, skip, limit });
+    @zQuery("brand", carBrandSchema.optional()) brand?: CarBrand,
+    @zQuery("model", carModelSchema.optional()) model?: string,
+    @zQuery("color", carColorSchema.optional()) color?: string,
+    @zQuery("skip", skipSchema.optional()) skip = 0,
+    @zQuery("limit", limitSchema.optional()) limit = 20,
+  ): GeneralResponseDto<PaginationDto<CarDto>> {
+    const cars = this.carsService.findAll({ brand, model, skip, limit, color });
+    const data = this.carsAdapter.getListDto(cars);
+    return wrapResponse(data);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'List cars' })
+  @Get(":id")
+  @ApiOperation({ summary: "Get a car" })
   @ApiOkResponse({ type: CarDto })
   @BadRequest()
   @NotFound()
-  findOne(
-    @zParam('id', uuidSchema) id: UUID,
-  ) {
-    return this.carsService.findOne(id);
+  findOne(@zParam("id", uuidSchema) id: UUID): CarDto {
+    const car = this.carsService.findOne(id);
+    return this.carsAdapter.getDto(car);
   }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update a car' })
-  @ApiOkResponse({ type: CarDto, description: 'Car succesfully updated' })
-  update(@zParam('id', uuidSchema) id: UUID, @Body() dto: UpdateCarDto) {
-    return this.carsService.update(id, dto);
+  @Put(":id")
+  @ApiOperation({ summary: "Update a car" })
+  @ApiOkResponse({
+    type: createResponseDto(CarDto),
+    description: "Car succesfully updated",
+  })
+  update(
+    @zParam("id", uuidSchema) id: UUID,
+    @Body() dto: UpdateCarDto,
+  ): GeneralResponseDto<CarDto> {
+    const car = this.carsService.update(id, dto);
+    const data = this.carsAdapter.getDto(car);
+    return wrapResponse(data);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a car' })
+  @Delete(":id")
+  @ApiOperation({ summary: "Delete a car" })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ description: 'Car deleted successfully' })
+  @ApiNoContentResponse({ description: "Car deleted successfully" })
   @BadRequest()
   @NotFound()
-  remove(@zParam('id', uuidSchema) id: UUID) {
+  remove(@zParam("id", uuidSchema) id: UUID) {
     this.carsService.remove(id);
   }
 }
