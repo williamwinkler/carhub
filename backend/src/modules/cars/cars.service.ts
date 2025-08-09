@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { randomUUID, UUID } from "crypto";
 import { NotFoundError } from "src/common/errors/not-found.error.dto";
 import { Pagination } from "src/common/types/pagination";
@@ -9,6 +9,8 @@ import { seedData } from "./entities/data";
 
 @Injectable()
 export class CarsService {
+  private readonly logger = new Logger(CarsService.name);
+
   /** In Memory database for POC purposes */
   private cars = new Map<UUID, Car>();
 
@@ -23,7 +25,7 @@ export class CarsService {
     };
     this.cars.set(car.id, car);
 
-    console.log("New car created: " + car.id);
+    this.logger.log("New car created: " + car.id);
 
     return car;
   }
@@ -89,7 +91,7 @@ export class CarsService {
 
     this.cars.set(id, updatedCar);
 
-    console.log("Updated car: " + id);
+    this.logger.log("Updated car: " + id);
 
     return updatedCar;
   }
@@ -100,7 +102,7 @@ export class CarsService {
       throw new NotFoundError("Car");
     }
 
-    console.log("Car deleted: " + id);
+    this.logger.log("Car deleted: " + id);
   }
 
   // region PRIVATE
