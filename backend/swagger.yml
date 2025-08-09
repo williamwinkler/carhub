@@ -1,0 +1,435 @@
+openapi: 3.0.0
+paths:
+  /api/v1:
+    get:
+      operationId: AppController_getHello_v1
+      parameters: []
+      responses:
+        "200":
+          description: ""
+      tags:
+        - App
+  /api/v1/cars:
+    post:
+      operationId: CarsController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarDto"
+      responses:
+        "201":
+          description: Car created successfully
+      summary: Create a car
+      tags: &a1
+        - Cars
+    get:
+      operationId: CarsController_findAll_v1
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: The limit of items to be returned.
+          schema:
+            type: string
+        - name: skip
+          required: false
+          in: query
+          description: The amount of items to skip.
+          schema:
+            type: string
+        - name: model
+          required: false
+          in: query
+          description: The model of the car.
+          schema:
+            type: string
+        - name: brand
+          required: false
+          in: query
+          description: The brand of the car.
+          schema:
+            enum:
+              - BMW
+              - Mercedes
+              - Porsche
+              - Audi
+              - Toyota
+              - Honda
+              - Ford
+              - Tesla
+              - Volkswagen
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarListDto"
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+      summary: List cars
+      tags: *a1
+  /api/v1/cars/{id}:
+    get:
+      operationId: CarsController_findOne_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: id (UUID)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarDto"
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+      summary: List cars
+      tags: *a1
+    put:
+      operationId: CarsController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: id (UUID)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCarDto"
+      responses:
+        "200":
+          description: Car succesfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarDto"
+      summary: Update a car
+      tags: *a1
+    delete:
+      operationId: CarsController_remove_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: id (UUID)
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Car deleted successfully
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+      summary: Delete a car
+      tags: *a1
+info:
+  title: 🔥 Next Gen Nestjs API
+  description: API documentation
+  version: "1.0"
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    CreateCarDto:
+      type: object
+      properties:
+        brand:
+          description: The brand of the car.
+          type: string
+          enum:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+          x-enumNames:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+        model:
+          description: The model of the car.
+          type: string
+          minLength: 1
+          maxLength: 100
+        year:
+          type: integer
+          minimum: 1886
+          exclusiveMinimum: false
+          maximum: 2026
+          exclusiveMaximum: false
+        color:
+          type: string
+          minLength: 1
+        kmDriven:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: false
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: false
+      required:
+        - brand
+        - model
+        - year
+        - color
+        - kmDriven
+        - price
+    BadRequestErrorItem:
+      type: object
+      properties:
+        code:
+          type: string
+          example: invalid_enum_value
+        path:
+          example:
+            - brand
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+          example: Invalid enum value. Expected 'BMW' | 'Audi', received 'Tesla'
+        received:
+          type: object
+          example: Tesla
+          nullable: true
+        options:
+          example:
+            - BMW
+            - Audi
+          nullable: true
+          type: array
+          items:
+            type: string
+      required:
+        - code
+        - path
+        - message
+        - received
+        - options
+    BadRequestErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        errorCode:
+          type: number
+          example: 100
+          description: Custom application error code
+          enum:
+            - 100
+            - 101
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadRequestErrorItem"
+      required:
+        - statusCode
+        - errorCode
+        - message
+        - errors
+    MetaPaginationDto:
+      type: object
+      properties:
+        totalItems:
+          type: number
+          description: The total number of items available across all pages
+        limit:
+          type: number
+          description: The limit of items
+        skipped:
+          type: number
+          description: Items skipped
+        count:
+          type: number
+          description: The count of items
+      required:
+        - totalItems
+        - limit
+        - skipped
+        - count
+    CarDto:
+      type: object
+      properties:
+        brand:
+          description: The brand of the car.
+          type: string
+          enum:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+          x-enumNames:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+        model:
+          description: The model of the car.
+          type: string
+          minLength: 1
+          maxLength: 100
+        year:
+          type: integer
+          minimum: 1886
+          exclusiveMinimum: false
+          maximum: 2026
+          exclusiveMaximum: false
+        color:
+          type: string
+          minLength: 1
+        kmDriven:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: false
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: false
+        id:
+          type: string
+          format: uuid
+      required:
+        - brand
+        - model
+        - year
+        - color
+        - kmDriven
+        - price
+        - id
+    CarListDto:
+      type: object
+      properties:
+        meta:
+          description: Metadata for pagination
+          allOf:
+            - $ref: "#/components/schemas/MetaPaginationDto"
+        items:
+          description: The list of cars
+          type: array
+          items:
+            $ref: "#/components/schemas/CarDto"
+      required:
+        - meta
+        - items
+    NotFoundErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: Car
+        message:
+          type: string
+          example: Car could not be found
+      required:
+        - message
+    UpdateCarDto:
+      type: object
+      properties:
+        brand:
+          description: The brand of the car.
+          type: string
+          enum:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+          x-enumNames:
+            - BMW
+            - Mercedes
+            - Porsche
+            - Audi
+            - Toyota
+            - Honda
+            - Ford
+            - Tesla
+            - Volkswagen
+        model:
+          description: The model of the car.
+          type: string
+          minLength: 1
+          maxLength: 100
+        year:
+          type: integer
+          minimum: 1886
+          exclusiveMinimum: false
+          maximum: 2026
+          exclusiveMaximum: false
+        color:
+          type: string
+          minLength: 1
+        kmDriven:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: false
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: false
