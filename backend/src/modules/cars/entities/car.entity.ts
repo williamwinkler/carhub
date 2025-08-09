@@ -1,15 +1,15 @@
-import { UUID } from 'crypto';
+import type { UUID } from "crypto";
 
 export enum CarBrand {
-  BMW = 'BMW',
-  Mercedes = 'Mercedes',
-  Porsche = 'Porsche',
-  Audi = 'Audi',
-  Toyota = 'Toyota',
-  Honda = 'Honda',
-  Ford = 'Ford',
-  Tesla = 'Tesla',
-  Volkswagen = 'Volkswagen',
+  BMW = "BMW",
+  Mercedes = "Mercedes",
+  Porsche = "Porsche",
+  Audi = "Audi",
+  Toyota = "Toyota",
+  Honda = "Honda",
+  Ford = "Ford",
+  Tesla = "Tesla",
+  Volkswagen = "Volkswagen",
 }
 
 export class Car {

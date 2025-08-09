@@ -18,10 +18,10 @@ export class BadRequestErrorItem {
   message!: string;
 
   @ApiProperty({ example: "Tesla", nullable: true })
-  received?: any;
+  received?: unknown;
 
   @ApiProperty({ example: ["BMW", "Audi"], nullable: true })
-  options?: any[];
+  options?: unknown[];
 }
 
 export class BadRequestErrorResponse {

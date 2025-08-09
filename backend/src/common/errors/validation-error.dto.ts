@@ -7,7 +7,7 @@ export class ValidationErrorItem {
     example: "Tesla",
     nullable: true,
   })
-  received?: any;
+  received?: unknown;
 
   @ApiProperty({ description: "The Zod error code" })
   code!: string;
@@ -16,7 +16,7 @@ export class ValidationErrorItem {
     description: "Allowed options (for enums)",
     required: false,
   })
-  options?: any[];
+  options?: unknown[];
 
   @ApiProperty({
     description: "The path to the invalid property",

@@ -1,6 +1,9 @@
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { ExecutionContext } from "@nestjs/common";
+import { createParamDecorator } from "@nestjs/common";
 import { ApiParam } from "@nestjs/swagger";
-import { z, ZodTypeAny } from "zod";
+import type { ZodTypeAny } from "zod";
+import { z } from "zod";
 import { BadRequestErrorCode } from "../errors/bad-request-error.dto";
 import { BadRequestError } from "../errors/bad-request.exception";
 
@@ -76,6 +79,7 @@ function unwrapZodType(zodType: any): any {
   ) {
     return unwrapZodType(zodType._def.innerType);
   }
+
   return zodType;
 }
 
@@ -98,5 +102,6 @@ function mapZodTypeToSwaggerType(zodType: any) {
 
 function extractEnumValues(zodType: any) {
   const unwrapped = unwrapZodType(zodType);
+
   return unwrapped._def?.values ?? undefined;
 }

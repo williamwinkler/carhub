@@ -1,5 +1,5 @@
 // src/common/schemas/query-params.schema.ts
-import { UUID } from "crypto";
+import type { UUID } from "crypto";
 import { z } from "zod";
 
 // All queries should start with z.string() since they are strings

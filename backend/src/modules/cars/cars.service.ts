@@ -38,11 +38,18 @@ export class CarsService {
     const { brand, model, color, skip, limit } = options;
 
     let cars = Array.from(this.cars.values()).filter((car) => {
-      if (brand && car.brand !== brand) return false;
-      if (model && car.model.toLowerCase() !== model.toLowerCase())
+      if (brand && car.brand !== brand) {
         return false;
-      if (color && car.color.toLowerCase() !== color.toLowerCase())
+      }
+
+      if (model && car.model.toLowerCase() !== model.toLowerCase()) {
         return false;
+      }
+
+      if (color && car.color.toLowerCase() !== color.toLowerCase()) {
+        return false;
+      }
+
       return true;
     });
 
@@ -62,13 +69,18 @@ export class CarsService {
 
   findOne(id: UUID): Car {
     const car = this.cars.get(id);
-    if (!car) throw new NotFoundError("Car");
+    if (!car) {
+      throw new NotFoundError("Car");
+    }
+
     return car;
   }
 
   update(id: UUID, dto: UpdateCarDto): Car {
     const car = this.cars.get(id);
-    if (!car) throw new NotFoundError("Car");
+    if (!car) {
+      throw new NotFoundError("Car");
+    }
 
     const updatedCar: Car = {
       ...car,
@@ -84,7 +96,10 @@ export class CarsService {
 
   remove(id: UUID): void {
     const isDeleted = this.cars.delete(id);
-    if (!isDeleted) throw new NotFoundError("Car");
+    if (!isDeleted) {
+      throw new NotFoundError("Car");
+    }
+
     console.log("Car deleted: " + id);
   }
 

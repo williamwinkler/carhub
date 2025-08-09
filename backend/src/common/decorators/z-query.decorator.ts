@@ -1,14 +1,11 @@
-import {
-  BadRequestException,
-  createParamDecorator,
-  ExecutionContext,
-} from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { ExecutionContext } from "@nestjs/common";
+import { BadRequestException, createParamDecorator } from "@nestjs/common";
 import { ApiQuery } from "@nestjs/swagger";
-import { z, ZodTypeAny } from "zod";
-import {
-  BadRequestErrorCode,
-  BadRequestErrorResponse,
-} from "../errors/bad-request-error.dto";
+import type { ZodTypeAny } from "zod";
+import { z } from "zod";
+import type { BadRequestErrorResponse } from "../errors/bad-request-error.dto";
+import { BadRequestErrorCode } from "../errors/bad-request-error.dto";
 
 export function zQuery<T extends ZodTypeAny>(
   name: string,
@@ -73,6 +70,7 @@ function unwrapZodType(zodType: any): any {
   ) {
     return unwrapZodType(zodType._def.innerType);
   }
+
   return zodType;
 }
 
@@ -95,5 +93,6 @@ function mapZodTypeToSwaggerType(zodType: any) {
 
 function extractEnumValues(zodType: any) {
   const unwrapped = unwrapZodType(zodType);
+
   return unwrapped._def?.values ?? undefined;
 }

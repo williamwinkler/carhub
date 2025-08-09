@@ -60,6 +60,7 @@ export class CarsController {
   create(@Body() dto: CreateCarDto): GeneralResponseDto<CarDto> {
     const car = this.carsService.create(dto);
     const data = this.carsAdapter.getDto(car);
+
     return wrapResponse(data);
   }
 
@@ -76,6 +77,7 @@ export class CarsController {
   ): GeneralResponseDto<PaginationDto<CarDto>> {
     const cars = this.carsService.findAll({ brand, model, skip, limit, color });
     const data = this.carsAdapter.getListDto(cars);
+
     return wrapResponse(data);
   }
 
@@ -86,6 +88,7 @@ export class CarsController {
   @NotFound()
   findOne(@zParam("id", uuidSchema) id: UUID): CarDto {
     const car = this.carsService.findOne(id);
+
     return this.carsAdapter.getDto(car);
   }
 
@@ -101,6 +104,7 @@ export class CarsController {
   ): GeneralResponseDto<CarDto> {
     const car = this.carsService.update(id, dto);
     const data = this.carsAdapter.getDto(car);
+
     return wrapResponse(data);
   }
 
