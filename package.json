@@ -1,0 +1,21 @@
+{
+  "name": "tanstack-demo",
+  "private": true,
+  "version": "1.0.0",
+  "auther": "William Winkler",
+  "license": "MIT",
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev": "pnpm run --parallel dev"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}
