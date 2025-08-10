@@ -32,19 +32,21 @@ export class CarsTrpc {
           })
           .optional(),
       )
-      .query(({ input }) => {
-        return this.carsService.findAll({ skip: 0, limit: 10, ...input });
+      .query(async ({ input }) => {
+        return await this.carsService.findAll({ skip: 0, limit: 10, ...input });
       }),
 
     getById: this.trpc.procedure
       .input(z.object({ id: uuidSchema }))
-      .query(({ input }) => {
-        return this.carsService.findById(input.id);
+      .query(async ({ input }) => {
+        return await this.carsService.findById(input.id);
       }),
 
-    create: this.trpc.procedure.input(createCarSchema).mutation(({ input }) => {
-      return this.carsService.create(input);
-    }),
+    create: this.trpc.procedure
+      .input(createCarSchema)
+      .mutation(async ({ input }) => {
+        return await this.carsService.create(input);
+      }),
 
     update: this.trpc.procedure
       .input(
@@ -53,14 +55,14 @@ export class CarsTrpc {
           data: updateCarSchema,
         }),
       )
-      .mutation(({ input }) => {
-        return this.carsService.update(input.id, input.data);
+      .mutation(async ({ input }) => {
+        return await this.carsService.update(input.id, input.data);
       }),
 
     deleteById: this.trpc.procedure
       .input(z.object({ id: uuidSchema }))
-      .mutation(({ input }) => {
-        return this.carsService.remove(input.id);
+      .mutation(async ({ input }) => {
+        return await this.carsService.remove(input.id);
       }),
   });
 }
