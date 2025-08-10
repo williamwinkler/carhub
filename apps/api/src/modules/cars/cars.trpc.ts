@@ -28,7 +28,7 @@ export class CarsTrpc {
             model: carModelSchema.optional(),
             color: carColorSchema.optional(),
             skip: z.number().int().min(0).default(0),
-            limit: z.number().int().min(100).optional().default(10),
+            limit: z.number().int().min(0).max(100).optional().default(10),
           })
           .optional(),
       )

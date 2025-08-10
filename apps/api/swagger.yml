@@ -2,14 +2,8 @@ openapi: 3.0.0
 paths:
   /api/v1/cars:
     post:
-      operationId: CarsController_create_v1
+      operationId: CarsController__v1
       parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateCarDto"
       responses:
         "201":
           description: Car created successfully
@@ -21,7 +15,7 @@ paths:
       tags: &a1
         - Cars
     get:
-      operationId: CarsController_findAll_v1
+      operationId: CarsController__v1
       parameters:
         - name: limit
           required: false
@@ -80,7 +74,7 @@ paths:
       tags: *a1
   /api/v1/cars/{id}:
     get:
-      operationId: CarsController_findOne_v1
+      operationId: CarsController__v1
       parameters:
         - name: id
           required: true
@@ -110,7 +104,7 @@ paths:
       summary: Get a car
       tags: *a1
     put:
-      operationId: CarsController_update_v1
+      operationId: CarsController__v1
       parameters:
         - name: id
           required: true
@@ -118,12 +112,6 @@ paths:
           description: id (UUID)
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
           description: Car succesfully updated
@@ -134,7 +122,7 @@ paths:
       summary: Update a car
       tags: *a1
     delete:
-      operationId: CarsController_remove_v1
+      operationId: CarsController__v1
       parameters:
         - name: id
           required: true
@@ -168,64 +156,6 @@ tags: []
 servers: []
 components:
   schemas:
-    CreateCarDto:
-      type: object
-      properties:
-        brand:
-          description: The brand of the car.
-          type: string
-          enum:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-          x-enumNames:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-        model:
-          description: The model of the car.
-          type: string
-          minLength: 1
-          maxLength: 100
-        year:
-          description: The year the it was manufactored.
-          type: integer
-          minimum: 1886
-          exclusiveMinimum: false
-          maximum: 2026
-          exclusiveMaximum: false
-        color:
-          description: The color of the car.
-          type: string
-          minLength: 0
-          maxLength: 100
-        kmDriven:
-          type: integer
-          minimum: 0
-          exclusiveMinimum: false
-        price:
-          type: number
-          minimum: 0
-          exclusiveMinimum: false
-      required:
-        - brand
-        - model
-        - year
-        - color
-        - kmDriven
-        - price
     CarDto:
       type: object
       properties:
@@ -419,54 +349,3 @@ components:
           example: Car could not be found
       required:
         - message
-    UpdateCarDto:
-      type: object
-      properties:
-        brand:
-          description: The brand of the car.
-          type: string
-          enum:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-          x-enumNames:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-        model:
-          description: The model of the car.
-          type: string
-          minLength: 1
-          maxLength: 100
-        year:
-          description: The year the it was manufactored.
-          type: integer
-          minimum: 1886
-          exclusiveMinimum: false
-          maximum: 2026
-          exclusiveMaximum: false
-        color:
-          description: The color of the car.
-          type: string
-          minLength: 0
-          maxLength: 100
-        kmDriven:
-          type: integer
-          minimum: 0
-          exclusiveMinimum: false
-        price:
-          type: number
-          minimum: 0
-          exclusiveMinimum: false
