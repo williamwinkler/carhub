@@ -21,7 +21,12 @@ export class CarsAdapter {
   public getListDto(input: Pagination<Car>): PaginationDto<CarDto> {
     return {
       items: input.items.map((item) => this.getDto(item)),
-      meta: input.meta,
+      meta: {
+        total: input.meta.total,
+        count: input.meta.count,
+        limit: input.meta.limit,
+        skipped: input.meta.skipped,
+      },
     };
   }
 }

@@ -61,7 +61,7 @@ export class CarsService {
     return {
       items: cars,
       meta: {
-        totalItems: this.cars.size,
+        total: this.cars.size,
         limit,
         skipped: skip,
         count: cars.length,

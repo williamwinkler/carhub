@@ -1,4 +1,5 @@
 "use client";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { trpc } from "../_trpc/client";
 
@@ -54,15 +55,15 @@ export default function CarList({ onEdit }: { onEdit: (car: any) => void }) {
               <td className="p-3 flex gap-2">
                 <button
                   onClick={() => onEdit(car)}
-                  className="bg-blue-500 hover:bg-blue-600 p-2 rounded-lg"
+                  className="bg-blue-500 hover:bg-blue-600 p-2 rounded-lg cursor-pointer"
                 >
-                  Edit
+                  <EditOutlined />
                 </button>
                 <button
                   onClick={() => deleteCar.mutate({ id: car.id })}
-                  className="bg-red-500 hover:bg-red-600 p-2 rounded-lg"
+                  className="bg-red-500 hover:bg-red-600 p-2 rounded-lg cursor-pointer"
                 >
-                  Delete
+                  <DeleteOutlined />
                 </button>
               </td>
             </tr>
@@ -80,10 +81,10 @@ export default function CarList({ onEdit }: { onEdit: (car: any) => void }) {
           Prev
         </button>
         <span className="text-sm">
-          Page {page + 1} of {Math.ceil((data?.meta.totalItems || 0) / limit)}
+          Page {page + 1} of {Math.ceil((data?.meta.total || 0) / limit)}
         </span>
         <button
-          disabled={(page + 1) * limit >= (data?.meta.totalItems || 0)}
+          disabled={(page + 1) * limit >= (data?.meta.total || 0)}
           onClick={() => setPage((p) => p + 1)}
           className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
         >

@@ -4,7 +4,7 @@ class MetaPaginationDto {
   @ApiProperty({
     description: "The total number of items available across all pages",
   })
-  totalItems: number;
+  total: number;
 
   @ApiProperty({
     description: "The limit of items",
@@ -29,5 +29,5 @@ export class PaginationDto<T> {
   })
   meta: MetaPaginationDto;
 
-  items: T[]
+  items: T[];
 }
