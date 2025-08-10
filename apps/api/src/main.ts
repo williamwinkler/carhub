@@ -40,6 +40,9 @@ async function bootstrap() {
     defaultVersion: "1",
   });
 
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
   app.useGlobalPipes(new ZodValidationPipe());
 
   if (process.env.NODE_ENV === "development") {
@@ -66,7 +69,7 @@ async function bootstrap() {
           trpcLogger.debug(
             `${req.method} ${req.originalUrl} | input: ${safeStringify(
               input,
-            )} | Duration: ${duration}ms`,
+            )} | Status: ${res.statusCode} | Duration: ${duration}ms`,
           );
         });
 
