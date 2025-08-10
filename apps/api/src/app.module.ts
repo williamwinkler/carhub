@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { APP_PIPE } from "@nestjs/core";
+import { APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { ZodValidationPipe } from "nestjs-zod";
+import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
 import { CarsModule } from "./modules/cars/cars.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 
@@ -12,6 +13,10 @@ import { TrpcModule } from "./modules/trpc/trpc.modules";
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TrafficInterceptor,
     },
   ],
 })

@@ -2,15 +2,29 @@
 import { patchNestJsSwagger, ZodValidationPipe } from "nestjs-zod";
 patchNestJsSwagger();
 
-import { VersioningType } from "@nestjs/common";
+import { Logger, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import type { NextFunction, Request, Response } from "express";
+import express from "express";
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 import * as YAML from "yaml";
 import pkg from "../package.json";
 import { AppModule } from "./app.module";
 import { TrpcRouter } from "./modules/trpc/trpc.router";
+
+function safeStringify(data: unknown): string {
+  if (!data) {
+    return "<none>";
+  }
+
+  try {
+    return JSON.stringify(data);
+  } catch {
+    return "[Unserializable input]";
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -27,6 +41,39 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ZodValidationPipe());
+
+  if (process.env.NODE_ENV === "development") {
+    const trpcLogger = new Logger("tRPC");
+
+    // Ensure body is parsed before logger
+    app.use(
+      "/trpc",
+      express.json(),
+      (req: Request, res: Response, next: NextFunction) => {
+        const start = Date.now();
+
+        res.on("finish", () => {
+          const duration = Date.now() - start;
+
+          let input: unknown;
+
+          if (Array.isArray(req.body)) {
+            input = req.body[0]?.json ?? req.body;
+          } else {
+            input = req.body;
+          }
+
+          trpcLogger.debug(
+            `${req.method} ${req.originalUrl} | input: ${safeStringify(
+              input,
+            )} | Duration: ${duration}ms`,
+          );
+        });
+
+        next();
+      },
+    );
+  }
 
   const trpcRouter = app.get(TrpcRouter);
   await trpcRouter.applyMiddleware(app);
