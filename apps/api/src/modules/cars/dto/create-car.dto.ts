@@ -1,6 +1,6 @@
+import { CarBrand } from "@repo/shared";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { CarBrand } from "../entities/car.entity";
 
 export const carBrandSchema = z
   .nativeEnum(CarBrand)

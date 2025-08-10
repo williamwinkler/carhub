@@ -4,8 +4,8 @@ module.exports = {
   parserOptions: {
     project: [
       './apps/api/tsconfig.json',
-      './apps/client/tsconfig.json',
-      './packages/trpc/tsconfig.json'
+      './apps/web/tsconfig.json',
+      './packages/shared/tsconfig.json'
     ],
     tsconfigRootDir: __dirname
   },

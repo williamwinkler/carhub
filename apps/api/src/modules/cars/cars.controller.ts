@@ -14,8 +14,8 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from "@nestjs/swagger";
+import { CarBrandType } from "@repo/shared";
 import { UUID } from "crypto";
-
 import { BadRequest } from "../../common/decorators/bad-request-error.decorator";
 import { NotFound } from "../../common/decorators/not-found-error.decorator";
 import { zParam } from "../../common/decorators/z-param.decorator";
@@ -42,7 +42,6 @@ import {
   CreateCarDto,
 } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
-import { CarBrand } from "./entities/car.entity";
 
 @Controller({ path: "cars", version: "1" })
 export class CarsController {
@@ -70,7 +69,7 @@ export class CarsController {
   @ApiOkResponse({ type: createResponseListDto(CarDto) })
   @BadRequest()
   findAll(
-    @zQuery("brand", carBrandSchema.optional()) brand?: CarBrand,
+    @zQuery("brand", carBrandSchema.optional()) brand?: CarBrandType,
     @zQuery("model", carModelSchema.optional()) model?: string,
     @zQuery("color", carColorSchema.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,

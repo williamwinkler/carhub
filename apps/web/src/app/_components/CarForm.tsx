@@ -1,11 +1,11 @@
 "use client";
-import { CarBrand } from "@api/modules/cars/entities/car.entity";
+import { CarBrand, CarBrandType } from "@repo/shared";
 import { useEffect, useState } from "react";
 import { trpc } from "../_trpc/client";
 
 export default function CarForm({ editingCar, onDone }: any) {
   const [form, setForm] = useState({
-    brand: CarBrand.BMW,
+    brand: CarBrand.BMW as CarBrandType,
     model: "",
     year: 2023,
     color: "",
@@ -72,7 +72,7 @@ export default function CarForm({ editingCar, onDone }: any) {
         <select
           value={form.brand}
           onChange={(e) =>
-            setForm({ ...form, brand: e.target.value as CarBrand })
+            setForm({ ...form, brand: e.target.value as CarBrandType })
           }
           className="w-full p-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           required
@@ -90,6 +90,7 @@ export default function CarForm({ editingCar, onDone }: any) {
           <label className="block text-sm mb-1 capitalize">{field}</label>
           <input
             type="text"
+            placeholder={`Enter ${field}`}
             value={(form as any)[field]}
             onChange={(e) => setForm({ ...form, [field]: e.target.value })}
             className="w-full p-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"

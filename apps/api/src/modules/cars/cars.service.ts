@@ -1,10 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { CarBrandType } from "@repo/shared";
 import { randomUUID, UUID } from "crypto";
 import { NotFoundError } from "../../common/errors/not-found.error.dto";
 import { Pagination } from "../../common/types/pagination";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
-import { Car, CarBrand } from "./entities/car.entity";
+import { Car } from "./entities/car.entity";
 import { seedData } from "./entities/data";
 
 @Injectable()
@@ -31,7 +32,7 @@ export class CarsService {
   }
 
   findAll(options: {
-    brand?: CarBrand;
+    brand?: CarBrandType;
     model?: string;
     color?: string;
     skip: number;

@@ -50,6 +50,9 @@ importers:
       '@nestjs/swagger':
         specifier: ^11.2.0
         version: 11.2.0(@nestjs/common@11.1.6(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.1.14)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@trpc/server':
         specifier: ^11.4.4
         version: 11.4.4(typescript@5.8.3)
@@ -120,6 +123,9 @@ importers:
       '@ant-design/icons':
         specifier: ~5.6.1
         version: 5.6.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: ^5.84.2
         version: 5.84.2(react@19.1.0)
@@ -172,6 +178,8 @@ importers:
       typescript:
         specifier: ^5
         version: 5.9.2
+
+  packages/shared: {}
 
 packages:
 
