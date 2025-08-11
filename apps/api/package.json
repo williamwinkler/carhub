@@ -28,6 +28,7 @@
     "@nestjs/swagger": "^11.2.0",
     "@repo/shared": "workspace:*",
     "@trpc/server": "^11.4.4",
+    "nestjs-cls": "^6.0.1",
     "nestjs-zod": "4.3.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",

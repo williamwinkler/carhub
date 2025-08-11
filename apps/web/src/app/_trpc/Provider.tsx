@@ -13,13 +13,14 @@ export default function Provider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            placeholderData: (prev: never) => prev, // 👈 replaces keepPreviousData
-            staleTime: 30_000, // optional: matches your previous config
-            refetchOnWindowFocus: false, // optional: matches your previous config
+            placeholderData: (prev: never) => prev,
+            staleTime: 30_000,
+            refetchOnWindowFocus: false,
           },
         },
       }),
   );
+
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [

@@ -14,18 +14,6 @@ import pkg from "../package.json";
 import { AppModule } from "./app.module";
 import { TrpcRouter } from "./modules/trpc/trpc.router";
 
-function safeStringify(data: unknown): string {
-  if (!data) {
-    return "<none>";
-  }
-
-  try {
-    return JSON.stringify(data);
-  } catch {
-    return "[Unserializable input]";
-  }
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -57,19 +45,8 @@ async function bootstrap() {
 
         res.on("finish", () => {
           const duration = Date.now() - start;
-
-          let input: unknown;
-
-          if (Array.isArray(req.body)) {
-            input = req.body[0]?.json ?? req.body;
-          } else {
-            input = req.body;
-          }
-
           trpcLogger.debug(
-            `${req.method} ${req.originalUrl} | input: ${safeStringify(
-              input,
-            )} | Status: ${res.statusCode} | Duration: ${duration}ms`,
+            `${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`,
           );
         });
 

@@ -1,13 +1,28 @@
-import { Module } from "@nestjs/common";
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
+import { ClsModule } from "nestjs-cls";
 import { ZodValidationPipe } from "nestjs-zod";
 import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
+import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { CarsModule } from "./modules/cars/cars.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 
 @Module({
-  imports: [ConfigModule.forRoot(), TrpcModule, CarsModule],
+  imports: [
+    ConfigModule.forRoot(),
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true }, // Wrap each request in the CLS context
+    }),
+    TrpcModule,
+    CarsModule,
+  ],
   controllers: [],
   providers: [
     {
@@ -20,4 +35,10 @@ import { TrpcModule } from "./modules/trpc/trpc.modules";
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ContextMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL });
+  }
+}
