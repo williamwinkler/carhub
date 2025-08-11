@@ -9,7 +9,7 @@ export const carBrandSchema = z
 export const carModelSchema = z
   .string()
   .min(1, "Model name is required")
-  .max(100, "Model name must be at most 255 characters long")
+  .max(100, "Model name must be at most 100 characters long")
   .describe("The model of the car.");
 
 export const carYearSchema = z

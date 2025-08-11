@@ -40,7 +40,7 @@ The architecture looks like this:
 ---
 ## Improved Swagger Documentation
 
-This project uses **Zod** as the single source of truth for all DTOs and validation rules.  
+This project uses **Zod** as the single source of truth for all DTOs and validation rules.
 With [`nestjs-zod`](https://github.com/colinhacks/zod) and some custom decorators, we can:
 
 - Define DTOs **once** in Zod
@@ -66,7 +66,7 @@ export const carBrandSchema = z
 export const carModelSchema = z
   .string()
   .min(1, "Model name is required")
-  .max(100, "Model name must be at most 255 characters long")
+  .max(100, "Model name must be at most 100 characters long")
   .describe("The model of the car.");
 
 export const createCarSchema = z.object({
@@ -193,10 +193,10 @@ Then:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/williamwinkler/trpc-nestjs-nextjs-demo.git
 
 # 2. Enter the project folder
-cd <your-repo-folder>
+cd trpc-nestjs-nextjs-demo
 
 # 3. Install dependencies
 pnpm install

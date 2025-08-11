@@ -18,14 +18,6 @@ interface CarListProps {
   onEdit: (car: Car) => void;
 }
 
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center py-12">
-    <div className="relative">
-      <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-    </div>
-  </div>
-);
-
 const TableSkeleton = () => (
   <div className="overflow-x-auto">
     <table className="w-full">
@@ -52,30 +44,13 @@ const TableSkeleton = () => (
       <tbody className="divide-y divide-gray-200">
         {[...Array(8)].map((_, i) => (
           <tr key={i} className="animate-pulse">
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-4 bg-gray-200 rounded w-16"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-4 bg-gray-200 rounded w-12"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-6 bg-gray-200 rounded-full w-16"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="h-4 bg-gray-200 rounded w-24"></div>
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap">
-              <div className="flex space-x-2">
-                <div className="h-8 w-8 bg-gray-200 rounded-lg"></div>
-                <div className="h-8 w-8 bg-gray-200 rounded-lg"></div>
-              </div>
-            </td>
+            {Array(7)
+              .fill(null)
+              .map((_, idx) => (
+                <td key={idx} className="px-6 py-4 whitespace-nowrap">
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </td>
+              ))}
           </tr>
         ))}
       </tbody>
@@ -85,45 +60,20 @@ const TableSkeleton = () => (
 
 export default function CarList({ onEdit }: CarListProps) {
   const [page, setPage] = useState(0);
-  const [isChangingPage, setIsChangingPage] = useState(false);
   const limit = 8;
 
-  const { data, error, isLoading, isFetching } = trpc.cars.list.useQuery(
-    {
-      skip: page * limit,
-      limit,
-    },
-    {
-      staleTime: 1000 * 30,
-      refetchOnWindowFocus: false,
-    },
-  );
+  const { data, error, isLoading, isFetching } = trpc.cars.list.useQuery({
+    skip: page * limit,
+    limit,
+  });
 
   const utils = trpc.useUtils();
   const deleteCar = trpc.cars.deleteById.useMutation({
     onSuccess: () => utils.cars.list.invalidate(),
   });
 
-  const handlePageChange = async (newPage: number) => {
-    setIsChangingPage(true);
-
-    // Prefetch the next page data
-    await utils.cars.list.prefetch(
-      {
-        skip: newPage * limit,
-        limit,
-      },
-      {
-        staleTime: 1000 * 15, // cached for 15 seconds
-      },
-    );
-
+  const handlePageChange = (newPage: number) => {
     setPage(newPage);
-
-    // Small delay to ensure smooth transition
-    setTimeout(() => {
-      setIsChangingPage(false);
-    }, 100);
   };
 
   if (error) {
@@ -144,51 +94,29 @@ export default function CarList({ onEdit }: CarListProps) {
   }
 
   const totalPages = Math.ceil((data?.meta.total || 0) / limit);
-  const showLoading = isLoading || isChangingPage;
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-full max-w-6xl">
-      <div className="px-8 py-6 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">Car Inventory</h3>
-            <p className="text-gray-600 mt-1">
-              {data?.meta.total || 0} cars total
-            </p>
-          </div>
-          {(isFetching || isChangingPage) && !isLoading && (
-            <div className="flex items-center text-sm text-gray-500">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mr-2"></div>
-              Updating...
-            </div>
-          )}
+      <div className="px-8 py-6 border-b border-gray-100 flex justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Car Inventory</h3>
+          <p className="text-gray-600 mt-1">
+            {data?.meta.total || 0} cars total
+          </p>
         </div>
+        {isFetching && !isLoading && (
+          <div className="flex items-center text-sm text-gray-500">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mr-2"></div>
+            Updating...
+          </div>
+        )}
       </div>
 
-      {/* Fixed height container to prevent jumping */}
       <div className="relative" style={{ minHeight: "600px" }}>
-        {showLoading ? (
+        {isLoading ? (
           <TableSkeleton />
         ) : data?.items.length === 0 ? (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No cars</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by adding a new car.
-            </p>
-          </div>
+          <div className="text-center py-12">No cars found</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -212,56 +140,34 @@ export default function CarList({ onEdit }: CarListProps) {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 text-black">
                 {data?.items.map((car) => (
                   <tr
                     key={car.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {car.brand}
-                      </div>
+                    <td className="px-6 py-4">{car.brand}</td>
+                    <td className="px-6 py-4">{car.model}</td>
+                    <td className="px-6 py-4">{car.year}</td>
+                    <td className="px-6 py-4">{car.color}</td>
+                    <td className="px-6 py-4">
+                      {car.kmDriven.toLocaleString()} km
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{car.model}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{car.year}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {car.color}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {car.kmDriven.toLocaleString()} km
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        ${car.price.toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => onEdit(car)}
-                          className="text-blue-600 hover:text-blue-50 p-2 rounded-lg hover:bg-blue-500 transition-colors cursor-pointer"
-                          title="Edit car"
-                        >
-                          <EditOutlined />
-                        </button>
-                        <button
-                          onClick={() => deleteCar.mutate({ id: car.id })}
-                          className="text-red-600 hover:text-red-50 p-2 rounded-lg hover:bg-red-500 transition-color cursor-pointer"
-                          title="Delete car"
-                          disabled={deleteCar.isPending}
-                        >
-                          <DeleteOutlined />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4">${car.price.toLocaleString()}</td>
+                    <td className="px-6 py-4 flex space-x-2">
+                      <button
+                        onClick={() => onEdit(car)}
+                        className="text-blue-600 hover:bg-blue-500 hover:text-white p-2 rounded-lg"
+                      >
+                        <EditOutlined />
+                      </button>
+                      <button
+                        onClick={() => deleteCar.mutate({ id: car.id })}
+                        className="text-red-600 hover:bg-red-500 hover:text-white p-2 rounded-lg"
+                        disabled={deleteCar.isPending}
+                      >
+                        <DeleteOutlined />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -272,57 +178,24 @@ export default function CarList({ onEdit }: CarListProps) {
       </div>
 
       {totalPages > 1 && (
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              disabled={page === 0 || isChangingPage}
-              onClick={() => handlePageChange(page - 1)}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              disabled={page >= totalPages - 1 || isChangingPage}
-              onClick={() => handlePageChange(page + 1)}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{page * limit + 1}</span>{" "}
-                to{" "}
-                <span className="font-medium">
-                  {Math.min((page + 1) * limit, data?.meta.total || 0)}
-                </span>{" "}
-                of <span className="font-medium">{data?.meta.total || 0}</span>{" "}
-                results
-              </p>
-            </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
-                  disabled={page === 0 || isChangingPage}
-                  onClick={() => handlePageChange(page - 1)}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Previous
-                </button>
-                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <button
-                  disabled={page >= totalPages - 1 || isChangingPage}
-                  onClick={() => handlePageChange(page + 1)}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Next
-                </button>
-              </nav>
-            </div>
-          </div>
+        <div className="bg-gray-50 text-black px-6 py-4 flex items-center justify-between border-t border-gray-200">
+          <button
+            disabled={page === 0 || isFetching}
+            onClick={() => handlePageChange(page - 1)}
+            className="px-4 py-2 border rounded-md disabled:opacity-50 cursor-pointer disabled:cursor-auto hover:bg-gray-300"
+          >
+            Previous
+          </button>
+          <span>
+            Page {page + 1} of {totalPages}
+          </span>
+          <button
+            disabled={page >= totalPages - 1 || isFetching}
+            onClick={() => handlePageChange(page + 1)}
+            className="px-4 py-2 border rounded-md disabled:opacity-50 cursor-pointer disabled:cursor-auto hover:bg-gray-300"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

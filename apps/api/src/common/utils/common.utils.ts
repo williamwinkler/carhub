@@ -43,3 +43,7 @@ export function wrapResponse<T>(data: T): GeneralResponseDto<T> {
     data,
   };
 }
+
+export const sleep = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
