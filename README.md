@@ -1,6 +1,6 @@
-# tRPC + NestJS + Next.js Demo
+# tRPC + NestJS + Next.js + Swagger Demo
 
-A full-stack demo showcasing **end-to-end type safety** between backend and frontend using tRPC, with improved Swagger documentation generation using Zod.
+A full-stack demo showcasing **end-to-end type safety** between backend and frontend using tRPC, with improved Swagger documentation generation using Zod. This project aims to serve as a **starter template** for building modern full-stack applications.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -35,7 +35,7 @@ This project demonstrates a **car dealership management system** with full CRUD 
 
 - **tRPC Endpoints** at `/trpc`:
   - Same CRUD operations but with full type safety
-  - Real-time type inference between client and server
+  - Compile-time type inference between client and server
 
 ### Frontend (Next.js)
 - **Modern UI** built with Ant Design and TailwindCSS
@@ -52,7 +52,7 @@ This project demonstrates a **car dealership management system** with full CRUD 
 
 - **Backend:** [NestJS](https://nestjs.com/) with tRPC and Swagger
 - **Frontend:** [Next.js](https://nextjs.org/) (App Router) with tRPC client
-- **Type Inference:** Runtime type safety via tRPC
+- **Type Inference:** Compile-time type safety via tRPC
 - **Package Manager:** [pnpm](https://pnpm.io/)
 - **UI:** [Ant Design](https://ant.design/) with TailwindCSS
 
@@ -103,6 +103,18 @@ pnpm install
 # 4. Start the development environment
 pnpm dev
 ```
+
+### Using as a Starter Template
+
+This project is designed to be used as a **starter template** for new full-stack applications. To use it as a base for your next project:
+
+1. **Fork or clone** this repository
+2. **Replace the car dealership logic** with your own business domain
+3. **Update the shared enums** in `packages/shared/src/index.ts`
+4. **Modify the DTOs** in `apps/api/src/modules/` to match your data models
+5. **Customize the UI** in `apps/web/src/app/` for your use case
+
+The project includes all the essential patterns and configurations you need for a production-ready application with type safety, API documentation, and modern development practices.
 
 ## 📜 Available Scripts
 
@@ -285,8 +297,8 @@ This provides:
 
 Using a monorepo allows:
 
-- **Shared types** between backend and frontend (e.g., `CarBrand` enum, DTOs, Zod schemas)
-- **Single source of truth** for API contracts
+- **Shared enum constants** between backend and frontend (e.g., `CarBrand` enum)
+- **Single source of truth** for shared constants
 - Easier refactoring and dependency management
 
 ## 📄 License
