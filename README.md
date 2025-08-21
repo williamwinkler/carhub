@@ -8,10 +8,10 @@ A full-stack demo showcasing **end-to-end type safety** between backend and fron
 
 - **End-to-end type safety** — No manual API client code, types are inferred from the backend
 - **Swagger API docs** — Automatically generated for third-party integrations
-- **Shared validation** — Zod schemas are reused on both backend and frontend
+- **Backend validation** — Zod schemas validate all API requests and generate Swagger docs
 - **Pagination & CRUD demo** — Example car listing with create, update, delete, and pagination
 - **Modern UI** — Styled with Ant Design and TailwindCSS
-- **Monorepo architecture** — Shared types, schemas, and utilities between backend and frontend
+- **Monorepo architecture** — Shared enum constants and utilities between backend and frontend
 
 ## 🏗️ Architecture
 
@@ -40,19 +40,19 @@ This project demonstrates a **car dealership management system** with full CRUD 
 ### Frontend (Next.js)
 - **Modern UI** built with Ant Design and TailwindCSS
 - **Type-safe API calls** using tRPC client
-- **Real-time form validation** using shared Zod schemas
+- **Type inference** from backend schemas for development
 
 ### Key Features Demonstrated
 - **Dual API Access**: Same data accessible via REST (for third-party integrations) and tRPC (for frontend)
-- **Type Safety**: End-to-end type safety between frontend and backend
-- **Validation**: Shared validation rules using Zod schemas
+- **Type Safety**: End-to-end type safety via tRPC type inference
+- **Backend Validation**: Zod schemas validate all API requests and generate Swagger docs
 - **Documentation**: Auto-generated Swagger docs for REST endpoints
 
 ## 🛠️ Tech Stack
 
 - **Backend:** [NestJS](https://nestjs.com/) with tRPC and Swagger
 - **Frontend:** [Next.js](https://nextjs.org/) (App Router) with tRPC client
-- **Type Sharing:** Shared TypeScript types & Zod schemas in a monorepo
+- **Type Inference:** Runtime type safety via tRPC
 - **Package Manager:** [pnpm](https://pnpm.io/)
 - **UI:** [Ant Design](https://ant.design/) with TailwindCSS
 
@@ -73,7 +73,7 @@ trpc-nestjs-nextjs-demo/
 │       │   └── _trpc/          # tRPC client setup
 │       └── package.json
 └── packages/
-    └── shared/                 # Shared types and constants
+    └── shared/                 # Shared consts & enums
         └── src/
             └── index.ts        # CarBrand enum, etc.
 ```
