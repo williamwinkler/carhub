@@ -4,6 +4,6 @@ export class GeneralResponseDto<T> {
   @ApiProperty({ description: "The version of the API" })
   apiVersion: string;
 
-  @ApiProperty({ description: "The data from the API" })
+  @ApiProperty({ description: "The data of the response" })
   data: T;
 }

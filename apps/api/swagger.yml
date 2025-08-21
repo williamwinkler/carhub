@@ -16,7 +16,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseDto"
+                $ref: "#/components/schemas/CarResponseDto"
       summary: Create a car
       tags: &a1
         - Cars
@@ -69,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseListDto"
+                $ref: "#/components/schemas/CarResponseListDto"
         "400":
           description: Bad request error
           content:
@@ -94,7 +94,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CarDto"
+                $ref: "#/components/schemas/CarResponseDto"
         "400":
           description: Bad request error
           content:
@@ -130,7 +130,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseDto"
+                $ref: "#/components/schemas/CarResponseDto"
       summary: Update a car
       tags: *a1
     delete:
@@ -289,14 +289,14 @@ components:
         - kmDriven
         - price
         - id
-    ResponseDto:
+    CarResponseDto:
       type: object
       properties:
         apiVersion:
           type: string
           description: The version of the API
         data:
-          description: The data from the API
+          description: The data of the response
           allOf:
             - $ref: "#/components/schemas/CarDto"
       required:
@@ -395,14 +395,14 @@ components:
       required:
         - meta
         - items
-    ResponseListDto:
+    CarResponseListDto:
       type: object
       properties:
         apiVersion:
           type: string
           description: The version of the API
         data:
-          description: The data from the API
+          description: The data of the response
           allOf:
             - $ref: "#/components/schemas/PaginatedItemsDto"
       required:

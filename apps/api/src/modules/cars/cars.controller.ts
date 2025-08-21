@@ -1,3 +1,4 @@
+import { wrapResponse } from "@api/common/utils/common.utils";
 import {
   Body,
   Controller,
@@ -28,10 +29,9 @@ import {
   uuidSchema,
 } from "../../common/schemas/common.schema";
 import {
-  createResponseDto,
-  createResponseListDto,
-  wrapResponse,
-} from "../../common/utils/common.utils";
+  ApiResponseDto,
+  ApiResponseListDto,
+} from "../../common/utils/swagger.utils";
 import { CarsAdapter } from "./cars.adapter";
 import { CarsService } from "./cars.service";
 import { CarDto } from "./dto/car.dto";
@@ -54,7 +54,7 @@ export class CarsController {
   @ApiOperation({ summary: "Create a car" })
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
-    type: createResponseDto(CarDto),
+    type: ApiResponseDto(CarDto),
     description: "Car created successfully",
   })
   create(@Body() dto: CreateCarDto): GeneralResponseDto<CarDto> {
@@ -66,7 +66,7 @@ export class CarsController {
 
   @Get()
   @ApiOperation({ summary: "List cars" })
-  @ApiOkResponse({ type: createResponseListDto(CarDto) })
+  @ApiOkResponse({ type: ApiResponseListDto(CarDto) })
   @BadRequest()
   findAll(
     @zQuery("brand", carBrandSchema.optional()) brand?: CarBrandType,
@@ -83,7 +83,7 @@ export class CarsController {
 
   @Get(":id")
   @ApiOperation({ summary: "Get a car" })
-  @ApiOkResponse({ type: CarDto })
+  @ApiOkResponse({ type: ApiResponseDto(CarDto) })
   @BadRequest()
   @NotFound()
   findOne(@zParam("id", uuidSchema) id: UUID): CarDto {
@@ -95,7 +95,7 @@ export class CarsController {
   @Put(":id")
   @ApiOperation({ summary: "Update a car" })
   @ApiOkResponse({
-    type: createResponseDto(CarDto),
+    type: ApiResponseDto(CarDto),
     description: "Car succesfully updated",
   })
   update(
