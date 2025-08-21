@@ -50,9 +50,7 @@ function getDtoName<T>(classRef: new () => T, isList: boolean = false) {
     ? classRef.name.slice(0, -3)
     : classRef.name;
 
-  const list = isList ? "List" : "";
-
-  return `${name}Response${list}Dto`;
+  return isList ? `${name}ResponseListDto` : `${name}ResponseDto`;
 }
 
 export function ApiResponseDto<T>(classRef: new () => T) {
