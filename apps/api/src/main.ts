@@ -20,7 +20,6 @@ async function bootstrap() {
   });
 
   app.enableCors();
-  app.setGlobalPrefix("api");
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -81,7 +80,7 @@ async function bootstrap() {
   await app.listen(port);
   if (process.env.NODE_ENV === "development") {
     console.log(`✨ Application started (v${pkg.version}) ✨`);
-    console.log(`🚀 Server ready on: http://localhost:${port}/api`);
+    console.log(`🚀 Server ready on: http://localhost:${port}`);
     console.log(`📡 tRPC ready on:   http://localhost:${port}/trpc`);
     console.log(`📚 Swagger UI:      http://localhost:${port}/docs`);
   }

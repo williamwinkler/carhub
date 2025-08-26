@@ -1,4 +1,5 @@
-import { wrapResponse } from "@api/common/utils/common.utils";
+import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
+import { ApiResponseDto } from "@api/common/utils/swagger.utils";
 import {
   Body,
   Controller,
@@ -9,29 +10,16 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import {
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiOkResponse,
-  ApiOperation,
-} from "@nestjs/swagger";
+import { ApiNoContentResponse, ApiOperation } from "@nestjs/swagger";
 import { CarBrandType } from "@repo/shared";
 import { UUID } from "crypto";
 import { BadRequest } from "../../common/decorators/bad-request-error.decorator";
 import { NotFound } from "../../common/decorators/not-found-error.decorator";
-import { zParam } from "../../common/decorators/z-param.decorator";
-import { zQuery } from "../../common/decorators/z-query.decorator";
-import { GeneralResponseDto } from "../../common/dto/general-response.dto";
-import { PaginationDto } from "../../common/dto/pagination.dto";
 import {
   limitSchema,
   skipSchema,
   uuidSchema,
 } from "../../common/schemas/common.schema";
-import {
-  ApiResponseDto,
-  ApiResponseListDto,
-} from "../../common/utils/swagger.utils";
 import { CarsAdapter } from "./cars.adapter";
 import { CarsService } from "./cars.service";
 import { CarDto } from "./dto/car.dto";
@@ -53,40 +41,47 @@ export class CarsController {
   @Post()
   @ApiOperation({ summary: "Create a car" })
   @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({
-    type: ApiResponseDto(CarDto),
+  @ApiResponseDto({
+    status: HttpStatus.CREATED,
     description: "Car created successfully",
+    type: CarDto,
   })
-  create(@Body() dto: CreateCarDto): GeneralResponseDto<CarDto> {
+  @BadRequest()
+  async create(@Body() dto: CreateCarDto) {
     const car = this.carsService.create(dto);
-    const data = this.carsAdapter.getDto(car);
 
-    return wrapResponse(data);
+    return this.carsAdapter.getDto(car);
   }
 
   @Get()
   @ApiOperation({ summary: "List cars" })
-  @ApiOkResponse({ type: ApiResponseListDto(CarDto) })
   @BadRequest()
-  findAll(
+  @ApiResponseDto({
+    status: HttpStatus.OK,
+    description: "List of cars",
+    type: [CarDto],
+  })
+  async findAll(
     @zQuery("brand", carBrandSchema.optional()) brand?: CarBrandType,
     @zQuery("model", carModelSchema.optional()) model?: string,
     @zQuery("color", carColorSchema.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
-  ): GeneralResponseDto<PaginationDto<CarDto>> {
+  ) {
     const cars = this.carsService.findAll({ brand, model, skip, limit, color });
-    const data = this.carsAdapter.getListDto(cars);
 
-    return wrapResponse(data);
+    return this.carsAdapter.getListDto(cars);
   }
 
   @Get(":id")
   @ApiOperation({ summary: "Get a car" })
-  @ApiOkResponse({ type: ApiResponseDto(CarDto) })
+  @ApiResponseDto({
+    description: "Car successfully retrieved",
+    type: CarDto,
+  })
   @BadRequest()
   @NotFound()
-  findOne(@zParam("id", uuidSchema) id: UUID): CarDto {
+  async findOne(@zParam("id", uuidSchema) id: UUID) {
     const car = this.carsService.findById(id);
 
     return this.carsAdapter.getDto(car);
@@ -94,18 +89,16 @@ export class CarsController {
 
   @Put(":id")
   @ApiOperation({ summary: "Update a car" })
-  @ApiOkResponse({
-    type: ApiResponseDto(CarDto),
-    description: "Car succesfully updated",
+  @ApiResponseDto({
+    description: "The car was successfully updated",
+    type: CarDto,
   })
-  update(
-    @zParam("id", uuidSchema) id: UUID,
-    @Body() dto: UpdateCarDto,
-  ): GeneralResponseDto<CarDto> {
+  @BadRequest()
+  @NotFound()
+  async update(@zParam("id", uuidSchema) id: UUID, @Body() dto: UpdateCarDto) {
     const car = this.carsService.update(id, dto);
-    const data = this.carsAdapter.getDto(car);
 
-    return wrapResponse(data);
+    return this.carsAdapter.getDto(car);
   }
 
   @Delete(":id")
@@ -114,7 +107,7 @@ export class CarsController {
   @ApiNoContentResponse({ description: "Car deleted successfully" })
   @BadRequest()
   @NotFound()
-  remove(@zParam("id", uuidSchema) id: UUID) {
+  async remove(@zParam("id", uuidSchema) id: UUID) {
     this.carsService.remove(id);
   }
 }

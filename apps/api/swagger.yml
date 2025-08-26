@@ -1,6 +1,6 @@
 openapi: 3.0.0
 paths:
-  /api/v1/cars:
+  /v1/cars:
     post:
       operationId: CarsController_create_v1
       parameters: []
@@ -17,6 +17,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
       summary: Create a car
       tags: &a1
         - Cars
@@ -65,7 +71,7 @@ paths:
               - Volkswagen
       responses:
         "200":
-          description: ""
+          description: List of cars
           content:
             application/json:
               schema:
@@ -78,7 +84,7 @@ paths:
                 $ref: "#/components/schemas/BadRequestErrorResponse"
       summary: List cars
       tags: *a1
-  /api/v1/cars/{id}:
+  /v1/cars/{id}:
     get:
       operationId: CarsController_findOne_v1
       parameters:
@@ -90,7 +96,7 @@ paths:
             type: string
       responses:
         "200":
-          description: ""
+          description: Car successfully retrieved
           content:
             application/json:
               schema:
@@ -126,11 +132,23 @@ paths:
               $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
-          description: Car succesfully updated
+          description: The car was successfully updated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
       summary: Update a car
       tags: *a1
     delete:
@@ -168,6 +186,64 @@ tags: []
 servers: []
 components:
   schemas:
+    BadRequestErrorItem:
+      type: object
+      properties:
+        code:
+          type: string
+          example: invalid_enum_value
+        path:
+          example:
+            - brand
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+          example: Invalid enum value. Expected 'BMW' | 'Audi', received 'Tesla'
+        received:
+          type: object
+          example: Tesla
+          nullable: true
+        options:
+          example:
+            - BMW
+            - Audi
+          nullable: true
+          type: array
+          items:
+            type: string
+      required:
+        - code
+        - path
+        - message
+        - received
+        - options
+    BadRequestErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        errorCode:
+          type: number
+          example: 100
+          description: Custom application error code
+          enum:
+            - 100
+            - 101
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadRequestErrorItem"
+      required:
+        - statusCode
+        - errorCode
+        - message
+        - errors
     CreateCarDto:
       type: object
       properties:
@@ -295,6 +371,7 @@ components:
         apiVersion:
           type: string
           description: The version of the API
+          example: 1.0.0
         data:
           description: The data of the response
           allOf:
@@ -302,64 +379,6 @@ components:
       required:
         - apiVersion
         - data
-    BadRequestErrorItem:
-      type: object
-      properties:
-        code:
-          type: string
-          example: invalid_enum_value
-        path:
-          example:
-            - brand
-          type: array
-          items:
-            type: string
-        message:
-          type: string
-          example: Invalid enum value. Expected 'BMW' | 'Audi', received 'Tesla'
-        received:
-          type: object
-          example: Tesla
-          nullable: true
-        options:
-          example:
-            - BMW
-            - Audi
-          nullable: true
-          type: array
-          items:
-            type: string
-      required:
-        - code
-        - path
-        - message
-        - received
-        - options
-    BadRequestErrorResponse:
-      type: object
-      properties:
-        statusCode:
-          type: number
-          example: 400
-        errorCode:
-          type: number
-          example: 100
-          description: Custom application error code
-          enum:
-            - 100
-            - 101
-        message:
-          type: string
-          example: Validation failed
-        errors:
-          type: array
-          items:
-            $ref: "#/components/schemas/BadRequestErrorItem"
-      required:
-        - statusCode
-        - errorCode
-        - message
-        - errors
     MetaPaginationDto:
       type: object
       properties:
@@ -388,7 +407,7 @@ components:
           allOf:
             - $ref: "#/components/schemas/MetaPaginationDto"
         items:
-          description: List of items
+          description: List of CarDto items
           type: array
           items:
             $ref: "#/components/schemas/CarDto"
@@ -401,6 +420,7 @@ components:
         apiVersion:
           type: string
           description: The version of the API
+          example: 1.0.0
         data:
           description: The data of the response
           allOf:

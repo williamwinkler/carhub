@@ -29,5 +29,9 @@ export class PaginationDto<T> {
   })
   meta: MetaPaginationDto;
 
+  @ApiProperty({
+    description: "List of items",
+    isArray: true,
+  })
   items: T[];
 }

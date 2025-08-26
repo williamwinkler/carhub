@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ApiParam, ApiQuery } from "@nestjs/swagger";
 import type { ExecutionContext } from "@nestjs/common";
 import { BadRequestException, createParamDecorator } from "@nestjs/common";
 import type { ZodTypeAny } from "zod";
@@ -6,9 +7,13 @@ import z from "zod";
 import type { BadRequestErrorResponse } from "../errors/bad-request-error.dto";
 import { BadRequestErrorCode } from "../errors/bad-request-error.dto";
 
-type SwaggerDecorator = (options: any) => MethodDecorator; // ⚠️ Change this
+export const zParam = createZodParamDecorator(ApiParam, "param");
+export const zQuery = createZodParamDecorator(ApiQuery, "query");
 
-export function createZodParamDecorator(
+type SwaggerDecorator = (options: any) => MethodDecorator;
+
+// TODO: make constraints like length, default etc show up in swagger.
+function createZodParamDecorator(
   swaggerDecorator: SwaggerDecorator,
   source: "query" | "param",
 ) {
@@ -16,14 +21,50 @@ export function createZodParamDecorator(
     name: string,
     schema: T,
   ): ParameterDecorator {
-    return (target, propertyKey, parameterIndex) => {
+    // Create the validation logic
+    const validationDecorator = createParamDecorator(
+      (_: unknown, ctx: ExecutionContext) => {
+        const request = ctx.switchToHttp().getRequest();
+        const rawValue =
+          source === "query" ? request.query[name] : request.params[name];
+
+        const parsed = schema.safeParse(rawValue);
+
+        if (!parsed.success) {
+          const issues = parsed.error.issues.map((issue: any) => ({
+            received: issue.received ?? undefined,
+            code: issue.code,
+            options: issue.options ?? undefined,
+            path: issue.path,
+            message: issue.message,
+          }));
+
+          // TODO: improve error validation code
+          throw new BadRequestException({
+            statusCode: 400,
+            errorCode: BadRequestErrorCode.VALIDATION_ERROR,
+            message: "Validation failed",
+            errors: issues,
+          } satisfies BadRequestErrorResponse);
+        }
+
+        return parsed.data;
+      },
+    )();
+
+    // Return a parameter decorator that applies both Swagger and validation
+    return (
+      target: any,
+      propertyKey: string | symbol | undefined,
+      parameterIndex: number,
+    ) => {
       if (typeof propertyKey !== "string") {
         throw new Error(
           "Zod decorators can only be used on method parameters, not constructor parameters.",
         );
       }
 
-      // Apply Swagger decorator
+      // Apply Swagger documentation to the method
       const methodDecorator = swaggerDecorator({
         name,
         required: !schema.isOptional?.(),
@@ -42,45 +83,18 @@ export function createZodParamDecorator(
             }),
       });
 
-      // Apply the method decorator properly
+      // Apply to method (not parameter) - propertyKey is now guaranteed to be string
       methodDecorator(
         target,
         propertyKey,
-        Object.getOwnPropertyDescriptor(target, propertyKey) ||
-          Object.getOwnPropertyDescriptor(
-            target.constructor.prototype,
-            propertyKey,
-          )!,
+        Object.getOwnPropertyDescriptor(
+          target.constructor.prototype,
+          propertyKey,
+        )!,
       );
 
-      // Apply runtime validation parameter decorator
-      createParamDecorator((data: unknown, ctx: ExecutionContext) => {
-        const request = ctx.switchToHttp().getRequest();
-        const value =
-          source === "query" ? request.query[name] : request.params[name];
-
-        const wrappedSchema = z.object({ [name]: schema });
-        const parsed = wrappedSchema.safeParse({ [name]: value });
-
-        if (!parsed.success) {
-          const issues = parsed.error.issues.map((issue) => ({
-            received: (issue as any).received ?? undefined,
-            code: issue.code,
-            options: (issue as any).options ?? undefined,
-            path: issue.path,
-            message: issue.message,
-          }));
-
-          throw new BadRequestException({
-            statusCode: 400,
-            errorCode: BadRequestErrorCode.VALIDATION_ERROR,
-            message: "Validation failed",
-            errors: issues,
-          } satisfies BadRequestErrorResponse);
-        }
-
-        return parsed.data[name];
-      })(target, propertyKey, parameterIndex);
+      // Apply validation to parameter
+      validationDecorator(target, propertyKey, parameterIndex);
     };
   };
 }

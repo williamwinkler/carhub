@@ -12,6 +12,7 @@ import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
 import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { CarsModule } from "./modules/cars/cars.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
+import { WrapResponseInterceptor } from "./common/interceptors/wrap-response.interceptor";
 
 @Module({
   imports: [
@@ -32,6 +33,10 @@ import { TrpcModule } from "./modules/trpc/trpc.modules";
     {
       provide: APP_INTERCEPTOR,
       useClass: TrafficInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: WrapResponseInterceptor,
     },
   ],
 })

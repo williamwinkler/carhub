@@ -40,7 +40,7 @@ export class CarsService {
   }): Pagination<Car> {
     const { brand, model, color, skip, limit } = options;
 
-    let cars = Array.from(this.cars.values()).filter((car) => {
+    const cars = Array.from(this.cars.values()).filter((car) => {
       if (brand && car.brand !== brand) {
         return false;
       }
@@ -57,21 +57,22 @@ export class CarsService {
     });
 
     // Apply pagination
-    cars = cars.slice(skip, skip + limit);
+    const paginatedCars = cars.slice(skip, skip + limit);
 
     return {
-      items: cars,
+      items: paginatedCars,
       meta: {
-        total: this.cars.size,
+        total: cars.length,
         limit,
         skipped: skip,
-        count: cars.length,
+        count: paginatedCars.length,
       },
     };
   }
 
   findById(id: UUID): Car {
     const car = this.cars.get(id);
+
     if (!car) {
       throw new NotFoundError("Car");
     }

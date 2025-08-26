@@ -5,7 +5,7 @@
   "auther": "William Winkler",
   "license": "MIT",
   "scripts": {
-    "dev:api": "pnpm --filter api start:dev",
+    "dev:api": "pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",
     "dev": "pnpm run --parallel dev"
   },
