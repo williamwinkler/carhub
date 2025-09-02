@@ -1,5 +1,30 @@
 openapi: 3.0.0
 paths:
+  /v1/auth/login:
+    post:
+      operationId: AuthController_login_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDto"
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JwtResponseDto"
+        "400":
+          description: Bad request error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorResponse"
+      tags:
+        - Auth
   /v1/cars:
     post:
       operationId: CarsController_create_v1
@@ -47,28 +72,21 @@ paths:
           description: The color of the car.
           schema:
             type: string
+            maxLength: 100
         - name: model
           required: false
           in: query
           description: The model of the car.
           schema:
             type: string
+            minLength: 1
+            maxLength: 100
         - name: brand
           required: false
           in: query
           description: The brand of the car.
           schema:
             type: string
-            enum:
-              - BMW
-              - Mercedes
-              - Porsche
-              - Audi
-              - Toyota
-              - Honda
-              - Ford
-              - Tesla
-              - Volkswagen
       responses:
         "200":
           description: List of cars
@@ -244,6 +262,47 @@ components:
         - errorCode
         - message
         - errors
+    LoginDto:
+      type: object
+      properties:
+        username:
+          description: The username of the user
+          type: string
+          minLength: 1
+          maxLength: 80
+        password:
+          description: The password of the user
+          type: string
+          minLength: 5
+          maxLength: 255
+      required:
+        - username
+        - password
+    JwtDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          format: jwt
+        refreshToken:
+          type: string
+      required:
+        - accessToken
+        - refreshToken
+    JwtResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/JwtDto"
+      required:
+        - apiVersion
+        - data
     CreateCarDto:
       type: object
       properties:
@@ -260,41 +319,34 @@ components:
             - Ford
             - Tesla
             - Volkswagen
-          x-enumNames:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
+          x-nestjs_zod-parent-additional-properties: false
         model:
           description: The model of the car.
           type: string
           minLength: 1
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
           type: integer
           minimum: 1886
-          exclusiveMinimum: false
           maximum: 2026
-          exclusiveMaximum: false
+          x-nestjs_zod-parent-additional-properties: false
         color:
           description: The color of the car.
           type: string
           minLength: 0
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           type: integer
           minimum: 0
-          exclusiveMinimum: false
+          maximum: 9007199254740991
+          x-nestjs_zod-parent-additional-properties: false
         price:
           type: number
           minimum: 0
-          exclusiveMinimum: false
+          x-nestjs_zod-parent-additional-properties: false
       required:
         - brand
         - model
@@ -318,45 +370,40 @@ components:
             - Ford
             - Tesla
             - Volkswagen
-          x-enumNames:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
+          x-nestjs_zod-parent-additional-properties: false
         model:
           description: The model of the car.
           type: string
           minLength: 1
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
           type: integer
           minimum: 1886
-          exclusiveMinimum: false
           maximum: 2026
-          exclusiveMaximum: false
+          x-nestjs_zod-parent-additional-properties: false
         color:
           description: The color of the car.
           type: string
           minLength: 0
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           type: integer
           minimum: 0
-          exclusiveMinimum: false
+          maximum: 9007199254740991
+          x-nestjs_zod-parent-additional-properties: false
         price:
           type: number
           minimum: 0
-          exclusiveMinimum: false
+          x-nestjs_zod-parent-additional-properties: false
         id:
           description: The unique id of the car (UUID)
           type: string
           format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
       required:
         - brand
         - model
@@ -455,38 +502,31 @@ components:
             - Ford
             - Tesla
             - Volkswagen
-          x-enumNames:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
+          x-nestjs_zod-parent-additional-properties: false
         model:
           description: The model of the car.
           type: string
           minLength: 1
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
           type: integer
           minimum: 1886
-          exclusiveMinimum: false
           maximum: 2026
-          exclusiveMaximum: false
+          x-nestjs_zod-parent-additional-properties: false
         color:
           description: The color of the car.
           type: string
           minLength: 0
           maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           type: integer
           minimum: 0
-          exclusiveMinimum: false
+          maximum: 9007199254740991
+          x-nestjs_zod-parent-additional-properties: false
         price:
           type: number
           minimum: 0
-          exclusiveMinimum: false
+          x-nestjs_zod-parent-additional-properties: false

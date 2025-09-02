@@ -153,7 +153,7 @@ export default function CarList({ onEdit }: CarListProps) {
                     <td className="px-6 py-4">
                       {car.kmDriven.toLocaleString()} km
                     </td>
-                    <td className="px-6 py-4">${car.price.toLocaleString()}</td>
+                    <td className="px-6 py-4">{car.price.toLocaleString()}€</td>
                     <td className="px-6 py-4 flex space-x-2">
                       <button
                         onClick={() => onEdit(car)}

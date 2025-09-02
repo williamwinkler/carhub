@@ -9,18 +9,22 @@ import { APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { ClsModule } from "nestjs-cls";
 import { ZodValidationPipe } from "nestjs-zod";
 import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
+import { WrapResponseInterceptor } from "./common/interceptors/wrap-response.interceptor";
 import { ContextMiddleware } from "./common/middlewares/context.middleware";
+import { AuthModule } from "./modules/auth/auth.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
-import { WrapResponseInterceptor } from "./common/interceptors/wrap-response.interceptor";
+import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true }, // Wrap each request in the CLS context
     }),
+    AuthModule,
+    ConfigModule,
+    UsersModule,
     TrpcModule,
     CarsModule,
   ],

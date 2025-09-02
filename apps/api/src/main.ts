@@ -1,7 +1,5 @@
 /* eslint-disable no-console */
-import { patchNestJsSwagger, ZodValidationPipe } from "nestjs-zod";
-patchNestJsSwagger();
-
+import { ZodValidationPipe } from "nestjs-zod";
 import { Logger, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -30,7 +28,7 @@ async function bootstrap() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.useGlobalPipes(new ZodValidationPipe());
+  app.useGlobalPipes(new ZodValidationPipe()); // for tRPC
 
   if (process.env.NODE_ENV === "development") {
     const trpcLogger = new Logger("tRPC");
