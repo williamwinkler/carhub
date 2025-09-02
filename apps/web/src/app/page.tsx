@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CarForm from "./_components/CarForm";
 import CarList, { Car } from "./_components/CarList";
+import { LoginForm } from "./_components/Login";
 
 export default function Home() {
   const [editingCar, setEditingCar] = useState<Car | null>(null);
@@ -18,6 +19,7 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col items-center gap-8">
+          <LoginForm></LoginForm>
           <CarForm editingCar={editingCar} onDone={() => setEditingCar(null)} />
           <CarList onEdit={(car) => setEditingCar(car)} />
         </div>

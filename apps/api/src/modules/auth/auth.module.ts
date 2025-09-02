@@ -5,6 +5,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { ConfigModule } from "../config/config.module";
 import { ConfigService } from "../config/config.service";
+import { AuthTrpc } from "./auth.trpc";
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { ConfigService } from "../config/config.service";
       }),
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, AuthTrpc],
   controllers: [AuthController],
+  exports: [AuthTrpc],
 })
 export class AuthModule {}

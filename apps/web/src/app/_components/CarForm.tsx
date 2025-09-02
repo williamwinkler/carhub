@@ -15,8 +15,8 @@ export default function CarForm({ editingCar, onDone }: CarFormProps) {
     model: "",
     year: 2023,
     color: "",
-    kmDriven: 0,
-    price: 0,
+    kmDriven: 35000,
+    price: 10500,
   });
 
   const utils = trpc.useUtils();

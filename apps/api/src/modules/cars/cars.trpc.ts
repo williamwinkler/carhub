@@ -11,8 +11,6 @@ import {
   createCarSchema,
 } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
-import { sleep } from "@api/common/utils/common.utils";
-
 @Injectable()
 export class CarsTrpc {
   constructor(
@@ -34,8 +32,6 @@ export class CarsTrpc {
           .optional(),
       )
       .query(async ({ input }) => {
-        // await sleep(1000);
-
         return await this.carsService.findAll({ skip: 0, limit: 10, ...input });
       }),
 

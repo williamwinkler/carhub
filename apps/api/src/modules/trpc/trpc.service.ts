@@ -1,8 +1,7 @@
 // src/modules/trpc/trpc.service.ts
-import { Ctx } from "@api/common/ctx";
 import { NotFoundError } from "@api/common/errors/not-found.error.dto";
 import { setupRequestContext } from "@api/common/utils/context.utils";
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { ClsServiceManager } from "nestjs-cls";
@@ -32,6 +31,7 @@ export class TrpcService {
 
     return cls.runWith({}, async () => {
       setupRequestContext(ctx.req);
+
       return next();
     });
   });
@@ -39,11 +39,20 @@ export class TrpcService {
   // Error handling middleware
   private errorMiddleware = this.trpc.middleware(async ({ next }) => {
     const result = await next();
-    if (!result.ok && result.error.cause instanceof NotFoundError) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: result.error.cause.message,
-      });
+    if (!result.ok) {
+      if (result.error.cause instanceof NotFoundError) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: result.error.cause.message,
+        });
+      }
+
+      if (result.error.cause instanceof UnauthorizedException) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: result.error.cause.message,
+        });
+      }
     }
 
     return result;

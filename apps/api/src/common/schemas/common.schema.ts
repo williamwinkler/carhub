@@ -25,7 +25,6 @@ export const limitSchema = z
   .describe("The limit of items to be returned.");
 
 export const uuidSchema = z
-  .string()
   .uuid()
   .transform((val) => val as UUID)
   .describe("id (UUID)");

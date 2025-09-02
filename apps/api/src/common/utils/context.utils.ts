@@ -5,7 +5,7 @@ import z from "zod";
 import { Ctx } from "../ctx";
 
 // Reusable UUID schema
-const uuidSchema = z.string().uuid();
+const uuidSchema = z.uuid();
 
 export function setupRequestContext(req: Request) {
   const headerValue = req.headers["x-request-id"];

@@ -1,7 +1,7 @@
 // src/modules/trpc/trpc.router.ts
 import { INestApplication, Injectable } from "@nestjs/common";
-import type { AnyRouter } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
+import { AuthTrpc } from "../auth/auth.trpc";
 import { CarsTrpc } from "../cars/cars.trpc";
 import { TrpcService, createContext } from "./trpc.service";
 
@@ -9,11 +9,13 @@ import { TrpcService, createContext } from "./trpc.service";
 export class TrpcRouter {
   constructor(
     private readonly trpc: TrpcService,
+    private readonly authTrpc: AuthTrpc,
     private readonly carsTrpc: CarsTrpc,
   ) {}
 
   // Main app router
   appRouter = this.trpc.router({
+    auth: this.authTrpc.router,
     cars: this.carsTrpc.router,
   });
 

@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "../config/config.service";
 import { Role } from "../users/entities/user.entity";
 import { UsersService } from "./../users/users.service";
-import { ConfigService } from "../config/config.service";
 
 export type Token = {
   iss: string;
@@ -20,7 +20,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signIn(
+  async login(
     username: string,
     pass: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
