@@ -4,7 +4,6 @@ import { ApiProperty } from "@nestjs/swagger";
 export class ValidationErrorItem {
   @ApiProperty({
     description: "The value that was received",
-    example: "Tesla",
     nullable: true,
   })
   received?: unknown;

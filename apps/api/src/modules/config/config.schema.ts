@@ -1,7 +1,10 @@
 import { z } from "zod";
+import pkg from "./../../../package.json";
 
 /** All environment variables for the API */
 export const configSchema = z.object({
+  SERVICE_NAME: z.string().default(pkg.name),
+  NODE_ENV: z.enum(["development", "test", "production"]),
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
   PORT: z.coerce.number().default(3000),

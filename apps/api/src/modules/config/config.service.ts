@@ -7,7 +7,22 @@ import { ConfigSchema } from "./config.schema";
 export class ConfigService {
   constructor(private config: NestConfigService<ConfigSchema, true>) {}
 
-  get<K extends keyof ConfigSchema>(key: K): ConfigSchema[K] {
-    return this.config.get(key, { infer: true });
+  // Overload signatures
+  get<K extends keyof ConfigSchema>(key: K): ConfigSchema[K];
+  get<K extends keyof ConfigSchema>(
+    key: K,
+    defaultValue: ConfigSchema[K],
+  ): ConfigSchema[K];
+
+  // Implementation
+  get<K extends keyof ConfigSchema>(
+    key: K,
+    defaultValue?: ConfigSchema[K],
+  ): ConfigSchema[K] {
+    return (
+      this.config.get(key, {
+        infer: true,
+      }) ?? (defaultValue as ConfigSchema[K])
+    );
   }
 }

@@ -22,7 +22,7 @@ export class CarsAdapter {
     return {
       items: input.items.map((item) => this.getDto(item)),
       meta: {
-        total: input.meta.total,
+        total: input.meta.totalItems,
         count: input.meta.count,
         limit: input.meta.limit,
         skipped: input.meta.skipped,

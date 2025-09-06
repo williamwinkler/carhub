@@ -4,24 +4,15 @@ import type { Request } from "express";
 import z from "zod";
 import { Ctx } from "../ctx";
 
-// Reusable UUID schema
-const uuidSchema = z.uuid();
+const uuidSchema = z.uuid().transform((uuid) => uuid as UUID);
 
-export function setupRequestContext(req: Request) {
-  const headerValue = req.headers["x-request-id"];
+export function setupContext(req: Request): void {
+  const requestIdHeader = req.headers["x-request-id"];
+  const correlationIdHeader = req.headers["x-correlation-id"];
 
-  let requestId: UUID;
+  Ctx.requestId =
+    uuidSchema.safeParse(requestIdHeader).data ?? crypto.randomUUID();
 
-  if (
-    typeof headerValue === "string" &&
-    uuidSchema.safeParse(headerValue).success
-  ) {
-    requestId = headerValue as UUID;
-  } else {
-    requestId = crypto.randomUUID();
-  }
-
-  Ctx.requestId = requestId;
-
-  // TODO set later userId etc
+  Ctx.correlationId =
+    uuidSchema.safeParse(correlationIdHeader).data ?? crypto.randomUUID();
 }

@@ -1,6 +1,6 @@
 // not-found-error.decorator.ts
 import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
-import { NotFoundErrorResponse } from "../errors/not-found.error.dto";
+import { NotFoundErrorResponse } from "../errors_old/not-found.error.dto";
 
 export function NotFound(): MethodDecorator {
   return (

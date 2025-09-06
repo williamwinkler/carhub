@@ -1,20 +1,23 @@
 /* eslint-disable no-console */
-import { ZodValidationPipe } from "nestjs-zod";
 import { Logger, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { writeFileSync } from "fs";
+import { ZodValidationPipe } from "nestjs-zod";
 import { resolve } from "path";
 import * as YAML from "yaml";
 import pkg from "../package.json";
 import { AppModule } from "./app.module";
+import { ConfigService } from "./modules/config/config.service";
 import { TrpcRouter } from "./modules/trpc/trpc.router";
+import { CustomLogger } from "./common/logging/custom-logger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
+    logger: new CustomLogger(),
   });
 
   app.enableCors();
@@ -30,7 +33,9 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ZodValidationPipe()); // for tRPC
 
-  if (process.env.NODE_ENV === "development") {
+  const configService = app.get(ConfigService);
+
+  if (configService.get("NODE_ENV") === "development") {
     const trpcLogger = new Logger("tRPC");
 
     // Ensure body is parsed before logger
@@ -70,13 +75,13 @@ async function bootstrap() {
   writeFileSync(outputPath, yamlString, { encoding: "utf8" });
 
   // Only serve Swagger UI in development
-  if (process.env.NODE_ENV === "development") {
+  if (configService.get("NODE_ENV") === "development") {
     SwaggerModule.setup("docs", app, document);
   }
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
-  if (process.env.NODE_ENV === "development") {
+  if (configService.get("NODE_ENV") === "development") {
     console.log(`✨ Application started (v${pkg.version}) ✨`);
     console.log(`🚀 Server ready on: http://localhost:${port}`);
     console.log(`📡 tRPC ready on:   http://localhost:${port}/trpc`);

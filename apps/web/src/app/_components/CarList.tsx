@@ -93,7 +93,7 @@ export default function CarList({ onEdit }: CarListProps) {
     );
   }
 
-  const totalPages = Math.ceil((data?.meta.total || 0) / limit);
+  const totalPages = Math.ceil((data?.meta.totalItems || 0) / limit);
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-full max-w-6xl">
@@ -101,7 +101,7 @@ export default function CarList({ onEdit }: CarListProps) {
         <div>
           <h3 className="text-xl font-bold text-gray-900">Car Inventory</h3>
           <p className="text-gray-600 mt-1">
-            {data?.meta.total || 0} cars total
+            {data?.meta.totalItems || 0} cars total
           </p>
         </div>
         {isFetching && !isLoading && (

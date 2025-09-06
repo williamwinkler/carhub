@@ -31,7 +31,7 @@ import {
 } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
 
-@Controller({ path: "cars", version: "1" })
+@Controller("cars")
 export class CarsController {
   constructor(
     private readonly carsService: CarsService,

@@ -1,12 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { CarBrandType } from "@repo/shared";
 import { randomUUID, UUID } from "crypto";
-import { NotFoundError } from "../../common/errors/not-found.error.dto";
+import { NotFoundError } from "../../common/errors_old/not-found.error.dto";
 import { Pagination } from "../../common/types/pagination";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
 import { Car } from "./entities/car.entity";
 import { seedData } from "./entities/data";
+import { CarNotFoundError } from "@api/common/errors/domain/not-found.error";
 
 @Injectable()
 export class CarsService {
@@ -62,7 +63,7 @@ export class CarsService {
     return {
       items: paginatedCars,
       meta: {
-        total: cars.length,
+        totalItems: cars.length,
         limit,
         skipped: skip,
         count: paginatedCars.length,
@@ -74,7 +75,7 @@ export class CarsService {
     const car = this.cars.get(id);
 
     if (!car) {
-      throw new NotFoundError("Car");
+      throw new CarNotFoundError(id);
     }
 
     return car;
@@ -83,7 +84,7 @@ export class CarsService {
   update(id: UUID, dto: UpdateCarDto): Car {
     const car = this.cars.get(id);
     if (!car) {
-      throw new NotFoundError("Car");
+      throw new CarNotFoundError(id);
     }
 
     const updatedCar: Car = {
@@ -101,7 +102,7 @@ export class CarsService {
   remove(id: UUID): void {
     const isDeleted = this.cars.delete(id);
     if (!isDeleted) {
-      throw new NotFoundError("Car");
+      throw new CarNotFoundError(id);
     }
 
     this.logger.log("Car deleted: " + id);

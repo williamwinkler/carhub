@@ -3,8 +3,8 @@ import type { ExecutionContext } from "@nestjs/common";
 import { BadRequestException, createParamDecorator } from "@nestjs/common";
 import { ApiParam, ApiQuery } from "@nestjs/swagger";
 import type { z } from "zod";
-import type { BadRequestErrorResponse } from "../errors/bad-request-error.dto";
-import { BadRequestErrorCode } from "../errors/bad-request-error.dto";
+import type { BadRequestErrorResponse } from "../errors_old/bad-request-error.dto";
+import { BadRequestErrorCode } from "../errors_old/bad-request-error.dto";
 
 export const zParam = createZodParamDecorator(ApiParam, "param");
 export const zQuery = createZodParamDecorator(ApiQuery, "query");

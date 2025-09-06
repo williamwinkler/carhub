@@ -1,0 +1,23 @@
+{
+  "name": "@repo/logging",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.1.6"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.6",
+    "typescript": "^5.0.0"
+  }
+}

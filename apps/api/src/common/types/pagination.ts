@@ -1,7 +1,7 @@
 export type Pagination<T> = {
   items: T[];
   meta: {
-    total: number;
+    totalItems: number;
     limit: number;
     skipped: number;
     count: number;

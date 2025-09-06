@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
-import { BadRequestErrorResponse } from "../errors/bad-request-error.dto";
+import { BadRequestErrorResponse } from "../errors_old/bad-request-error.dto";
 
 export function BadRequest(): MethodDecorator {
   return (

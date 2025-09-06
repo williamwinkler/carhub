@@ -5,7 +5,7 @@ import { AuthService } from "./auth.service";
 import { JwtDto } from "./dto/jwt.dto";
 import { LoginDto } from "./dto/login.dto";
 
-@Controller({ path: "auth", version: "1" })
+@Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
