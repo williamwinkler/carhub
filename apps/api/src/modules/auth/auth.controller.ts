@@ -1,9 +1,9 @@
-import { BadRequest } from "@api/common/decorators/bad-request-error.decorator";
 import { ApiResponseDto } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtDto } from "./dto/jwt.dto";
 import { LoginDto } from "./dto/login.dto";
+import { BadRequest } from "@api/common/decorators/swagger-responses.decorator";
 
 @Controller("auth")
 export class AuthController {

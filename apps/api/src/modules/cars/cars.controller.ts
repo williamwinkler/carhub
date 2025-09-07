@@ -13,8 +13,6 @@ import {
 import { ApiNoContentResponse, ApiOperation } from "@nestjs/swagger";
 import { CarBrandType } from "@repo/shared";
 import { UUID } from "crypto";
-import { BadRequest } from "../../common/decorators/bad-request-error.decorator";
-import { NotFound } from "../../common/decorators/not-found-error.decorator";
 import {
   limitSchema,
   skipSchema,
@@ -30,6 +28,7 @@ import {
   CreateCarDto,
 } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
+import { BadRequest, NotFound } from "@api/common/decorators/swagger-responses.decorator";
 
 @Controller("cars")
 export class CarsController {

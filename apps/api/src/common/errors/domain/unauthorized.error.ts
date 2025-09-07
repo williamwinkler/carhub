@@ -1,14 +1,13 @@
 import { HttpStatus } from "@nestjs/common";
-import { BaseError, BaseErrorOptions } from "../base-error";
+import { BaseError } from "../base-error";
 import { ErrorCode } from "../error-codes.enum";
+import { ErrorDto } from "../error.dto";
 
-interface NotFoundErrorOptions extends Omit<BaseErrorOptions, "status"> {}
-
-export abstract class UnauthorizedBaseError extends BaseError {
-  constructor(options: NotFoundErrorOptions) {
+abstract class UnauthorizedBaseError extends BaseError {
+  constructor(error: Omit<ErrorDto, "statusCode">) {
     super({
-      ...options,
-      status: HttpStatus.UNAUTHORIZED, // always 401
+      ...error,
+      statusCode: HttpStatus.UNAUTHORIZED, // always 401
     });
   }
 }

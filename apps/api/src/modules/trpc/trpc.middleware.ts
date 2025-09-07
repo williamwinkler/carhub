@@ -38,9 +38,10 @@ export const errorMiddleware = t.middleware(async ({ next }) => {
 
     throw new TRPCError({
       code: trpcCode,
-      message: result.error.cause.message,
+      message: result.error.cause.error.message,
       cause: {
-        errorCode: result.error.cause.errorCode,
+        errorCode: result.error.cause.error.errorCode,
+        errors: result.error.cause.error.errors,
       },
     });
   }

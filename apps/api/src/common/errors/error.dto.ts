@@ -1,41 +1,25 @@
 import { HttpStatus } from "@nestjs/common";
-import { ApiProperty } from "@nestjs/swagger";
+import { createZodDto } from "nestjs-zod";
+import { z } from "zod";
 import { ErrorCode } from "./error-codes.enum";
 
-export class ErrorItemDto {
-  @ApiProperty({ required: true })
-  code: string;
+// export const ErrorItemSchema = z.object({
+//   code: z.string(),
+//   path: z.array(z.union([z.string(), z.number()])),
+//   message: z.string(),
+//   expected: z.string().optional(),
+//   received: z.any().optional(),
+//   options: z.array(z.any()).optional(),
+//   minimum: z.union([z.number(), z.bigint()]).optional(),
+//   maximum: z.union([z.number(), z.bigint()]).optional(),
+//   inclusive: z.boolean().optional(),
+// });
 
-  @ApiProperty({ required: true })
-  path: (string | number)[];
+export const ErrorDtoSchema = z.object({
+  statusCode: z.enum(HttpStatus),
+  errorCode: z.enum(ErrorCode),
+  message: z.string(),
+  errors: z.array(z.any()).optional(),
+});
 
-  @ApiProperty({ required: true })
-  message: string;
-
-  @ApiProperty({ nullable: true })
-  received?: unknown;
-
-  @ApiProperty({ nullable: true })
-  options?: unknown[];
-}
-
-export class ErrorResponseDto {
-  @ApiProperty({
-    required: true,
-    enum: HttpStatus,
-    description: "HTTP status code",
-  })
-  statusCode: number;
-
-  @ApiProperty({
-    description: "Application-specific error code",
-    enum: ErrorCode,
-  })
-  errorCode: ErrorCode;
-
-  @ApiProperty({ description: "Message for the error" })
-  message: string;
-
-  @ApiProperty({ type: [ErrorItemDto], required: false })
-  errors?: ErrorItemDto[];
-}
+export class ErrorDto extends createZodDto(ErrorDtoSchema) {}

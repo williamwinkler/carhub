@@ -5,7 +5,7 @@ import {
   RequestMethod,
 } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { ClsModule } from "nestjs-cls";
 import { ZodValidationPipe } from "nestjs-zod";
 import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
@@ -15,6 +15,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 import { UsersModule } from "./modules/users/users.module";
+import { HttpErrorFilter } from "./common/filters/http-error.filter";
 
 @Module({
   imports: [
@@ -42,6 +43,10 @@ import { UsersModule } from "./modules/users/users.module";
       provide: APP_INTERCEPTOR,
       useClass: WrapResponseInterceptor,
     },
+    {
+      provide: APP_FILTER,
+      useClass: HttpErrorFilter,
+    }
   ],
 })
 export class AppModule implements NestModule {

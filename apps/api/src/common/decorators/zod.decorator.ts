@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ExecutionContext } from "@nestjs/common";
-import { BadRequestException, createParamDecorator } from "@nestjs/common";
+import { createParamDecorator } from "@nestjs/common";
 import { ApiParam, ApiQuery } from "@nestjs/swagger";
 import type { z } from "zod";
-import type { BadRequestErrorResponse } from "../errors_old/bad-request-error.dto";
-import { BadRequestErrorCode } from "../errors_old/bad-request-error.dto";
+import { ValidationError } from "../errors/domain/bad-request.error";
 
 export const zParam = createZodParamDecorator(ApiParam, "param");
 export const zQuery = createZodParamDecorator(ApiQuery, "query");
@@ -27,18 +26,7 @@ function createZodParamDecorator(
 
         const parsed = schema.safeParse(rawValue);
         if (!parsed.success) {
-          const issues = parsed.error.issues.map((issue) => ({
-            code: issue.code,
-            path: issue.path as (string | number)[],
-            message: issue.message,
-          }));
-
-          throw new BadRequestException({
-            statusCode: 400,
-            errorCode: BadRequestErrorCode.VALIDATION_ERROR,
-            message: "Validation failed",
-            errors: issues,
-          } satisfies BadRequestErrorResponse);
+          throw new ValidationError(parsed.error);
         }
       },
     )();

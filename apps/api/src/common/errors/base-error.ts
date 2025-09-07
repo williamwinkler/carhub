@@ -1,30 +1,11 @@
-import type { HttpStatus } from "@nestjs/common";
 import { HttpException } from "@nestjs/common";
-import type { ErrorCode } from "./error-codes.enum";
-
-export interface BaseErrorOptions {
-  message: string;
-  errorCode: ErrorCode;
-  status: HttpStatus;
-  details?: unknown;
-}
+import type { ErrorDto } from "./error.dto";
 
 export abstract class BaseError extends HttpException {
-  readonly errorCode: ErrorCode;
-  readonly details?: unknown;
+  readonly error: ErrorDto;
 
-  constructor({ message, errorCode, status, details }: BaseErrorOptions) {
-    super(
-      {
-        statusCode: status,
-        errorCode,
-        message,
-        details,
-      },
-      status,
-    );
-
-    this.errorCode = errorCode;
-    this.details = details;
+  constructor(error: ErrorDto) {
+    super(error, error.statusCode);
+    this.error = error;
   }
 }

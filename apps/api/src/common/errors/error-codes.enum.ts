@@ -1,5 +1,6 @@
 export enum ErrorCode {
   GENERAL_ERROR = 1000,
+  UNKNOWN = 1001,
 
   // Validation
   VALIDATION_ERROR = 1100,
@@ -12,4 +13,8 @@ export enum ErrorCode {
   // Auth
   UNAUTHORIZED = 3000,
   FORBIDDEN = 3001,
+
+  // Conflict
+  CONFLICT = 4000,
+
 }
