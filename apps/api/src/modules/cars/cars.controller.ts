@@ -44,7 +44,6 @@ export class CarsController {
   @ApiOperation({ summary: "Create a car" })
   @Roles("user")
   @BearerAuth()
-  @HttpCode(HttpStatus.CREATED)
   @ApiResponseDto({
     status: HttpStatus.CREATED,
     description: "Car created successfully",
@@ -89,6 +88,8 @@ export class CarsController {
   async findOne(@zParam("id", uuidSchema) id: UUID) {
     const car = this.carsService.findById(id);
     const data = this.carsAdapter.getDto(car);
+
+    // (data as any).not_okay = "should not be here";
 
     return data;
   }
