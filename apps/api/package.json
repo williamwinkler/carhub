@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.6",
@@ -30,6 +31,7 @@
     "@repo/logging": "workspace:*",
     "@repo/shared": "workspace:*",
     "@trpc/server": "^11.5.1",
+    "cache-manager": "^7.2.0",
     "nestjs-cls": "^6.0.1",
     "nestjs-zod": "^5.0.1",
     "reflect-metadata": "^0.2.2",

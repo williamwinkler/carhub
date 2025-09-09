@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { BaseError } from "../errors/base-error";
 import { ErrorCode } from "../errors/error-codes.enum";
-import { ErrorDto, ErrorDtoSchema } from "../errors/error.dto";
+import { ErrorDto, ErrorSchema } from "../errors/error.dto";
 
 @Catch()
 export class HttpErrorFilter implements ExceptionFilter {
@@ -51,7 +51,7 @@ export class HttpErrorFilter implements ExceptionFilter {
     }
 
     // Validate against Zod schema before sending
-    const parsed = ErrorDtoSchema.safeParse(errorResponse);
+    const parsed = ErrorSchema.safeParse(errorResponse);
     if (!parsed.success) {
       this.logger.error("Invalid ErrorDto shape", parsed.error.format());
       response.status(500).json({

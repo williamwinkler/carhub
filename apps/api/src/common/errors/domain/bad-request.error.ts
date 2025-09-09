@@ -31,3 +31,12 @@ export class ValidationError extends BadRequestBaseError {
     });
   }
 }
+
+export class InvalidCredentialsError extends BadRequestBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.INVALID_CREDENTIALS,
+      message: "The combination of the username and password was invalid",
+    });
+  }
+}

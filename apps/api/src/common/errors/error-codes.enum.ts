@@ -1,10 +1,8 @@
 export enum ErrorCode {
   GENERAL_ERROR = 1000,
   UNKNOWN = 1001,
-
-  // Validation
-  VALIDATION_ERROR = 1100,
-  INVALID_ENUM = 1101,
+  VALIDATION_ERROR = 1002,
+  INVALID_CREDENTIALS = 1003,
 
   // Not Found
   NOT_FOUND = 2000,

@@ -1,10 +1,12 @@
+import { TokenPayload } from "@api/modules/auth/auth.service";
+import { Role } from "@api/modules/users/entities/user.entity";
 import type { UUID } from "crypto";
 import { ClsServiceManager } from "nestjs-cls";
 
 export type CtxStore = {
   requestId: UUID;
   correlationId: UUID;
-  userId?: string;
+  token: TokenPayload | null;
 };
 
 export class Ctx {
@@ -28,11 +30,18 @@ export class Ctx {
     this.cls().set("correlationId", value);
   }
 
-  // UserId
-  static get userId(): string | undefined {
-    return this.cls().get("userId");
+  static get token(): TokenPayload | null {
+    return this.cls().get("token");
   }
-  static set userId(value: string) {
-    this.cls().set("userId", value);
+  static set token(value: TokenPayload | null) {
+    this.cls().set("token", value);
+  }
+
+  static get userId(): string | undefined {
+    return this.cls().get("token")?.sub;
+  }
+
+  static get role(): Role | undefined {
+    return this.cls().get("token")?.role;
   }
 }

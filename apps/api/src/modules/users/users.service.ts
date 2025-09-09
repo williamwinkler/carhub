@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "./entities/user.entity";
 import { randomUUID } from "crypto";
+import { User } from "./entities/user.entity";
 
 @Injectable()
 export class UsersService {
@@ -15,7 +15,11 @@ export class UsersService {
     },
   ];
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async findOne(username: string): Promise<User | null> {
+    return this.users.find((user) => user.username === username) ?? null;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.find((u) => u.id === id) ?? null;
   }
 }
