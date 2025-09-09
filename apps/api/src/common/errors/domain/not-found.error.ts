@@ -29,3 +29,12 @@ export class CarNotFoundError extends NotFoundBaseError {
     });
   }
 }
+
+export class UserNotFoundError extends NotFoundBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.USER_NOT_FOUND,
+      message: "User could not be found",
+    });
+  }
+}

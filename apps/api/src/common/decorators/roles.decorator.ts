@@ -1,5 +1,8 @@
 import { Role } from "@api/modules/users/entities/user.entity";
-import { SetMetadata } from "@nestjs/common";
+import { applyDecorators, SetMetadata } from "@nestjs/common";
+import { Forbidden } from "./swagger-responses.decorator";
 
 export const ROLES_KEY = "roles";
-export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
+export function Roles(...roles: Role[]) {
+  return applyDecorators(SetMetadata(ROLES_KEY, roles), Forbidden());
+}

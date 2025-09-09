@@ -3,20 +3,20 @@ import { BaseError } from "../base-error";
 import { ErrorCode } from "../error-codes.enum";
 import { ErrorDto } from "../error.dto";
 
-abstract class UnauthorizedBaseError extends BaseError {
+abstract class InternalServerErrorBaseError extends BaseError {
   constructor(error: Omit<ErrorDto, "statusCode">) {
     super({
       ...error,
-      statusCode: HttpStatus.UNAUTHORIZED, // always 401
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
     });
   }
 }
 
-export class UnauthorizedError extends UnauthorizedBaseError {
+export class InternalServerError extends InternalServerErrorBaseError {
   constructor() {
     super({
-      errorCode: ErrorCode.UNAUTHORIZED,
-      message: "Invalid or missing authentication credentials",
+      errorCode: ErrorCode.UNKNOWN,
+      message: "An unexpected error occured. Try again.",
     });
   }
 }

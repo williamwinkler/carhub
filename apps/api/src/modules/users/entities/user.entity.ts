@@ -8,8 +8,10 @@ export class User {
   firstName: string;
   lastName: string;
 
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
+
+  apiKey?: string;
 }
 
 export const roles = ["admin", "user"] as const;

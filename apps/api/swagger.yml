@@ -12,13 +12,19 @@ paths:
               $ref: "#/components/schemas/LoginDto"
       responses:
         "201":
-          description: ""
+          description: User successfully logged in
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/JwtResponseDto"
         "400":
-          description: Bad request
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -36,14 +42,20 @@ paths:
             schema:
               $ref: "#/components/schemas/RefreshTokenDto"
       responses:
-        "200":
-          description: ""
+        "201":
+          description: Session succesfully refreshed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/JwtResponseDto"
         "400":
-          description: Bad request
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -54,13 +66,50 @@ paths:
       operationId: AuthController_logout_v1
       parameters: []
       responses:
+        "204":
+          description: User logged out successfully
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      security:
+        - bearer: []
       tags: *a1
+  /v1/users/me:
+    get:
+      operationId: UsersController_getMe_v1
+      parameters: []
+      responses:
+        "200":
+          description: Successfully retrieved user details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponseDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      security:
+        - bearer: []
+      tags:
+        - Users
   /v1/cars:
     post:
       operationId: CarsController_create_v1
@@ -79,11 +128,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad request
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      security:
+        - bearer: []
       summary: Create a car
       tags: &a2
         - Cars
@@ -131,7 +200,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/CarResponseListDto"
         "400":
-          description: Bad request
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -156,13 +231,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad request
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
         "404":
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -192,7 +273,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad request
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -203,6 +296,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      security:
+        - bearer: []
       summary: Update a car
       tags: *a2
     delete:
@@ -218,7 +319,19 @@ paths:
         "204":
           description: Car deleted successfully
         "400":
-          description: Bad request
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -229,6 +342,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      security:
+        - bearer: []
       summary: Delete a car
       tags: *a2
 info:
@@ -239,6 +360,15 @@ info:
 tags: []
 servers: []
 components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+    api_key:
+      type: apiKey
+      in: header
+      name: x-api-key
   schemas:
     ErrorDto:
       type: object
@@ -310,8 +440,10 @@ components:
             - 1001
             - 1002
             - 1003
+            - 1004
             - 2000
             - 2001
+            - 2002
             - 3000
             - 3001
             - 4000
@@ -350,6 +482,7 @@ components:
           format: jwt
         refreshToken:
           type: string
+          format: jwt
       required:
         - accessToken
         - refreshToken
@@ -375,6 +508,41 @@ components:
           format: jwt
       required:
         - refreshToken
+    MeDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum:
+            - admin
+            - user
+      required:
+        - id
+        - firstName
+        - lastName
+        - role
+    MeResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/MeDto"
+      required:
+        - apiVersion
+        - data
     CreateCarDto:
       type: object
       properties:
@@ -413,7 +581,7 @@ components:
         kmDriven:
           type: integer
           minimum: 0
-          maximum: 9007199254740991
+          maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
           type: number
@@ -464,7 +632,7 @@ components:
         kmDriven:
           type: integer
           minimum: 0
-          maximum: 9007199254740991
+          maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
           type: number
@@ -585,7 +753,7 @@ components:
         kmDriven:
           type: integer
           minimum: 0
-          maximum: 9007199254740991
+          maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
           type: number

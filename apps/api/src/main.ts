@@ -1,18 +1,15 @@
 /* eslint-disable no-console */
 import { Logger, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
-import { writeFileSync } from "fs";
 import { ZodValidationPipe } from "nestjs-zod";
-import { resolve } from "path";
-import * as YAML from "yaml";
 import pkg from "../package.json";
 import { AppModule } from "./app.module";
+import { CustomLogger } from "./common/logging/custom-logger";
 import { ConfigService } from "./modules/config/config.service";
 import { TrpcRouter } from "./modules/trpc/trpc.router";
-import { CustomLogger } from "./common/logging/custom-logger";
+import { setupSwagger } from "./setup-swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -60,24 +57,7 @@ async function bootstrap() {
   const trpcRouter = app.get(TrpcRouter);
   await trpcRouter.applyMiddleware(app);
 
-  // Always generate Swagger documentation for external tools
-  const config = new DocumentBuilder()
-    .setTitle("🔥 Next Gen Nestjs API")
-    .setDescription(pkg.description)
-    .setVersion(pkg.version)
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-
-  // Generate YAML file for external tools (always)
-  const yamlString = YAML.stringify(document);
-  const outputPath = resolve(process.cwd(), "swagger.yml");
-  writeFileSync(outputPath, yamlString, { encoding: "utf8" });
-
-  // Only serve Swagger UI in development
-  if (configService.get("NODE_ENV") === "development") {
-    SwaggerModule.setup("docs", app, document);
-  }
+  setupSwagger(app);
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);

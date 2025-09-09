@@ -31,7 +31,7 @@ export const createCarSchema = z
     model: carModelSchema,
     year: carYearSchema,
     color: carColorSchema,
-    kmDriven: z.number().int().gte(0),
+    kmDriven: z.number().int().gte(0).max(10_000_000),
     price: z.number().min(0),
   })
   .strict();

@@ -23,6 +23,6 @@ import { AuthTrpc } from "./auth.trpc";
   ],
   providers: [AuthService, AuthTrpc],
   controllers: [AuthController],
-  exports: [AuthTrpc],
+  exports: [AuthService, AuthTrpc],
 })
 export class AuthModule {}

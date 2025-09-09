@@ -1,6 +1,12 @@
 import { Role } from "@api/modules/users/entities/user.entity";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { Ctx } from "../ctx"; // use your CLS context
 import { ROLES_KEY } from "../decorators/roles.decorator";
 
 @Injectable()
@@ -12,10 +18,13 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles) {
-      return true;
+    if (!requiredRoles?.length) return true;
+
+    const role = Ctx.role;
+    if (!role || !requiredRoles.includes(role)) {
+      throw new ForbiddenException("Insufficient role");
     }
-    const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.roles?.includes(role));
+
+    return true;
   }
 }

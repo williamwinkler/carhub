@@ -9,7 +9,6 @@ import {
 import { Request, Response } from "express";
 import { Observable } from "rxjs";
 import { catchError, finalize } from "rxjs/operators";
-import { Ctx } from "../ctx";
 
 @Injectable()
 export class TrafficInterceptor implements NestInterceptor {
@@ -39,7 +38,7 @@ export class TrafficInterceptor implements NestInterceptor {
         this.logger.debug(
           `${method} ${url} | Status: ${
             statusCode ?? res.statusCode
-          } | Duration: ${duration}ms | requestId: ${Ctx.requestId} | correlationId: ${Ctx.correlationId}`,
+          } | Duration: ${duration}ms`,
         );
       }),
     );

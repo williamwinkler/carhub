@@ -1,12 +1,19 @@
-import { TokenPayload } from "@api/modules/auth/auth.service";
 import { Role } from "@api/modules/users/entities/user.entity";
 import type { UUID } from "crypto";
 import { ClsServiceManager } from "nestjs-cls";
+import { UnauthorizedError } from "./errors/domain/unauthorized.error";
+
+export type Principal = {
+  id: UUID;
+  role: Role;
+  authType: "jwt" | "api-key";
+  sessionId?: UUID;
+};
 
 export type CtxStore = {
   requestId: UUID;
   correlationId: UUID;
-  token: TokenPayload | null;
+  principal: Principal | null;
 };
 
 export class Ctx {
@@ -14,7 +21,7 @@ export class Ctx {
     return ClsServiceManager.getClsService<CtxStore>();
   }
 
-  // RequestId
+  // Request ID
   static get requestId(): UUID {
     return this.cls().get("requestId");
   }
@@ -22,7 +29,7 @@ export class Ctx {
     this.cls().set("requestId", value);
   }
 
-  // CorrelationId
+  // Correlation ID
   static get correlationId(): UUID {
     return this.cls().get("correlationId");
   }
@@ -30,18 +37,40 @@ export class Ctx {
     this.cls().set("correlationId", value);
   }
 
-  static get token(): TokenPayload | null {
-    return this.cls().get("token");
+  // Principal (unified user identity)
+  static get principal(): Principal | null {
+    return this.cls().get("principal");
   }
-  static set token(value: TokenPayload | null) {
-    this.cls().set("token", value);
+  static set principal(value: Principal | null) {
+    this.cls().set("principal", value);
   }
 
-  static get userId(): string | undefined {
-    return this.cls().get("token")?.sub;
+  // Convenience accessors
+  static get userId(): UUID | undefined {
+    return this.principal?.id;
+  }
+
+  static userIdRequired(): UUID {
+    const id = this.userId;
+    if (!id) throw new UnauthorizedError();
+    return id;
   }
 
   static get role(): Role | undefined {
-    return this.cls().get("token")?.role;
+    return this.principal?.role;
+  }
+
+  static roleRequired(): Role {
+    const role = this.principal?.role;
+    if (!role) throw new UnauthorizedError();
+    return role;
+  }
+
+  static get sessionId(): UUID | undefined {
+    return this.principal?.sessionId;
+  }
+
+  static get authType(): "jwt" | "api-key" | undefined {
+    return this.principal?.authType;
   }
 }

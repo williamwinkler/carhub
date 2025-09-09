@@ -40,3 +40,12 @@ export class InvalidCredentialsError extends BadRequestBaseError {
     });
   }
 }
+
+export class InvalidRefreshTokenError extends BadRequestBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.INVALID_REFRESH_TOKEN,
+      message: "The refresh token is invalid or outdated",
+    });
+  }
+}

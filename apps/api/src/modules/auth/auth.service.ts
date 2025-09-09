@@ -1,8 +1,14 @@
-import { InvalidCredentialsError } from "@api/common/errors/domain/bad-request.error";
+import { Ctx, Principal } from "@api/common/ctx";
+import {
+  InvalidCredentialsError,
+  InvalidRefreshTokenError,
+} from "@api/common/errors/domain/bad-request.error";
+import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Cache } from "cache-manager";
+import { UUID } from "crypto";
 import { ConfigService } from "../config/config.service";
 import { Role, User } from "../users/entities/user.entity";
 import { UsersService } from "./../users/users.service";
@@ -10,8 +16,8 @@ import { JwtDto } from "./dto/jwt.dto";
 
 export type TokenPayload = {
   iss: string;
-  sub: string; // userId (JWT standard for Subject)
-  sid: string;
+  sub: UUID; // userId (JWT standard for Subject)
+  sid: UUID;
   firstName: string;
   lastName: string;
   role: Role;
@@ -30,6 +36,21 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  async verifyAccessToken(accessToken: string): Promise<TokenPayload> {
+    try {
+      return this.jwtService.verifyAsync(accessToken);
+    } catch {
+      this.logger.debug("Invalid access token");
+      throw new UnauthorizedError();
+    }
+  }
+
+  async findUserByApiKey(apiKey: string): Promise<User> {
+    const user = await this.usersService.findByApiKey(apiKey);
+    if (!user) throw new UnauthorizedError();
+    return user;
+  }
+
   async login(username: string, pass: string): Promise<JwtDto> {
     const user = await this.usersService.findOne(username);
 
@@ -45,44 +66,25 @@ export class AuthService {
     return tokens;
   }
 
-  async refreshTokens(refreshToken: string): Promise<JwtDto> {
-    try {
-      // 1. Verify refresh token validity & signature
-      const { sub, sid } = await this.jwtService.verifyAsync<RefreshPayload>(
-        refreshToken,
-        {
-          secret: this.configService.get("JWT_REFRESH_SECRET"),
-        },
-      );
-
-      // 2. Check cache that the refresh token is still active
-      const cachedToken = await this.cacheManager.get<string>(
-        `refresh_tokens:${sub}:${sid}`,
-      );
-
-      if (!cachedToken || cachedToken !== refreshToken) {
-        throw new InvalidCredentialsError(); // revoked or expired
-      }
-
-      // 3. Ensure the user exists
-      const user = await this.usersService.findById(sub);
-      if (!user) {
-        throw new InvalidCredentialsError();
-      }
-
-      const tokens = await this.getTokens(user, sid);
-
-      this.logger.log(`User ${sub} renewed their session`);
-
-      return tokens;
-    } catch (error) {
-      this.logger.log(`An error occured when refreshing tokens. ${error}`)
-      throw new InvalidCredentialsError();
-    }
+  principalFromJwt(payload: TokenPayload): Principal {
+    return {
+      id: payload.sub,
+      role: payload.role,
+      sessionId: payload.sid,
+      authType: "jwt",
+    };
   }
 
-  async logout(refreshToken: string): Promise<void> {
-    // TODO: get this from the ctx instead
+  principalFromUser(user: User): Principal {
+    return {
+      id: user.id,
+      role: user.role,
+      authType: "api-key",
+    };
+  }
+
+  async refreshTokens(refreshToken: string): Promise<JwtDto> {
+    // 1. Verify refresh token validity & signature
     const { sub, sid } = await this.jwtService.verifyAsync<RefreshPayload>(
       refreshToken,
       {
@@ -90,12 +92,42 @@ export class AuthService {
       },
     );
 
-    await this.cacheManager.del(`refresh_tokens:${sub}:${sid}`);
+    // 2. Check cache that the refresh token is still active
+    const cachedToken = await this.cacheManager.get<string>(
+      `refresh_tokens:${sub}:${sid}`,
+    );
 
+    if (!cachedToken || cachedToken !== refreshToken) {
+      throw new InvalidRefreshTokenError(); // revoked or expired
+    }
+
+    // 3. Ensure the user exists
+    const user = await this.usersService.findById(sub);
+    if (!user) {
+      throw new InvalidRefreshTokenError();
+    }
+
+    const [tokens] = await Promise.all([
+      this.getTokens(user),
+      this.cacheManager.del(`refresh_tokens:${user.id}:${sid}`), // Delete old refresh token
+    ]);
+
+    this.logger.log(`User ${sub} renewed their session`);
+
+    return tokens;
+  }
+
+  async logout(): Promise<void> {
+    const sub = Ctx.userId;
+    const sid = Ctx.sessionId;
+
+    if (!sub || !sid) throw new UnauthorizedError();
+
+    await this.cacheManager.del(`refresh_tokens:${sub}:${sid}`);
     this.logger.log(`User ${sub} logged out of session ${sid}`);
   }
 
-  private async getTokens(user: User, oldSid?: string): Promise<JwtDto> {
+  private async getTokens(user: User): Promise<JwtDto> {
     const sessionId = crypto.randomUUID();
     const refreshTTL = 1000 * 60 * 60 * 24 * 7; // 7 days in milliseconds
 
@@ -116,15 +148,10 @@ export class AuthService {
       refreshTTL,
     );
 
-    if (oldSid) {
-      await this.cacheManager.del(`refresh_tokens:${user.id}:${oldSid}`);
-      this.logger.debug(`Deleted old refresh token for ${user.id} session ${oldSid}`)
-    }
-
     return { accessToken, refreshToken };
   }
 
-  private getTokenPayload(user: User, sessionId: string): TokenPayload {
+  private getTokenPayload(user: User, sessionId: UUID): TokenPayload {
     return {
       iss: "Demo Nestjs API",
       sub: user.id,

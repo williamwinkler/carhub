@@ -1,8 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Type, applyDecorators } from "@nestjs/common";
+import { SetMetadata, Type, applyDecorators } from "@nestjs/common";
 import { ApiProperty, ApiResponse, ApiResponseOptions } from "@nestjs/swagger";
+import z from "zod";
 import { GeneralResponseDto } from "../dto/general-response.dto";
 import { PaginationDto } from "../dto/pagination.dto";
+
+export const RESPONSE_DTO_KEY = "responseDto";
+
+export interface ResponseDtoMeta<T = any> {
+  classRef: Type<T>; // the DTO class (CarDto, UserDto, etc.)
+  isList: boolean; // whether it's a list response
+  schema?: z.ZodTypeAny; // Zod schema from createZodDto
+}
 
 type SingleResponse<T> = Promise<T>;
 type ListResponse<T> = Promise<PaginationDto<T>>;
@@ -85,8 +94,16 @@ export function ApiResponseDto<T>(
     ? createResponseListDto(classRef)
     : createResponseDto(classRef);
 
+  // Grab zod schema if the DTO was made with createZodDto
+  const schema = (classRef as any)?.schema;
+
   const base = applyDecorators(
     ApiResponse({ status: 200, ...options, type: dtoClass }),
+    SetMetadata(RESPONSE_DTO_KEY, {
+      classRef,
+      isList,
+      schema,
+    } as ResponseDtoMeta<T>),
   );
 
   if (isList) {
