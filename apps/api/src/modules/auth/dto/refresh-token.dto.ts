@@ -1,7 +1,7 @@
 import { createZodDto } from "nestjs-zod";
 import z from "zod";
 
-const refreshTokenSchema = z.object({
+export const refreshTokenSchema = z.object({
   refreshToken: z.jwt(),
 });
 

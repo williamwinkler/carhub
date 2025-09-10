@@ -1,29 +1,25 @@
 "use client";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { CarBrandType } from "packages/shared/src";
 import { useState } from "react";
 import { trpc } from "../_trpc/client";
+import type { AppRouter } from "@api/modules/trpc/trpc.router";
+import type { inferRouterOutputs } from "@trpc/server";
 
-export type Car = {
-  id: string;
-  brand: CarBrandType;
-  model: string;
-  year: number;
-  color: string;
-  kmDriven: number;
-  price: number;
-};
+type RouterOutput = inferRouterOutputs<AppRouter>;
+export type Car = RouterOutput['cars']['list']['items'][0];
 
 interface CarListProps {
   onEdit: (car: Car) => void;
+  currentUser?: { id: string; role: string };
 }
 
-const TableSkeleton = () => (
+const TableSkeleton = ({ showFavoriteColumn = false }: { showFavoriteColumn?: boolean }) => (
   <div className="overflow-x-auto">
     <table className="w-full">
       <thead className="bg-gray-50">
         <tr>
           {[
+            showFavoriteColumn ? "❤️" : "",
             "Brand",
             "Model",
             "Year",
@@ -31,7 +27,7 @@ const TableSkeleton = () => (
             "KM Driven",
             "Price",
             "Actions",
-          ].map((header) => (
+          ].filter(Boolean).map((header) => (
             <th
               key={header}
               className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -44,7 +40,7 @@ const TableSkeleton = () => (
       <tbody className="divide-y divide-gray-200">
         {[...Array(8)].map((_, i) => (
           <tr key={i} className="animate-pulse">
-            {Array(7)
+            {Array(showFavoriteColumn ? 8 : 7)
               .fill(null)
               .map((_, idx) => (
                 <td key={idx} className="px-6 py-4 whitespace-nowrap">
@@ -58,7 +54,7 @@ const TableSkeleton = () => (
   </div>
 );
 
-export default function CarList({ onEdit }: CarListProps) {
+export default function CarList({ onEdit, currentUser }: CarListProps) {
   const [page, setPage] = useState(0);
   const limit = 8;
 
@@ -69,6 +65,10 @@ export default function CarList({ onEdit }: CarListProps) {
 
   const utils = trpc.useUtils();
   const deleteCar = trpc.cars.deleteById.useMutation({
+    onSuccess: () => utils.cars.list.invalidate(),
+  });
+
+  const toggleFavorite = trpc.cars.toggleFavorite.useMutation({
     onSuccess: () => utils.cars.list.invalidate(),
   });
 
@@ -114,7 +114,7 @@ export default function CarList({ onEdit }: CarListProps) {
 
       <div className="relative" style={{ minHeight: "600px" }}>
         {isLoading ? (
-          <TableSkeleton />
+          <TableSkeleton showFavoriteColumn={!!currentUser} />
         ) : data?.items.length === 0 ? (
           <div className="text-center py-12">No cars found</div>
         ) : (
@@ -123,6 +123,7 @@ export default function CarList({ onEdit }: CarListProps) {
               <thead className="bg-gray-50">
                 <tr>
                   {[
+                    currentUser ? "❤️" : "",
                     "Brand",
                     "Model",
                     "Year",
@@ -130,7 +131,7 @@ export default function CarList({ onEdit }: CarListProps) {
                     "KM Driven",
                     "Price",
                     "Actions",
-                  ].map((header) => (
+                  ].filter(Boolean).map((header) => (
                     <th
                       key={header}
                       className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -141,36 +142,57 @@ export default function CarList({ onEdit }: CarListProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 text-black">
-                {data?.items.map((car) => (
-                  <tr
-                    key={car.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">{car.brand}</td>
-                    <td className="px-6 py-4">{car.model}</td>
-                    <td className="px-6 py-4">{car.year}</td>
-                    <td className="px-6 py-4">{car.color}</td>
-                    <td className="px-6 py-4">
-                      {car.kmDriven.toLocaleString()} km
-                    </td>
-                    <td className="px-6 py-4">{car.price.toLocaleString()}€</td>
-                    <td className="px-6 py-4 flex space-x-2">
-                      <button
-                        onClick={() => onEdit(car)}
-                        className="text-blue-600 hover:bg-blue-500 hover:text-white p-2 rounded-lg"
-                      >
-                        <EditOutlined />
-                      </button>
-                      <button
-                        onClick={() => deleteCar.mutate({ id: car.id })}
-                        className="text-red-600 hover:bg-red-500 hover:text-white p-2 rounded-lg"
-                        disabled={deleteCar.isPending}
-                      >
-                        <DeleteOutlined />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {data?.items.map((car) => {
+                  const isFavorited = currentUser && car.favoritedBy.includes(currentUser.id);
+                  const canEdit = currentUser && (currentUser.role === 'admin' || car.createdBy === currentUser.id);
+                  const canDelete = currentUser && (currentUser.role === 'admin' || car.createdBy === currentUser.id);
+                  
+                  return (
+                    <tr
+                      key={car.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {currentUser && (
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => toggleFavorite.mutate({ id: car.id })}
+                            className={`text-2xl ${isFavorited ? 'text-red-500' : 'text-gray-300'} hover:text-red-500 transition-colors`}
+                            disabled={toggleFavorite.isPending}
+                          >
+                            ❤️
+                          </button>
+                        </td>
+                      )}
+                      <td className="px-6 py-4">{car.brand}</td>
+                      <td className="px-6 py-4">{car.model}</td>
+                      <td className="px-6 py-4">{car.year}</td>
+                      <td className="px-6 py-4">{car.color}</td>
+                      <td className="px-6 py-4">
+                        {car.kmDriven.toLocaleString()} km
+                      </td>
+                      <td className="px-6 py-4">{car.price.toLocaleString()}€</td>
+                      <td className="px-6 py-4 flex space-x-2">
+                        {canEdit && (
+                          <button
+                            onClick={() => onEdit(car)}
+                            className="text-blue-600 hover:bg-blue-500 hover:text-white p-2 rounded-lg"
+                          >
+                            <EditOutlined />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => deleteCar.mutate({ id: car.id })}
+                            className="text-red-600 hover:bg-red-500 hover:text-white p-2 rounded-lg"
+                            disabled={deleteCar.isPending}
+                          >
+                            <DeleteOutlined />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

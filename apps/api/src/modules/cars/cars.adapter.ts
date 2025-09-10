@@ -15,6 +15,11 @@ export class CarsAdapter {
       color: car.color,
       kmDriven: car.kmDriven,
       price: car.price,
+      createdBy: car.createdBy,
+      createdAt: car.createdAt.toISOString(),
+      updatedBy: car.updatedBy,
+      updatedAt: car.updatedAt?.toISOString(),
+      favoritedBy: car.favoritedBy,
     };
   }
 

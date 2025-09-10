@@ -26,6 +26,13 @@ export default function Provider({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           url: `${apiUrl}/trpc`,
+          headers() {
+            const token =
+              typeof window !== "undefined"
+                ? localStorage.getItem("accessToken")
+                : null;
+            return token ? { authorization: `Bearer ${token}` } : {};
+          },
         }),
       ],
     }),
