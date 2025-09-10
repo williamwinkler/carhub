@@ -1,43 +1,49 @@
 "use client";
-import { CheckOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  HeartFilled,
+  HeartOutlined,
+  MoreOutlined,
+} from "@ant-design/icons";
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
-import {
-  Delete,
-  Edit,
-  Favorite,
-  FavoriteBorder,
-  MoreVert,
-} from "@mui/icons-material";
-import {
-  Box,
+import { CarBrand, type CarBrandType } from "@repo/shared";
+import type { inferRouterOutputs } from "@trpc/server";
+import { useEffect, useState } from "react";
+import { trpc } from "../_trpc/client";
+import { 
+  TableContainer, 
+  Table, 
+  TableHead, 
+  TableBody, 
+  TableRow, 
+  TableCell, 
+  TableSortLabel, 
   IconButton,
   Menu,
   MenuItem,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
+  Box
 } from "@mui/material";
-import { CarBrand, type CarBrandType } from "@repo/shared";
-import type { inferRouterOutputs } from "@trpc/server";
-import { useEffect, useState } from "react";
-import {
-  SiAudi,
-  SiBmw,
-  SiFord,
-  SiHonda,
-  SiMercedes,
-  SiPorsche,
-  SiTesla,
-  SiToyota,
-  SiVolkswagen,
+import { 
+  MoreVert, 
+  Edit, 
+  Delete, 
+  Favorite, 
+  FavoriteBorder 
+} from "@mui/icons-material";
+import { 
+  SiBmw, 
+  SiMercedes, 
+  SiPorsche, 
+  SiAudi, 
+  SiToyota, 
+  SiHonda, 
+  SiFord, 
+  SiTesla, 
+  SiVolkswagen 
 } from "react-icons/si";
-import { trpc } from "../_trpc/client";
-import { UUID } from "crypto";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type Car = RouterOutput["cars"]["list"]["items"][0];
@@ -51,28 +57,22 @@ const TableSkeleton = ({
 }: {
   showActionsColumn?: boolean;
 }) => (
-  <TableContainer sx={{ bgcolor: "transparent" }}>
+  <TableContainer sx={{ bgcolor: 'transparent' }}>
     <Table sx={{ minWidth: 650 }}>
-      <TableHead sx={{ bgcolor: "rgba(15, 23, 42, 0.6)" }}>
+      <TableHead sx={{ bgcolor: 'rgba(15, 23, 42, 0.6)' }}>
         <TableRow>
           {[
-            { width: "80px" }, // Logo
-            { width: "150px" }, // Brand
-            { width: "180px" }, // Model
-            { width: "100px" }, // Year
-            { width: "120px" }, // Color
-            { width: "140px" }, // KM Driven
-            { width: "130px" }, // Price
-            ...(showActionsColumn ? [{ width: "120px" }] : []),
+            { width: '80px' }, // Logo
+            { width: '150px' }, // Brand
+            { width: '180px' }, // Model
+            { width: '100px' }, // Year
+            { width: '120px' }, // Color
+            { width: '140px' }, // KM Driven
+            { width: '130px' }, // Price
+            ...(showActionsColumn ? [{ width: '120px' }] : []),
           ].map((col, idx) => (
-            <TableCell
-              key={idx}
-              sx={{ width: col.width, color: "rgb(148, 163, 184)" }}
-            >
-              <Skeleton
-                variant="text"
-                sx={{ bgcolor: "rgba(71, 85, 105, 0.5)" }}
-              />
+            <TableCell key={idx} sx={{ width: col.width, color: 'rgb(148, 163, 184)' }}>
+              <Skeleton variant="text" sx={{ bgcolor: 'rgba(71, 85, 105, 0.5)' }} />
             </TableCell>
           ))}
         </TableRow>
@@ -81,20 +81,17 @@ const TableSkeleton = ({
         {[...Array(8)].map((_, i) => (
           <TableRow key={i}>
             {[
-              { width: "80px" }, // Logo
-              { width: "150px" }, // Brand
-              { width: "180px" }, // Model
-              { width: "100px" }, // Year
-              { width: "120px" }, // Color
-              { width: "140px" }, // KM Driven
-              { width: "130px" }, // Price
-              ...(showActionsColumn ? [{ width: "120px" }] : []),
+              { width: '80px' }, // Logo
+              { width: '150px' }, // Brand
+              { width: '180px' }, // Model
+              { width: '100px' }, // Year
+              { width: '120px' }, // Color
+              { width: '140px' }, // KM Driven
+              { width: '130px' }, // Price
+              ...(showActionsColumn ? [{ width: '120px' }] : []),
             ].map((col, idx) => (
               <TableCell key={idx} sx={{ width: col.width }}>
-                <Skeleton
-                  variant="text"
-                  sx={{ bgcolor: "rgba(71, 85, 105, 0.5)" }}
-                />
+                <Skeleton variant="text" sx={{ bgcolor: 'rgba(71, 85, 105, 0.5)' }} />
               </TableCell>
             ))}
           </TableRow>
@@ -104,41 +101,37 @@ const TableSkeleton = ({
   </TableContainer>
 );
 
-type SortField = "brand" | "model" | "year" | "color" | "kmDriven" | "price";
-type SortDirection = "asc" | "desc";
+type SortField = 'brand' | 'model' | 'year' | 'color' | 'kmDriven' | 'price';
+type SortDirection = 'asc' | 'desc';
 
 const BrandLogo = ({ brand }: { brand: string }) => {
-  const logoMap: Record<string, React.ReactElement> = {
-    BMW: <SiBmw size={28} color="#0066CC" />,
-    Mercedes: <SiMercedes size={28} color="#A8A8A8" />,
-    Porsche: <SiPorsche size={28} color="#D5A441" />,
-    Audi: <SiAudi size={28} color="#BB0A30" />,
-    Toyota: <SiToyota size={28} color="#EB0A1E" />,
-    Honda: <SiHonda size={28} color="#CC0000" />,
-    Ford: <SiFord size={28} color="#003478" />,
-    Tesla: <SiTesla size={28} color="#CC0000" />,
-    Volkswagen: <SiVolkswagen size={28} color="#151F5D" />,
+  const logoMap: Record<string, JSX.Element> = {
+    'BMW': <SiBmw size={28} color="#0066CC" />,
+    'Mercedes': <SiMercedes size={28} color="#A8A8A8" />,
+    'Porsche': <SiPorsche size={28} color="#D5A441" />,
+    'Audi': <SiAudi size={28} color="#BB0A30" />,
+    'Toyota': <SiToyota size={28} color="#EB0A1E" />,
+    'Honda': <SiHonda size={28} color="#CC0000" />,
+    'Ford': <SiFord size={28} color="#003478" />,
+    'Tesla': <SiTesla size={28} color="#CC0000" />,
+    'Volkswagen': <SiVolkswagen size={28} color="#151F5D" />
   };
-
-  return (
-    logoMap[brand] || (
-      <Box
-        sx={{
-          width: "28px",
-          height: "28px",
-          bgcolor: "rgba(148, 163, 184, 0.2)",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "12px",
-          fontWeight: "bold",
-          color: "rgb(148, 163, 184)",
-        }}
-      >
-        {brand.charAt(0)}
-      </Box>
-    )
+  
+  return logoMap[brand] || (
+    <Box sx={{ 
+      width: '28px', 
+      height: '28px', 
+      bgcolor: 'rgba(148, 163, 184, 0.2)',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      color: 'rgb(148, 163, 184)'
+    }}>
+      {brand.charAt(0)}
+    </Box>
   );
 };
 
@@ -147,8 +140,8 @@ export default function CarList({ currentUser }: CarListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Partial<Car>>({});
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>("brand");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [sortField, setSortField] = useState<SortField>('brand');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const limit = 8;
 
@@ -212,32 +205,27 @@ export default function CarList({ currentUser }: CarListProps) {
   };
 
   const handleSort = (field: SortField) => {
-    const isAsc = sortField === field && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
     setSortField(field);
   };
 
-  const sortedData = data?.items
-    ? [...data.items].sort((a, b) => {
-        let aVal = a[sortField];
-        let bVal = b[sortField];
-
-        if (typeof aVal === "string") aVal = aVal.toLowerCase();
-        if (typeof bVal === "string") bVal = bVal.toLowerCase();
-
-        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      })
-    : [];
+  const sortedData = data?.items ? [...data.items].sort((a, b) => {
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+    
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    
+    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  }) : [];
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        openDropdownId &&
-        !(event.target as Element)?.closest?.(".relative")
-      ) {
+      if (openDropdownId && !event.target?.closest?.(".relative")) {
         setOpenDropdownId(null);
       }
     };
@@ -269,9 +257,7 @@ export default function CarList({ currentUser }: CarListProps) {
     <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden w-full max-w-6xl">
       <div className="px-8 py-6 border-b border-slate-700/50 flex justify-between">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Car Inventory
-          </h3>
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Car Inventory</h3>
           <p className="text-slate-400 mt-1">
             {data?.meta.totalItems || 0} cars total
           </p>
@@ -291,85 +277,64 @@ export default function CarList({ currentUser }: CarListProps) {
           <div className="text-center py-16 text-slate-400">
             <div className="text-6xl mb-4">🚗</div>
             <p className="text-lg font-medium">No cars found</p>
-            <p className="text-sm text-slate-500 mt-2">
-              Start by adding some cars to your inventory
-            </p>
+            <p className="text-sm text-slate-500 mt-2">Start by adding some cars to your inventory</p>
           </div>
         ) : (
-          <TableContainer sx={{ bgcolor: "transparent" }}>
-            <Table
-              sx={{
-                minWidth: 650,
-                "& .MuiTableCell-root": {
-                  borderColor: "rgba(148, 163, 184, 0.2)",
-                  color: "rgb(226, 232, 240)",
-                  bgcolor: "transparent",
-                },
-              }}
-            >
-              <TableHead
-                sx={{
-                  bgcolor: "rgba(15, 23, 42, 0.6)",
-                }}
-              >
+          <TableContainer sx={{ bgcolor: 'transparent' }}>
+            <Table sx={{ 
+              minWidth: 650,
+              '& .MuiTableCell-root': {
+                borderColor: 'rgba(148, 163, 184, 0.2)',
+                color: 'rgb(226, 232, 240)',
+                bgcolor: 'transparent'
+              }
+            }}>
+              <TableHead sx={{ 
+                bgcolor: 'rgba(15, 23, 42, 0.6)'
+              }}>
                 <TableRow>
                   {/* Logo Column Header */}
                   <TableCell
-                    sx={{
-                      color: "rgb(148, 163, 184)",
+                    sx={{ 
+                      color: 'rgb(148, 163, 184)',
                       fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      fontSize: "0.75rem",
-                      width: "80px",
-                      textAlign: "center",
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      fontSize: '0.75rem',
+                      width: '80px',
+                      textAlign: 'center'
                     }}
                   >
                     Logo
                   </TableCell>
                   {[
-                    { key: "brand", label: "Brand" },
-                    { key: "model", label: "Model" },
-                    { key: "year", label: "Year" },
-                    { key: "color", label: "Color" },
-                    { key: "kmDriven", label: "KM Driven" },
-                    { key: "price", label: "Price" },
+                    { key: 'brand', label: 'Brand' },
+                    { key: 'model', label: 'Model' },
+                    { key: 'year', label: 'Year' },
+                    { key: 'color', label: 'Color' },
+                    { key: 'kmDriven', label: 'KM Driven' },
+                    { key: 'price', label: 'Price' },
                   ].map(({ key, label }) => (
                     <TableCell
                       key={key}
-                      sx={{
-                        color: "rgb(148, 163, 184)",
+                      sx={{ 
+                        color: 'rgb(148, 163, 184)',
                         fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        fontSize: "0.75rem",
-                        width:
-                          key === "brand"
-                            ? "150px"
-                            : key === "model"
-                              ? "180px"
-                              : key === "year"
-                                ? "100px"
-                                : key === "color"
-                                  ? "120px"
-                                  : key === "kmDriven"
-                                    ? "140px"
-                                    : "130px",
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontSize: '0.75rem',
+                        width: key === 'brand' ? '150px' : key === 'model' ? '180px' : key === 'year' ? '100px' : key === 'color' ? '120px' : key === 'kmDriven' ? '140px' : '130px'
                       }}
                     >
                       <TableSortLabel
                         active={sortField === key}
-                        direction={sortField === key ? sortDirection : "asc"}
+                        direction={sortField === key ? sortDirection : 'asc'}
                         onClick={() => handleSort(key as SortField)}
                         sx={{
-                          color: "rgb(148, 163, 184) !important",
-                          "&:hover": { color: "rgb(96, 165, 250) !important" },
-                          "&.Mui-active": {
-                            color: "rgb(96, 165, 250) !important",
-                          },
-                          "& .MuiTableSortLabel-icon": {
-                            color: "rgb(96, 165, 250) !important",
-                          },
+                          color: 'rgb(148, 163, 184) !important',
+                          '&:hover': { color: 'rgb(96, 165, 250) !important' },
+                          '&.Mui-active': { color: 'rgb(96, 165, 250) !important' },
+                          '& .MuiTableSortLabel-icon': { color: 'rgb(96, 165, 250) !important' }
                         }}
                       >
                         {label}
@@ -377,14 +342,14 @@ export default function CarList({ currentUser }: CarListProps) {
                     </TableCell>
                   ))}
                   {currentUser && (
-                    <TableCell
-                      sx={{
-                        color: "rgb(148, 163, 184)",
+                    <TableCell 
+                      sx={{ 
+                        color: 'rgb(148, 163, 184)',
                         fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        fontSize: "0.75rem",
-                        width: "120px",
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontSize: '0.75rem',
+                        width: '120px'
                       }}
                     >
                       Actions
@@ -395,7 +360,7 @@ export default function CarList({ currentUser }: CarListProps) {
               <TableBody>
                 {sortedData.map((car) => {
                   const isFavorited =
-                    currentUser && car.favoritedBy.includes(currentUser.id as UUID);
+                    currentUser && car.favoritedBy.includes(currentUser.id);
                   const canEdit =
                     currentUser &&
                     (currentUser.role === "admin" ||
@@ -410,36 +375,28 @@ export default function CarList({ currentUser }: CarListProps) {
                     <TableRow
                       key={car.id}
                       sx={{
-                        transition: "all 0.2s",
-                        bgcolor: isEditing
-                          ? "rgba(59, 130, 246, 0.1)"
-                          : "transparent",
-                        border: isEditing
-                          ? "2px solid rgba(59, 130, 246, 0.3)"
-                          : "none",
-                        "&:hover": {
-                          bgcolor: isEditing
-                            ? "rgba(59, 130, 246, 0.1)"
-                            : "rgba(71, 85, 105, 0.3)",
-                        },
+                        transition: 'all 0.2s',
+                        bgcolor: isEditing ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        border: isEditing ? '2px solid rgba(59, 130, 246, 0.3)' : 'none',
+                        '&:hover': {
+                          bgcolor: isEditing ? 'rgba(59, 130, 246, 0.1)' : 'rgba(71, 85, 105, 0.3)'
+                        }
                       }}
                     >
                       {/* Logo Column */}
-                      <TableCell sx={{ width: "80px", textAlign: "center" }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            height: "40px",
-                          }}
-                        >
+                      <TableCell sx={{ width: '80px', textAlign: 'center' }}>
+                        <Box sx={{ 
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '40px'
+                        }}>
                           <BrandLogo brand={car.brand} />
                         </Box>
                       </TableCell>
 
                       {/* Brand Column */}
-                      <TableCell sx={{ width: "150px" }}>
+                      <TableCell sx={{ width: '150px' }}>
                         {isEditing ? (
                           <select
                             value={editingData.brand || ""}
@@ -464,7 +421,7 @@ export default function CarList({ currentUser }: CarListProps) {
                       </TableCell>
 
                       {/* Model Column */}
-                      <TableCell sx={{ width: "180px" }}>
+                      <TableCell sx={{ width: '180px' }}>
                         {isEditing ? (
                           <input
                             type="text"
@@ -484,7 +441,7 @@ export default function CarList({ currentUser }: CarListProps) {
                       </TableCell>
 
                       {/* Year Column */}
-                      <TableCell sx={{ width: "100px" }}>
+                      <TableCell sx={{ width: '100px' }}>
                         {isEditing ? (
                           <input
                             type="number"
@@ -506,7 +463,7 @@ export default function CarList({ currentUser }: CarListProps) {
                       </TableCell>
 
                       {/* Color Column */}
-                      <TableCell sx={{ width: "120px" }}>
+                      <TableCell sx={{ width: '120px' }}>
                         {isEditing ? (
                           <input
                             type="text"
@@ -526,7 +483,7 @@ export default function CarList({ currentUser }: CarListProps) {
                       </TableCell>
 
                       {/* KM Driven Column */}
-                      <TableCell sx={{ width: "140px" }}>
+                      <TableCell sx={{ width: '140px' }}>
                         {isEditing ? (
                           <input
                             type="number"
@@ -547,7 +504,7 @@ export default function CarList({ currentUser }: CarListProps) {
                       </TableCell>
 
                       {/* Price Column */}
-                      <TableCell sx={{ width: "130px" }}>
+                      <TableCell sx={{ width: '130px' }}>
                         {isEditing ? (
                           <input
                             type="number"
@@ -570,20 +527,20 @@ export default function CarList({ currentUser }: CarListProps) {
 
                       {/* Actions Column */}
                       {currentUser && (
-                        <TableCell sx={{ width: "120px" }}>
+                        <TableCell sx={{ width: '120px' }}>
                           {isEditing ? (
-                            <Box sx={{ display: "flex", gap: 1 }}>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
                               <IconButton
                                 onClick={() => handleSaveClick(car.id)}
                                 disabled={updateCar.isPending}
                                 sx={{
-                                  color: "#4ade80",
-                                  border: "1px solid rgba(34, 197, 94, 0.3)",
-                                  "&:hover": {
-                                    bgcolor: "rgba(34, 197, 94, 0.2)",
-                                    borderColor: "rgba(34, 197, 94, 0.5)",
+                                  color: '#4ade80',
+                                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(34, 197, 94, 0.2)',
+                                    borderColor: 'rgba(34, 197, 94, 0.5)'
                                   },
-                                  "&:disabled": { opacity: 0.5 },
+                                  '&:disabled': { opacity: 0.5 }
                                 }}
                               >
                                 <CheckOutlined />
@@ -592,50 +549,36 @@ export default function CarList({ currentUser }: CarListProps) {
                                 onClick={handleCancelEdit}
                                 disabled={updateCar.isPending}
                                 sx={{
-                                  color: "rgb(148, 163, 184)",
-                                  border: "1px solid rgba(148, 163, 184, 0.3)",
-                                  "&:hover": {
-                                    bgcolor: "rgba(239, 68, 68, 0.2)",
-                                    borderColor: "rgba(239, 68, 68, 0.5)",
-                                    color: "rgb(248, 113, 113)",
+                                  color: 'rgb(148, 163, 184)',
+                                  border: '1px solid rgba(148, 163, 184, 0.3)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(239, 68, 68, 0.2)',
+                                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                                    color: 'rgb(248, 113, 113)'
                                   },
-                                  "&:disabled": { opacity: 0.5 },
+                                  '&:disabled': { opacity: 0.5 }
                                 }}
                               >
                                 ✕
                               </IconButton>
                             </Box>
                           ) : (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                              }}
-                            >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               {/* Heart Icon */}
                               <IconButton
-                                onClick={() =>
-                                  toggleFavorite.mutate({ id: car.id })
-                                }
+                                onClick={() => toggleFavorite.mutate({ id: car.id })}
                                 disabled={toggleFavorite.isPending}
                                 sx={{
-                                  color: isFavorited
-                                    ? "#ef4444"
-                                    : "rgb(148, 163, 184)",
-                                  "&:hover": {
-                                    color: "#ef4444",
-                                    bgcolor: "rgba(239, 68, 68, 0.1)",
-                                    transform: "scale(1.1)",
+                                  color: isFavorited ? '#ef4444' : 'rgb(148, 163, 184)',
+                                  '&:hover': {
+                                    color: '#ef4444',
+                                    bgcolor: 'rgba(239, 68, 68, 0.1)',
+                                    transform: 'scale(1.1)'
                                   },
-                                  transition: "all 0.2s",
+                                  transition: 'all 0.2s'
                                 }}
                               >
-                                {isFavorited ? (
-                                  <Favorite />
-                                ) : (
-                                  <FavoriteBorder />
-                                )}
+                                {isFavorited ? <Favorite /> : <FavoriteBorder />}
                               </IconButton>
 
                               {/* Three Dots Menu */}
@@ -646,44 +589,38 @@ export default function CarList({ currentUser }: CarListProps) {
                                 }}
                                 disabled={!canEdit && !canDelete}
                                 sx={{
-                                  color:
-                                    !canEdit && !canDelete
-                                      ? "rgb(71, 85, 105)"
-                                      : "rgb(148, 163, 184)",
-                                  "&:hover": {
-                                    color: "rgb(226, 232, 240)",
-                                    bgcolor: "rgba(71, 85, 105, 0.5)",
-                                  },
+                                  color: (!canEdit && !canDelete) ? 'rgb(71, 85, 105)' : 'rgb(148, 163, 184)',
+                                  '&:hover': {
+                                    color: 'rgb(226, 232, 240)',
+                                    bgcolor: 'rgba(71, 85, 105, 0.5)'
+                                  }
                                 }}
                               >
                                 <MoreVert />
                               </IconButton>
-
+                              
                               <Menu
                                 anchorEl={anchorEl}
-                                open={Boolean(
-                                  anchorEl && openDropdownId === car.id,
-                                )}
+                                open={Boolean(anchorEl && openDropdownId === car.id)}
                                 onClose={() => {
                                   setAnchorEl(null);
                                   setOpenDropdownId(null);
                                 }}
                                 sx={{
-                                  "& .MuiPaper-root": {
-                                    bgcolor: "rgba(15, 23, 42, 0.95)",
-                                    backdropFilter: "blur(8px)",
-                                    border:
-                                      "1px solid rgba(148, 163, 184, 0.2)",
-                                    borderRadius: "8px",
+                                  '& .MuiPaper-root': {
+                                    bgcolor: 'rgba(15, 23, 42, 0.95)',
+                                    backdropFilter: 'blur(8px)',
+                                    border: '1px solid rgba(148, 163, 184, 0.2)',
+                                    borderRadius: '8px',
                                   },
-                                  "& .MuiMenuItem-root": {
-                                    color: "rgb(203, 213, 225)",
-                                    "&:hover": {
-                                      bgcolor: "rgba(59, 130, 246, 0.2)",
-                                      color: "rgb(96, 165, 250)",
-                                    },
-                                  },
-                                }}
+                                  '& .MuiMenuItem-root': {
+                                    color: 'rgb(203, 213, 225)',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(59, 130, 246, 0.2)',
+                                      color: 'rgb(96, 165, 250)'
+                                    }
+                                  }
+                                }
                               >
                                 {canEdit && (
                                   <MenuItem
@@ -692,13 +629,9 @@ export default function CarList({ currentUser }: CarListProps) {
                                       setAnchorEl(null);
                                       setOpenDropdownId(null);
                                     }}
-                                    sx={{
-                                      "&:hover": {
-                                        bgcolor: "rgba(59, 130, 246, 0.2)",
-                                      },
-                                    }}
+                                    sx={{ '&:hover': { bgcolor: 'rgba(59, 130, 246, 0.2)' } }}
                                   >
-                                    <Edit sx={{ mr: 2, fontSize: "1.1rem" }} />
+                                    <Edit sx={{ mr: 2, fontSize: '1.1rem' }} />
                                     Edit
                                   </MenuItem>
                                 )}
@@ -710,16 +643,11 @@ export default function CarList({ currentUser }: CarListProps) {
                                       setOpenDropdownId(null);
                                     }}
                                     disabled={deleteCar.isPending}
-                                    sx={{
-                                      "&:hover": {
-                                        bgcolor: "rgba(239, 68, 68, 0.2)",
-                                        color: "rgb(248, 113, 113)",
-                                      },
+                                    sx={{ 
+                                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.2)', color: 'rgb(248, 113, 113)' }
                                     }}
                                   >
-                                    <Delete
-                                      sx={{ mr: 2, fontSize: "1.1rem" }}
-                                    />
+                                    <Delete sx={{ mr: 2, fontSize: '1.1rem' }} />
                                     Delete
                                   </MenuItem>
                                 )}
@@ -747,8 +675,7 @@ export default function CarList({ currentUser }: CarListProps) {
             Previous
           </button>
           <span className="text-slate-400 font-medium">
-            Page <span className="text-blue-400">{page + 1}</span> of{" "}
-            <span className="text-blue-400">{totalPages}</span>
+            Page <span className="text-blue-400">{page + 1}</span> of <span className="text-blue-400">{totalPages}</span>
           </span>
           <button
             disabled={page >= totalPages - 1 || isFetching}

@@ -2,8 +2,11 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/react-query";
+import { TRPCClientError } from "@trpc/client";
 import { useState } from "react";
 import { trpc } from "./client";
+import { getAccessToken } from "../../lib/cookies";
+import { refreshTokens } from "../../lib/token-refresh";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -27,11 +30,30 @@ export default function Provider({ children }: { children: React.ReactNode }) {
         httpBatchLink({
           url: `${apiUrl}/trpc`,
           headers() {
-            const token =
-              typeof window !== "undefined"
-                ? localStorage.getItem("accessToken")
-                : null;
+            // Always get the current token from cookies (reactive to changes)
+            const token = getAccessToken();
             return token ? { authorization: `Bearer ${token}` } : {};
+          },
+          async fetch(url, options) {
+            const response = await fetch(url, options);
+            
+            // If we get a 401, try to refresh the token and retry
+            if (response.status === 401) {
+              const newTokens = await refreshTokens();
+              if (newTokens) {
+                // Retry the request with the new token
+                const retryOptions = {
+                  ...options,
+                  headers: {
+                    ...options?.headers,
+                    authorization: `Bearer ${newTokens.accessToken}`,
+                  },
+                };
+                return fetch(url, retryOptions);
+              }
+            }
+            
+            return response;
           },
         }),
       ],
