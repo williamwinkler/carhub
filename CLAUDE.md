@@ -40,7 +40,7 @@ This is a full-stack monorepo demonstrating **end-to-end type safety** between a
 - All API responses follow consistent wrapper format via `wrapResponse()`
 
 ### tRPC Integration
-- Backend router at `apps/api/src/modules/trpc/trpc.router.ts` 
+- Backend router at `apps/api/src/modules/trpc/trpc.router.ts`
 - Frontend client at `apps/web/src/app/_trpc/client.ts`
 - Type inference flows from backend to frontend automatically
 - tRPC routes are mounted at `/trpc` endpoint
@@ -76,7 +76,7 @@ This is a full-stack monorepo demonstrating **end-to-end type safety** between a
 
 ### Frontend Structure (`apps/web/src/`)
 - `app/` - Next.js App Router pages and layouts
-- `app/_components/` - Reusable React components  
+- `app/_components/` - Reusable React components
 - `app/_trpc/` - tRPC client setup and provider
 - **Frontend Vision**: Building towards a state-of-the-art Next.js application using tRPC with TanStack Query for optimal data fetching and caching
 - **Styling**: TailwindCSS for utility-first styling (note: currently transitioning from Ant Design)
@@ -89,21 +89,22 @@ This is a full-stack monorepo demonstrating **end-to-end type safety** between a
 
 **IMPORTANT**: Keep task completion summaries very short (1-2 sentences max). User has limited time to read lengthy summaries.
 
+## App-Specific Guidelines
+
+For detailed development guidelines specific to each application, see:
+- **API Development**: `apps/api/CLAUDE.md` - NestJS patterns, testing requirements, rate limiting
+- **Frontend Development**: `apps/web/CLAUDE.md` - Next.js patterns, tRPC client usage, styling guidelines
+
 ## Development Notes
 
 ### Adding New Features
 1. Define Zod schemas in the appropriate module's `dto/` folder
 2. Create NestJS DTOs using `createZodDto(schema)`
 3. Add REST controllers with proper Swagger decorations
-4. Add corresponding tRPC procedures in the router
-5. Update frontend to consume new tRPC procedures using TanStack Query patterns
-
-### Frontend Development Standards
-- **Data Fetching**: Use tRPC with TanStack Query for server state management
-- **Component Architecture**: Favor composition and reusability with proper TypeScript interfaces
-- **Styling**: Use TailwindCSS utility classes; avoid inline styles and CSS modules
-- **State Management**: Leverage TanStack Query for server state, React state for UI state
-- **Performance**: Implement proper loading states, error boundaries, and optimistic updates where appropriate
+4. Add corresponding tRPC procedures in the router (if meant for the web)
+5. Write comprehensive tests for all new functionality
+6. Run tests to verify implementation works correctly
+7. Update frontend to consume new tRPC procedures using TanStack Query patterns
 
 ### Database/State Management
 - No database is configured - uses in-memory storage for demo purposes
