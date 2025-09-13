@@ -14,7 +14,6 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
-    "@repo/shared": "workspace:*",
     "@tanstack/react-query": "^5.84.2",
     "@trpc/client": "^11.4.4",
     "@trpc/react-query": "^11.4.4",

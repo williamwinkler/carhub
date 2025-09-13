@@ -22,7 +22,6 @@ import {
   TableRow,
   TableSortLabel,
 } from "@mui/material";
-import { CarBrand } from "@repo/shared";
 import type { inferRouterOutputs } from "@trpc/server";
 import { UUID } from "crypto";
 import { useEffect, useState } from "react";
@@ -45,6 +44,18 @@ import { trpc } from "../_trpc/client";
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type Car = RouterOutput["cars"]["getById"];
 export type CarBrandType = RouterOutput["cars"]["getById"]["brand"];
+
+const CAR_BRANDS: { [K in CarBrandType]: K } = {
+  BMW: "BMW",
+  Mercedes: "Mercedes",
+  Porsche: "Porsche",
+  Audi: "Audi",
+  Toyota: "Toyota",
+  Honda: "Honda",
+  Ford: "Ford",
+  Tesla: "Tesla",
+  Volkswagen: "Volkswagen",
+};
 
 const TableSkeleton = ({
   showActionsColumn = false,
@@ -565,7 +576,7 @@ export default function CarList() {
                             className="w-full px-3 py-2 border border-slate-600/50 bg-slate-700/50 text-slate-200 rounded-lg text-sm focus:border-blue-400/50 focus:outline-none focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
                           >
                             <option value="">Select Brand</option>
-                            {Object.values(CarBrand).map((brand) => (
+                            {Object.values(CAR_BRANDS).map((brand) => (
                               <option key={brand} value={brand}>
                                 {brand}
                               </option>

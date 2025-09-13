@@ -5,7 +5,7 @@ import Navbar from "./_components/Navbar";
 import { useAuth } from "../lib/auth-context";
 
 export default function Home() {
-  const { user, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (

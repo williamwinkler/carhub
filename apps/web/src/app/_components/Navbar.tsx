@@ -1,9 +1,14 @@
 "use client";
 
+import type { AppRouter } from "@api/modules/trpc/trpc.router";
+import type { inferRouterOutputs } from "@trpc/server";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../lib/auth-context";
 import { trpc } from "../_trpc/client";
+
+type RouterOutput = inferRouterOutputs<AppRouter>;
+type User = RouterOutput["auth"]["me"];
 
 export default function Navbar() {
   const { user, login, logout } = useAuth();
@@ -18,7 +23,7 @@ export default function Navbar() {
   const loginMutation = trpc.auth.login.useMutation();
   const utils = trpc.useUtils();
 
-  const handleLoginSuccess = (userInfo: any) => {
+  const handleLoginSuccess = (userInfo: User) => {
     login(userInfo);
     setIsLoginOpen(false);
     setUsername("");
@@ -57,7 +62,7 @@ export default function Navbar() {
           secondary: "#1e293b",
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setHasError(true);
 
       // Auto-clear error state after animation
@@ -104,13 +109,21 @@ export default function Navbar() {
       await logoutMutation.mutateAsync();
       logout();
       toast.success("Logged out successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Even if logout fails on server, clear local state
       logout();
 
       // Don't show error toast for 401 - that means we're already logged out
-      if (error.data?.httpStatus !== 401) {
-        toast.error(error.message || "Logout failed");
+      if (error && typeof error === 'object' && 'data' in error) {
+        const errorData = (error as { data?: { httpStatus?: number } }).data;
+        if (errorData?.httpStatus !== 401) {
+          const errorMessage = error && typeof error === 'object' && 'message' in error 
+            ? (error as { message?: string }).message 
+            : "Logout failed";
+          toast.error(errorMessage || "Logout failed");
+        }
+      } else {
+        toast.error("Logout failed");
       }
     }
   };

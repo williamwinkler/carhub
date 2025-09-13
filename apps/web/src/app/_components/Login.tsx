@@ -49,8 +49,8 @@ export function LoginForm({ onLoginSuccess, onClose, standalone = false }: Login
       if (onClose) {
         onClose();
       }
-    } catch (error: any) {
-      toast.error(error.message || "Login failed");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Login failed");
     }
   }
 

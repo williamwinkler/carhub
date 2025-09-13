@@ -1,5 +1,5 @@
-import { CarBrand } from "@repo/shared";
 import type { CreateCarDto } from "../dto/create-car.dto";
+import { CarBrand } from "./car.entity";
 
 export const seedData: CreateCarDto[] = [
   {

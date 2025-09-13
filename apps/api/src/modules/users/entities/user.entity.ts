@@ -1,12 +1,12 @@
 import type { UUID } from "crypto";
 
 export class User {
-  id: UUID;
+  id!: UUID;
 
-  role: Role;
+  role!: Role;
 
-  firstName: string;
-  lastName: string;
+  firstName!: string;
+  lastName!: string;
 
   username?: string;
   password?: string;

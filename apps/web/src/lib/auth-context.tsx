@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       window.removeEventListener("storage", checkAuthChanges);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, handleLogout]);
 
   useEffect(() => {
     // Set the global logout callback

@@ -15,7 +15,6 @@ import {
   Put,
 } from "@nestjs/common";
 import { ApiNoContentResponse, ApiOperation } from "@nestjs/swagger";
-import { CarBrandType } from "@repo/shared";
 import { UUID } from "crypto";
 import {
   limitSchema,
@@ -35,6 +34,7 @@ import {
   CreateCarDto,
 } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
+import { CarBrandType } from "./entities/car.entity";
 
 @Controller("cars")
 export class CarsController {

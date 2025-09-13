@@ -68,9 +68,6 @@ importers:
       '@repo/logging':
         specifier: workspace:*
         version: link:../../packages/logging
-      '@repo/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@trpc/server':
         specifier: ^11.5.1
         version: 11.5.1(typescript@5.8.3)
@@ -159,9 +156,6 @@ importers:
       '@mui/material':
         specifier: ^7.3.2
         version: 7.3.2(@emotion/react@11.14.0(@types/react@19.1.9)(react@19.1.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.9)(react@19.1.0))(@types/react@19.1.9)(react@19.1.0))(@types/react@19.1.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@repo/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: ^5.84.2
         version: 5.84.2(react@19.1.0)
@@ -238,8 +232,6 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.2
-
-  packages/shared: {}
 
 packages:
 

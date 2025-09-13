@@ -1,7 +1,7 @@
 // src/modules/trpc/trpc-rate-limit.service.ts
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
-import { Cache } from "cache-manager";
+import type { Cache } from "cache-manager";
 
 export type RateLimitRecord = {
   count: number;

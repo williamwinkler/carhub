@@ -7,7 +7,7 @@ import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error"
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Cache } from "cache-manager";
+import type { Cache } from "cache-manager";
 import { UUID } from "crypto";
 import { ConfigService } from "../config/config.service";
 import { Role, User } from "../users/entities/user.entity";
@@ -133,7 +133,7 @@ export class AuthService {
   }
 
   private async getTokens(user: User): Promise<JwtDto> {
-    const sessionId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID() as UUID;
     const refreshTTL = 1000 * 60 * 60 * 24 * 7; // 7 days in milliseconds
 
     const [accessToken, refreshToken] = await Promise.all([

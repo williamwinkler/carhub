@@ -1,6 +1,6 @@
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
-import { CarBrand } from "@repo/shared";
+
 import type { UUID } from "crypto";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "../../common/errors/domain/bad-request.error";
@@ -8,6 +8,7 @@ import { CarNotFoundError } from "../../common/errors/domain/not-found.error";
 import { CarsService } from "./cars.service";
 import type { CreateCarDto } from "./dto/create-car.dto";
 import type { UpdateCarDto } from "./dto/update-car.dto";
+import { CarBrand } from "./entities/car.entity";
 
 describe("CarsService", () => {
   let service: CarsService;
