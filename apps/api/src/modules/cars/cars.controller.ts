@@ -20,10 +20,13 @@ import { UUID } from "crypto";
 import {
   limitSchema,
   skipSchema,
+  sortDirectionQuerySchema,
+  sortFieldQuerySchema,
   uuidSchema,
 } from "../../common/schemas/common.schema";
 import { CarsAdapter } from "./cars.adapter";
 import { CarsService } from "./cars.service";
+import { SortDirection, SortField } from "./cars.type";
 import { CarDto } from "./dto/car.dto";
 import {
   carBrandSchema,
@@ -50,7 +53,9 @@ export class CarsController {
     type: CarDto,
   })
   async create(@Body() dto: CreateCarDto) {
-    const car = this.carsService.create(dto);
+    // TODO: Get actual user ID from JWT context - using system ID for now
+    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
+    const car = this.carsService.create(dto, systemUserId);
     const data = this.carsAdapter.getDto(car);
 
     return data;
@@ -70,9 +75,22 @@ export class CarsController {
     @zQuery("color", carColorSchema.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
+    @zQuery("sortField", sortFieldQuerySchema) sortField?: SortField,
+    @zQuery("sortDirection", sortDirectionQuerySchema)
+    sortDirection?: SortDirection,
   ) {
-    const cars = this.carsService.findAll({ brand, model, skip, limit, color });
+    const cars = this.carsService.findAll({
+      brand,
+      model,
+      color,
+      skip,
+      limit,
+      sortField,
+      sortDirection,
+    });
     const data = this.carsAdapter.getListDto(cars);
+
+    // (data.items as any)[2].whoops = "should not be here";
 
     return data;
   }
@@ -104,7 +122,9 @@ export class CarsController {
   })
   @NotFound()
   async update(@zParam("id", uuidSchema) id: UUID, @Body() dto: UpdateCarDto) {
-    const car = this.carsService.update(id, dto);
+    // TODO: Get actual user ID from JWT context - using system ID for now
+    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
+    const car = this.carsService.update(id, dto, systemUserId, "admin"); // System user acts as admin
 
     return this.carsAdapter.getDto(car);
   }
@@ -117,6 +137,8 @@ export class CarsController {
   @ApiNoContentResponse({ description: "Car deleted successfully" })
   @NotFound()
   async remove(@zParam("id", uuidSchema) id: UUID) {
-    this.carsService.remove(id);
+    // TODO: Get actual user ID from JWT context - using system ID for now
+    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
+    this.carsService.remove(id, systemUserId, "admin"); // System user acts as admin
   }
 }

@@ -14,6 +14,24 @@ export class UsersService {
       password: "string",
       apiKey: ""
     },
+    {
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      role: "admin",
+      firstName: "Admin",
+      lastName: "User",
+      username: "admin",
+      password: "admin123",
+      apiKey: "admin-api-key"
+    },
+    {
+      id: "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      role: "user",
+      firstName: "Jane",
+      lastName: "Smith",
+      username: "jane",
+      password: "jane123",
+      apiKey: "jane-api-key"
+    },
   ];
 
   async findOne(username: string): Promise<User | null> {

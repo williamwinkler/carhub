@@ -28,3 +28,47 @@ export const uuidSchema = z
   .uuid()
   .transform((val) => val as UUID)
   .describe("id (UUID)");
+
+// Sorting schemas
+export const sortFieldSchema = z
+  .enum(["brand", "model", "year", "color", "kmDriven", "price"])
+  .describe("Field to sort by");
+
+export const sortDirectionSchema = z
+  .enum(["asc", "desc"])
+  .describe("Sort direction (ascending or descending)");
+
+// Query param versions (for REST API)
+export const sortFieldQuerySchema = z
+  .string()
+  .optional()
+  .refine(
+    (val) =>
+      !val ||
+      ["brand", "model", "year", "color", "kmDriven", "price"].includes(val),
+    {
+      message:
+        "Sort field must be one of: brand, model, year, color, kmDriven, price",
+    },
+  )
+  .transform(
+    (val) =>
+      val as
+        | "brand"
+        | "model"
+        | "year"
+        | "color"
+        | "kmDriven"
+        | "price"
+        | undefined,
+  )
+  .describe("Field to sort by");
+
+export const sortDirectionQuerySchema = z
+  .string()
+  .optional()
+  .refine((val) => !val || ["asc", "desc"].includes(val), {
+    message: "Sort direction must be either 'asc' or 'desc'",
+  })
+  .transform((val) => val as "asc" | "desc" | undefined)
+  .describe("Sort direction (ascending or descending)");

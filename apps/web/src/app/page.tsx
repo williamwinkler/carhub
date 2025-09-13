@@ -1,27 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import CarForm from "./_components/CarForm";
-import CarList, { Car } from "./_components/CarList";
-import { LoginForm } from "./_components/Login";
+import CarList from "./_components/CarList";
+import Navbar from "./_components/Navbar";
+import { useAuth } from "../lib/auth-context";
 
 export default function Home() {
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-300 to-purple-500">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
             Car Management System
           </h1>
-          <p className="text-gray-600">Manage your car inventory with ease</p>
+          <p className="text-slate-400 text-lg">Manage your car inventory with elegance</p>
         </div>
 
         <div className="flex flex-col items-center gap-8">
-          <LoginForm></LoginForm>
-          <CarForm editingCar={editingCar} onDone={() => setEditingCar(null)} />
-          <CarList onEdit={(car) => setEditingCar(car)} />
+          <CarList />
         </div>
       </div>
     </div>

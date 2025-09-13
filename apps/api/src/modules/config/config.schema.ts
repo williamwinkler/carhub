@@ -7,7 +7,7 @@ export const configSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
-  PORT: z.coerce.number().default(3000),
+  PORT: z.coerce.number().default(3001),
 });
 
 export type ConfigSchema = z.infer<typeof configSchema>;

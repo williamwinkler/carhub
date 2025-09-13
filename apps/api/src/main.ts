@@ -17,7 +17,21 @@ async function bootstrap() {
     logger: new CustomLogger(),
   });
 
-  app.enableCors();
+  app.enableCors({
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-trpc-source",
+      "x-trpc-batch",
+      "Accept",
+      "Accept-Language",
+      "Content-Language",
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  });
 
   app.enableVersioning({
     type: VersioningType.URI,

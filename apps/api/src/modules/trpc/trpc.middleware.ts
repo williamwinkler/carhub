@@ -1,8 +1,10 @@
 // src/modules/trpc/trpc.middleware.ts
 import { Ctx } from "@api/common/ctx";
 import { BaseError } from "@api/common/errors/base-error";
+import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
 import { setupContext } from "@api/common/utils/context.utils";
-import { HttpStatus } from "@nestjs/common";
+import { AuthService } from "@api/modules/auth/auth.service";
+import { HttpStatus, Inject } from "@nestjs/common";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { ClsServiceManager } from "nestjs-cls";
 import { httpStatusToTrpcCode } from "./trpc.consts";
@@ -48,3 +50,44 @@ export const errorMiddleware = t.middleware(async ({ next }) => {
 
   return result;
 });
+
+// Authentication middleware factory
+export const createAuthMiddleware = (authService: AuthService) => {
+  return t.middleware(async ({ ctx, next }) => {
+    const authorization = ctx.req.headers.authorization;
+    
+    if (!authorization) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "No authorization header provided",
+      });
+    }
+
+    try {
+      // Try JWT first
+      if (authorization.startsWith('Bearer ')) {
+        const token = authorization.slice(7);
+        const payload = await authService.verifyAccessToken(token);
+        Ctx.principal = authService.principalFromJwt(payload);
+      }
+      // Try API key
+      else if (authorization.startsWith('ApiKey ')) {
+        const apiKey = authorization.slice(7);
+        const user = await authService.findUserByApiKey(apiKey);
+        Ctx.principal = authService.principalFromUser(user);
+      }
+      // Invalid auth format
+      else {
+        throw new UnauthorizedError();
+      }
+    } catch (error) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid credentials",
+        cause: error,
+      });
+    }
+
+    return next();
+  });
+};
