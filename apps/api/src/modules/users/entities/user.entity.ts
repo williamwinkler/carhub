@@ -1,18 +1,25 @@
 import type { UUID } from "crypto";
 
+export const Role = {
+  Admin: "admin",
+  User: "user",
+} as const;
+export type RoleType = (typeof Role)[keyof typeof Role];
+
 export class User {
   id!: UUID;
 
-  role!: Role;
+  role!: RoleType;
 
   firstName!: string;
   lastName!: string;
 
-  username?: string;
-  password?: string;
+  username!: string;
+  password!: string;
 
-  apiKey?: string;
+  apiKeyLookupHash?: string;
+  apiKeySecret?: string;
+
+  createdAt!: Date;
+  updatedAt!: Date;
 }
-
-export const roles = ["admin", "user"] as const;
-export type Role = (typeof roles)[number];

@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
-
+import type { MockMetadata } from "jest-mock";
+import { ModuleMocker } from "jest-mock";
 import type { UUID } from "crypto";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "../../common/errors/domain/bad-request.error";
@@ -10,21 +12,58 @@ import type { CreateCarDto } from "./dto/create-car.dto";
 import type { UpdateCarDto } from "./dto/update-car.dto";
 import { CarBrand } from "./entities/car.entity";
 
+const moduleMocker = new ModuleMocker(global);
+
+// Mock Ctx module
+jest.mock("@api/common/ctx", () => ({
+  Ctx: {
+    userIdRequired: jest.fn(),
+    principalRequired: jest.fn(),
+    roleRequired: jest.fn(),
+  },
+}));
+
 describe("CarsService", () => {
   let service: CarsService;
   let cleanService: CarsService;
 
+  const mockUserId = randomUUID();
+  const mockPrincipal = {
+    id: mockUserId,
+    role: "user" as const,
+    authType: "jwt" as const,
+  };
+
+  const { Ctx } = require("@api/common/ctx");
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [CarsService],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (typeof token === "function") {
+          const metadata = moduleMocker.getMetadata(token) as MockMetadata<
+            any,
+            any
+          >;
+          const Mock = moduleMocker.generateFromMetadata(metadata);
+          return new Mock();
+        }
+      })
+      .compile();
 
     service = module.get<CarsService>(CarsService);
 
     // Create a clean instance for filtering tests by clearing the cars Map
     cleanService = new CarsService();
-    // Clear seeded data
     (cleanService as unknown as { cars: Map<string, unknown> }).cars.clear();
+
+    // Setup default mocks
+    Ctx.userIdRequired.mockReturnValue(mockUserId);
+    Ctx.principalRequired.mockReturnValue(mockPrincipal);
+    Ctx.roleRequired.mockReturnValue("user");
+
+    jest.clearAllMocks();
   });
 
   it("should be defined", () => {
@@ -41,9 +80,8 @@ describe("CarsService", () => {
         kmDriven: 1000,
         price: 50000,
       };
-      const createdBy = randomUUID() as UUID;
 
-      const result = cleanService.create(createCarDto, createdBy);
+      const result = cleanService.create(createCarDto);
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -53,9 +91,10 @@ describe("CarsService", () => {
       expect(result.color).toBe("Black");
       expect(result.kmDriven).toBe(1000);
       expect(result.price).toBe(50000);
-      expect(result.createdBy).toBe(createdBy);
+      expect(result.createdBy).toBe(mockUserId);
       expect(result.createdAt).toBeInstanceOf(Date);
       expect(result.favoritedBy).toEqual([]);
+      expect(Ctx.userIdRequired).toHaveBeenCalled();
     });
 
     it("should create cars with different brands", () => {
@@ -67,12 +106,12 @@ describe("CarsService", () => {
         kmDriven: 0,
         price: 80000,
       };
-      const createdBy = randomUUID() as UUID;
 
-      const result = cleanService.create(createCarDto, createdBy);
+      const result = cleanService.create(createCarDto);
 
       expect(result.brand).toBe(CarBrand.Tesla);
       expect(result.model).toBe("Model S");
+      expect(result.createdBy).toBe(mockUserId);
     });
   });
 
@@ -106,9 +145,8 @@ describe("CarsService", () => {
         },
       ];
 
-      const createdBy = randomUUID() as UUID;
       testCars.forEach((carData) => {
-        cleanService.create(carData, createdBy);
+        cleanService.create(carData);
       });
     });
 
@@ -230,8 +268,7 @@ describe("CarsService", () => {
         kmDriven: 0,
         price: 40000,
       };
-      const createdBy = randomUUID() as UUID;
-      const createdCar = cleanService.create(createCarDto, createdBy);
+      const createdCar = cleanService.create(createCarDto);
 
       const result = cleanService.findById(createdCar.id);
 
@@ -251,7 +288,6 @@ describe("CarsService", () => {
 
   describe("update", () => {
     let testCar: ReturnType<CarsService["create"]>;
-    let createdBy: UUID;
 
     beforeEach(() => {
       const createCarDto: CreateCarDto = {
@@ -262,55 +298,63 @@ describe("CarsService", () => {
         kmDriven: 5000,
         price: 25000,
       };
-      createdBy = randomUUID() as UUID;
-      testCar = cleanService.create(createCarDto, createdBy);
+      testCar = cleanService.create(createCarDto);
     });
 
     it("should update car successfully when user is owner", () => {
+      // Mock that the current user is the owner
+      Ctx.principalRequired.mockReturnValue({
+        id: testCar.createdBy,
+        role: "user",
+      });
+      Ctx.roleRequired.mockReturnValue("user");
+
       const updateDto: UpdateCarDto = {
         color: "Red",
         price: 26000,
       };
 
-      const result = cleanService.update(
-        testCar.id,
-        updateDto,
-        createdBy,
-        "user",
-      );
+      const result = cleanService.update(testCar.id, updateDto);
 
       expect(result.color).toBe("Red");
       expect(result.price).toBe(26000);
-      expect(result.updatedBy).toBe(createdBy);
+      expect(result.updatedBy).toBe(testCar.createdBy);
       expect(result.updatedAt).toBeInstanceOf(Date);
     });
 
     it("should allow admin to update any car", () => {
-      const adminUserId = randomUUID() as UUID;
+      const adminUserId = randomUUID();
+      Ctx.principalRequired.mockReturnValue({
+        id: adminUserId,
+        role: "admin",
+      });
+      Ctx.roleRequired.mockReturnValue("admin");
+
       const updateDto: UpdateCarDto = {
         model: "Civic Si",
       };
 
-      const result = cleanService.update(
-        testCar.id,
-        updateDto,
-        adminUserId,
-        "admin",
-      );
+      const result = cleanService.update(testCar.id, updateDto);
 
       expect(result.model).toBe("Civic Si");
       expect(result.updatedBy).toBe(adminUserId);
     });
 
     it("should throw BadRequestError when non-owner user tries to update", () => {
-      const otherUserId = randomUUID() as UUID;
+      const otherUserId = randomUUID();
+      Ctx.principalRequired.mockReturnValue({
+        id: otherUserId,
+        role: "user",
+      });
+      Ctx.roleRequired.mockReturnValue("user");
+
       const updateDto: UpdateCarDto = {
         color: "Blue",
       };
 
-      expect(() =>
-        cleanService.update(testCar.id, updateDto, otherUserId, "user"),
-      ).toThrow(BadRequestError);
+      expect(() => cleanService.update(testCar.id, updateDto)).toThrow(
+        BadRequestError,
+      );
     });
 
     it("should throw CarNotFoundError when car does not exist", () => {
@@ -319,15 +363,14 @@ describe("CarsService", () => {
         color: "Green",
       };
 
-      expect(() =>
-        cleanService.update(nonExistentId, updateDto, createdBy, "user"),
-      ).toThrow(CarNotFoundError);
+      expect(() => cleanService.update(nonExistentId, updateDto)).toThrow(
+        CarNotFoundError,
+      );
     });
   });
 
-  describe("remove", () => {
+  describe("delete", () => {
     let testCar: ReturnType<CarsService["create"]>;
-    let createdBy: UUID;
 
     beforeEach(() => {
       const createCarDto: CreateCarDto = {
@@ -338,42 +381,42 @@ describe("CarsService", () => {
         kmDriven: 8000,
         price: 18000,
       };
-      createdBy = randomUUID() as UUID;
-      testCar = cleanService.create(createCarDto, createdBy);
+      testCar = cleanService.create(createCarDto);
     });
 
     it("should remove car successfully when user is owner", () => {
-      expect(() =>
-        cleanService.remove(testCar.id, createdBy, "user"),
-      ).not.toThrow();
+      Ctx.userIdRequired.mockReturnValue(testCar.createdBy);
+      Ctx.roleRequired.mockReturnValue("user");
+
+      expect(() => cleanService.delete(testCar.id)).not.toThrow();
 
       expect(() => cleanService.findById(testCar.id)).toThrow(CarNotFoundError);
     });
 
     it("should allow admin to remove any car", () => {
-      const adminUserId = randomUUID() as UUID;
+      const adminUserId = randomUUID();
+      Ctx.userIdRequired.mockReturnValue(adminUserId);
+      Ctx.roleRequired.mockReturnValue("admin");
 
-      expect(() =>
-        cleanService.remove(testCar.id, adminUserId, "admin"),
-      ).not.toThrow();
+      expect(() => cleanService.delete(testCar.id)).not.toThrow();
 
       expect(() => cleanService.findById(testCar.id)).toThrow(CarNotFoundError);
     });
 
     it("should throw BadRequestError when non-owner user tries to remove", () => {
-      const otherUserId = randomUUID() as UUID;
+      const otherUserId = randomUUID();
+      Ctx.userIdRequired.mockReturnValue(otherUserId);
+      Ctx.roleRequired.mockReturnValue("user");
 
-      expect(() =>
-        cleanService.remove(testCar.id, otherUserId, "user"),
-      ).toThrow(BadRequestError);
+      expect(() => cleanService.delete(testCar.id)).toThrow(BadRequestError);
     });
 
     it("should throw CarNotFoundError when car does not exist", () => {
       const nonExistentId = randomUUID() as UUID;
 
-      expect(() =>
-        cleanService.remove(nonExistentId, createdBy, "user"),
-      ).toThrow(CarNotFoundError);
+      expect(() => cleanService.delete(nonExistentId)).toThrow(
+        CarNotFoundError,
+      );
     });
   });
 
@@ -390,8 +433,7 @@ describe("CarsService", () => {
         kmDriven: 3000,
         price: 35000,
       };
-      const createdBy = randomUUID() as UUID;
-      testCar = cleanService.create(createCarDto, createdBy);
+      testCar = cleanService.create(createCarDto);
       userId = randomUUID() as UUID;
     });
 
@@ -436,7 +478,6 @@ describe("CarsService", () => {
 
     beforeEach(() => {
       userId = randomUUID() as UUID;
-      const createdBy = randomUUID() as UUID;
 
       // Create multiple cars
       const cars = [
@@ -467,7 +508,7 @@ describe("CarsService", () => {
       ];
 
       cars.forEach((carData) => {
-        const car = cleanService.create(carData, createdBy);
+        const car = cleanService.create(carData);
         if (carData.brand !== CarBrand.Volkswagen) {
           cleanService.toggleFavorite(car.id, userId);
         }
@@ -501,7 +542,7 @@ describe("CarsService", () => {
         price: 28000,
       };
 
-      const newCar = cleanService.create(createCarDto, randomUUID() as UUID);
+      const newCar = cleanService.create(createCarDto);
       cleanService.toggleFavorite(newCar.id, user2Id);
 
       const user1Favorites = cleanService.getFavoritesByUser(userId);

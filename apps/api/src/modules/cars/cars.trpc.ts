@@ -55,9 +55,7 @@ export class CarsTrpc {
     create: this.trpc.authenticatedMediumProcedure
       .input(createCarSchema)
       .mutation(async ({ input }) => {
-        const userId = Ctx.userIdRequired();
-
-        return await this.carsService.create(input, userId);
+        return await this.carsService.create(input);
       }),
 
     // Authenticated route - updating cars with medium rate limiting for protection
@@ -69,25 +67,14 @@ export class CarsTrpc {
         }),
       )
       .mutation(async ({ input }) => {
-        const userId = Ctx.userIdRequired();
-        const userRole = Ctx.roleRequired();
-
-        return await this.carsService.update(
-          input.id,
-          input.data,
-          userId,
-          userRole,
-        );
+        return await this.carsService.update(input.id, input.data);
       }),
 
     // Authenticated route - deleting cars with short rate limiting (most restrictive)
     deleteById: this.trpc.authenticatedShortProcedure
       .input(z.object({ id: uuidSchema }))
       .mutation(async ({ input }) => {
-        const userId = Ctx.userIdRequired();
-        const userRole = Ctx.roleRequired();
-
-        return await this.carsService.remove(input.id, userId, userRole);
+        return await this.carsService.delete(input.id);
       }),
 
     // Authenticated route - toggle favorite (uses default rate limiting)

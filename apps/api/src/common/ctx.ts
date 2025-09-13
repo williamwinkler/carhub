@@ -1,11 +1,12 @@
-import type { Role } from "@api/modules/users/entities/user.entity";
+import type { RoleType } from "@api/modules/users/entities/user.entity";
+import { Logger } from "@nestjs/common";
 import type { UUID } from "crypto";
 import { ClsServiceManager } from "nestjs-cls";
 import { UnauthorizedError } from "./errors/domain/unauthorized.error";
 
 export type Principal = {
   id: UUID;
-  role: Role;
+  role: RoleType;
   authType: "jwt" | "api-key";
   sessionId?: UUID;
 };
@@ -17,6 +18,7 @@ export type CtxStore = {
 };
 
 export class Ctx {
+  private static readonly logger = new Logger(Ctx.name);
   private static cls() {
     return ClsServiceManager.getClsService<CtxStore>();
   }
@@ -41,6 +43,15 @@ export class Ctx {
   static get principal(): Principal | null {
     return this.cls().get("principal");
   }
+  static principalRequired(): Principal {
+    const principal = this.cls().get("principal");
+    if (!principal) {
+      this.logger.debug("User unauthorized - no principal");
+      throw new UnauthorizedError();
+    }
+
+    return principal;
+  }
   static set principal(value: Principal | null) {
     this.cls().set("principal", value);
   }
@@ -53,19 +64,21 @@ export class Ctx {
   static userIdRequired(): UUID {
     const id = this.userId;
     if (!id) {
+      this.logger.debug("User unauthorized - no userId");
       throw new UnauthorizedError();
     }
 
     return id;
   }
 
-  static get role(): Role | undefined {
+  static get role(): RoleType | undefined {
     return this.principal?.role;
   }
 
-  static roleRequired(): Role {
+  static roleRequired(): RoleType {
     const role = this.principal?.role;
     if (!role) {
+      this.logger.debug("User unauthorized - no role");
       throw new UnauthorizedError();
     }
 

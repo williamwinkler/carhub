@@ -4,6 +4,7 @@ export enum ErrorCode {
   VALIDATION_ERROR = 1002,
   INVALID_CREDENTIALS = 1003,
   INVALID_REFRESH_TOKEN = 1004,
+  TOO_MANY_REQUESTS = 1005,
 
   // Not Found
   NOT_FOUND = 2000,
@@ -16,4 +17,5 @@ export enum ErrorCode {
 
   // Conflict
   CONFLICT = 4000,
+  USERNAME_ALREADY_EXISTS = 4001,
 }

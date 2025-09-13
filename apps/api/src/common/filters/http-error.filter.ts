@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from "@nestjs/common";
-import z from "zod";
+import z, { ZodError } from "zod";
 import { BaseError } from "../errors/base-error";
 import { ErrorCode } from "../errors/error-codes.enum";
 import { ErrorDto, ErrorSchema } from "../errors/error.dto";
@@ -35,10 +35,30 @@ export class HttpErrorFilter implements ExceptionFilter {
       const message =
         typeof res === "string"
           ? res
-          : ((res as any).message ?? "Unexpected error");
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ((res as any).message ?? "Unexpected error");
 
-      errorResponse.statusCode = status;
-      errorResponse.message = message;
+      if (status === HttpStatus.TOO_MANY_REQUESTS) {
+        errorResponse.errorCode = ErrorCode.TOO_MANY_REQUESTS;
+        errorResponse.message = "Too Many Requests";
+      } else {
+        errorResponse.statusCode = status;
+        errorResponse.message = message;
+
+        if (status === HttpStatus.BAD_REQUEST) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const zodError: ZodError = (exception as any).error;
+
+          if (zodError) {
+            errorResponse.errorCode = ErrorCode.VALIDATION_ERROR;
+            errorResponse.errors = zodError.issues.map((issue) => ({
+              field: issue.path.join("."), // e.g. "password" or "user.email"
+              message: issue.message, // clean message
+              code: issue.code, // optional: Zod error code like "too_small"
+            }));
+          }
+        }
+      }
     } else {
       this.logger.error(
         `HTTP 500 | ${request.method} ${request.url} | ${(exception as Error)?.message}`,

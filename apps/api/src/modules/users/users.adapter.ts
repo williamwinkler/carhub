@@ -1,15 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { MeDto } from "./dto/me.dto";
+import { UserDto } from "./dto/user.dto";
 import { User } from "./entities/user.entity";
 
 @Injectable()
 export class UsersAdapter {
-  getMeDto(user: User): MeDto {
+  getUserDto(user: User): UserDto {
     return {
-      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
+      username: user.username,
       role: user.role,
+      hasApiKey: !!user.apiKeySecret,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
     };
   }
 }

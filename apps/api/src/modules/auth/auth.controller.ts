@@ -1,47 +1,86 @@
-import { BearerAuth } from "@api/common/decorators/bearer.decorator";
 import { Public } from "@api/common/decorators/public.decorator";
-import { BadRequest } from "@api/common/decorators/swagger-responses.decorator";
-import { ApiResponseDto } from "@api/common/utils/swagger.utils";
+import { BadRequestDecorator } from "@api/common/decorators/swagger-responses.decorator";
+import { zQuery } from "@api/common/decorators/zod.decorator";
+import { uuidSchema } from "@api/common/schemas/common.schema";
+import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiNoContentResponse } from "@nestjs/swagger";
+import { UUID } from "crypto";
+import { UserDto } from "../users/dto/user.dto";
+import { UsersAdapter } from "../users/users.adapter";
 import { AuthService } from "./auth.service";
+import { ApiKeyDto } from "./dto/apiKey.dto";
 import { JwtDto } from "./dto/jwt.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { RegisterDto } from "./dto/register.dto";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersAdapter: UsersAdapter,
+  ) {}
+
+  @Post("register")
+  @Public()
+  @ApiEndpoint({
+    status: HttpStatus.CREATED,
+    summary: "Register an account",
+    successText: "Account created successfully",
+    type: UserDto,
+  })
+  async createAccount(@Body() registerDto: RegisterDto) {
+    const user = await this.authService.register(registerDto);
+
+    return this.usersAdapter.getUserDto(user);
+  }
 
   @Post("login")
   @Public()
-  @ApiResponseDto({
+  @ApiEndpoint({
     status: HttpStatus.CREATED,
+    successText: "User successfully logged in",
     type: JwtDto,
-    description: "User successfully logged in",
   })
-  @BadRequest()
+  @BadRequestDecorator()
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.username, dto.password);
   }
 
   @Post("refresh")
   @Public()
-  @ApiResponseDto({
+  @ApiEndpoint({
     status: HttpStatus.CREATED,
+    summary: "Get a new access token with your refresh token",
+    successText: "Session succesfully refreshed",
     type: JwtDto,
-    description: "Session succesfully refreshed",
   })
-  @BadRequest()
+  @BadRequestDecorator()
   async refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refreshTokens(dto.refreshToken);
   }
 
   @Post("logout")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @BearerAuth()
   @ApiNoContentResponse({ description: "User logged out successfully" })
   async logout() {
     await this.authService.logout();
+  }
+
+  @Post("apiKey")
+  @ApiEndpoint({
+    status: HttpStatus.CREATED,
+    summary: "Generate an API key",
+    successText: "The API key was successfully generated",
+    type: ApiKeyDto,
+  })
+  async createApiKey(
+    @zQuery("userId", uuidSchema.optional().describe("userId to generate for"))
+    userId?: UUID,
+  ) {
+    const apiKey = await this.authService.createApiKey(userId);
+
+    return { apiKey };
   }
 }

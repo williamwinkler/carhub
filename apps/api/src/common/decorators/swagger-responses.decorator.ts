@@ -2,7 +2,7 @@ import { applyDecorators, HttpStatus } from "@nestjs/common";
 import { ApiExtraModels, ApiResponse, getSchemaPath } from "@nestjs/swagger";
 import { ErrorDto } from "../errors/error.dto";
 
-export function BadRequest() {
+export function BadRequestDecorator() {
   return applyDecorators(
     ApiExtraModels(ErrorDto),
     ApiResponse({
@@ -13,7 +13,7 @@ export function BadRequest() {
   );
 }
 
-export function Forbidden() {
+export function ForbiddenDecorator() {
   return applyDecorators(
     ApiExtraModels(ErrorDto),
     ApiResponse({
@@ -24,7 +24,7 @@ export function Forbidden() {
   );
 }
 
-export function Unauthorized() {
+export function UnauthorizedDecorator() {
   return applyDecorators(
     ApiExtraModels(ErrorDto),
     ApiResponse({
@@ -35,7 +35,7 @@ export function Unauthorized() {
   );
 }
 
-export function NotFound() {
+export function NotFoundDecorator() {
   return applyDecorators(
     ApiExtraModels(ErrorDto),
     ApiResponse({
@@ -46,7 +46,7 @@ export function NotFound() {
   );
 }
 
-export function Conflict() {
+export function ConflictDecorator() {
   return applyDecorators(
     ApiExtraModels(ErrorDto),
     ApiResponse({

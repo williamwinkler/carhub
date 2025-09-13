@@ -1,9 +1,8 @@
-import { BearerAuth } from "@api/common/decorators/bearer.decorator";
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { NotFound } from "@api/common/decorators/swagger-responses.decorator";
+import { NotFoundDecorator } from "@api/common/decorators/swagger-responses.decorator";
 import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
-import { ApiResponseDto } from "@api/common/utils/swagger.utils";
+import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import {
   Body,
   Controller,
@@ -21,12 +20,11 @@ import {
   skipSchema,
   sortDirectionQuerySchema,
   sortFieldQuerySchema,
-  uuidSchema,
 } from "../../common/schemas/common.schema";
 import { CarsAdapter } from "./cars.adapter";
 import { CarsService } from "./cars.service";
 import { SortDirection, SortField } from "./cars.type";
-import { CarDto } from "./dto/car.dto";
+import { CarDto, carIdSchema } from "./dto/car.dto";
 import {
   carBrandSchema,
   carColorSchema,
@@ -44,18 +42,15 @@ export class CarsController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: "Create a car" })
   @Roles("user")
-  @BearerAuth()
-  @ApiResponseDto({
+  @ApiEndpoint({
     status: HttpStatus.CREATED,
-    description: "Car created successfully",
+    summary: "Create a car",
+    successText: "ar created successfully",
     type: CarDto,
   })
   async create(@Body() dto: CreateCarDto) {
-    // TODO: Get actual user ID from JWT context - using system ID for now
-    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
-    const car = this.carsService.create(dto, systemUserId);
+    const car = this.carsService.create(dto);
     const data = this.carsAdapter.getDto(car);
 
     return data;
@@ -64,9 +59,9 @@ export class CarsController {
   @Get()
   @Public()
   @ApiOperation({ summary: "List cars" })
-  @ApiResponseDto({
-    status: HttpStatus.OK,
-    description: "List of cars",
+  @ApiEndpoint({
+    status: HttpStatus.CREATED,
+    successText: "ist of cars",
     type: [CarDto],
   })
   async findAll(
@@ -97,13 +92,13 @@ export class CarsController {
 
   @Get(":id")
   @Public()
-  @ApiOperation({ summary: "Get a car" })
-  @ApiResponseDto({
-    description: "Car successfully retrieved",
+  @ApiEndpoint({
+    summary: "Get a car",
+    successText: "Car successfully retrieved",
     type: CarDto,
   })
-  @NotFound()
-  async findOne(@zParam("id", uuidSchema) id: UUID) {
+  @NotFoundDecorator()
+  async findOne(@zParam("id", carIdSchema) id: UUID) {
     const car = this.carsService.findById(id);
     const data = this.carsAdapter.getDto(car);
 
@@ -113,18 +108,15 @@ export class CarsController {
   }
 
   @Put(":id")
-  @ApiOperation({ summary: "Update a car" })
   @Roles("user")
-  @BearerAuth()
-  @ApiResponseDto({
-    description: "The car was successfully updated",
+  @ApiEndpoint({
+    summary: "Update a car",
+    successText: "car was successfully updated",
     type: CarDto,
   })
-  @NotFound()
-  async update(@zParam("id", uuidSchema) id: UUID, @Body() dto: UpdateCarDto) {
-    // TODO: Get actual user ID from JWT context - using system ID for now
-    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
-    const car = this.carsService.update(id, dto, systemUserId, "admin"); // System user acts as admin
+  @NotFoundDecorator()
+  async update(@zParam("id", carIdSchema) id: UUID, @Body() dto: UpdateCarDto) {
+    const car = this.carsService.update(id, dto);
 
     return this.carsAdapter.getDto(car);
   }
@@ -133,12 +125,9 @@ export class CarsController {
   @ApiOperation({ summary: "Delete a car" })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles("user")
-  @BearerAuth()
   @ApiNoContentResponse({ description: "Car deleted successfully" })
-  @NotFound()
-  async remove(@zParam("id", uuidSchema) id: UUID) {
-    // TODO: Get actual user ID from JWT context - using system ID for now
-    const systemUserId = "00000000-0000-0000-0000-000000000000" as UUID;
-    this.carsService.remove(id, systemUserId, "admin"); // System user acts as admin
+  @NotFoundDecorator()
+  async remove(@zParam("id", carIdSchema) id: UUID) {
+    this.carsService.delete(id);
   }
 }

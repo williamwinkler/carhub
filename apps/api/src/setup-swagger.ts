@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule, getSchemaPath } from "@nestjs/swagger";
 import { writeFileSync } from "fs";
@@ -18,17 +19,20 @@ export function setupSwagger(app: INestApplication) {
       scheme: "bearer",
       bearerFormat: "JWT",
     })
-    .addApiKey({
-      type: "apiKey",
-      in: "header",
-      name: "x-api-key",
-    })
+    .addApiKey(
+      {
+        type: "apiKey",
+        in: "header",
+        name: "x-api-key",
+      },
+      "apiKey",
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   for (const path of Object.values(document.paths)) {
     for (const method of Object.values(path)) {
-      // Add 500 error to each route
+      // Add base error responses
       method.responses["500"] = {
         description: "Internal Server Error",
         content: {
@@ -37,9 +41,50 @@ export function setupSwagger(app: INestApplication) {
           },
         },
       };
+      method.responses["429"] = {
+        description: "Too Many Requests",
+        content: {
+          "application/json": {
+            schema: { $ref: getSchemaPath(ErrorDto) },
+          },
+        },
+      };
 
-      // 400 response
-      // Only add if the operation actually has inputs (parameters or body)
+      // Public overrides everything
+      if ((method as any)["x-public"] === true) {
+        delete method.security;
+        delete (method as any)["x-public"];
+      } else {
+        // Not public → need security
+        if (!method.security) {
+          // If no decorator already set → default to both
+          method.security = [{ bearer: [] }, { apiKey: [] }];
+        }
+        // else: keep whatever @ApiBearerAuth() / @ApiSecurity("apiKey") already put there
+        // (so only apiKey or only bearer if explicitly decorated)
+      }
+
+      // Add 401/403 only to secured endpoints
+      if (method.security) {
+        method.responses["401"] = {
+          description: "Unauthorized",
+          content: {
+            "application/json": {
+              schema: { $ref: getSchemaPath(ErrorDto) },
+            },
+          },
+        };
+        method.responses["403"] = {
+          description: "Forbidden",
+          content: {
+            "application/json": {
+              schema: { $ref: getSchemaPath(ErrorDto) },
+            },
+          },
+        };
+      }
+
+      // 400 response if params/body present
       if (method.parameters?.length || method.requestBody) {
         method.responses["400"] = {
           description: "Bad Request",

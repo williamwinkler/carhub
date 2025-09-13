@@ -1,5 +1,43 @@
 openapi: 3.0.0
 paths:
+  /v1/auth/register:
+    post:
+      operationId: AuthController_createAccount_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDto"
+      responses:
+        "201":
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDto"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      summary: Register an account
+      tags: &a1
+        - Auth
   /v1/auth/login:
     post:
       operationId: AuthController_login_v1
@@ -23,14 +61,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-      tags: &a1
-        - Auth
+      tags: *a1
   /v1/auth/refresh:
     post:
       operationId: AuthController_refresh_v1
@@ -54,12 +97,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+      summary: Get a new access token with your refresh token
       tags: *a1
   /v1/auth/logout:
     post:
@@ -74,42 +124,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+      tags: *a1
       security:
         - bearer: []
-      tags: *a1
-  /v1/users/me:
-    get:
-      operationId: UsersController_getMe_v1
-      parameters: []
+        - apiKey: []
+  /v1/auth/apiKey:
+    post:
+      operationId: AuthController_createApiKey_v1
+      parameters:
+        - name: userId
+          required: false
+          in: query
+          description: userId to generate for
+          schema:
+            type: string
       responses:
-        "200":
-          description: Successfully retrieved user details
+        "201":
+          description: The API key was successfully generated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MeResponseDto"
+                $ref: "#/components/schemas/ApiKeyResponseDto"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+      summary: Generate an API key
+      tags: *a1
       security:
         - bearer: []
-      tags:
-        - Users
+        - apiKey: []
   /v1/cars:
     post:
       operationId: CarsController_create_v1
@@ -122,7 +210,7 @@ paths:
               $ref: "#/components/schemas/CreateCarDto"
       responses:
         "201":
-          description: Car created successfully
+          description: ar created successfully
           content:
             application/json:
               schema:
@@ -145,17 +233,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-      security:
-        - bearer: []
       summary: Create a car
       tags: &a2
         - Cars
+      security:
+        - bearer: []
+        - apiKey: []
     get:
       operationId: CarsController_findAll_v1
       parameters:
@@ -205,14 +300,20 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          description: List of cars
+        "201":
+          description: ist of cars
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseListDto"
         "400":
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
           content:
             application/json:
               schema:
@@ -232,7 +333,7 @@ paths:
         - name: id
           required: true
           in: path
-          description: id (UUID)
+          description: The unique id of the car (UUID)
           schema:
             type: string
       responses:
@@ -254,6 +355,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -268,7 +375,7 @@ paths:
         - name: id
           required: true
           in: path
-          description: id (UUID)
+          description: The unique id of the car (UUID)
           schema:
             type: string
       requestBody:
@@ -279,7 +386,7 @@ paths:
               $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
-          description: The car was successfully updated
+          description: car was successfully updated
           content:
             application/json:
               schema:
@@ -308,23 +415,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-      security:
-        - bearer: []
       summary: Update a car
       tags: *a2
+      security:
+        - bearer: []
+        - apiKey: []
     delete:
       operationId: CarsController_remove_v1
       parameters:
         - name: id
           required: true
           in: path
-          description: id (UUID)
+          description: The unique id of the car (UUID)
           schema:
             type: string
       responses:
@@ -354,16 +468,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-      security:
-        - bearer: []
       summary: Delete a car
       tags: *a2
+      security:
+        - bearer: []
+        - apiKey: []
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.
@@ -377,11 +498,103 @@ components:
       scheme: bearer
       bearerFormat: JWT
       type: http
-    api_key:
+    apiKey:
       type: apiKey
       in: header
       name: x-api-key
   schemas:
+    RegisterDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        lastName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        username:
+          type: string
+          minLength: 3
+          x-nestjs_zod-parent-additional-properties: false
+        password:
+          type: string
+          minLength: 6
+          x-nestjs_zod-parent-additional-properties: false
+        role:
+          default: user
+          description: The role of the user
+          type: string
+          enum:
+            - admin
+            - user
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - firstName
+        - lastName
+        - username
+        - password
+    UserDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        lastName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        username:
+          type: string
+          minLength: 3
+          x-nestjs_zod-parent-additional-properties: false
+        role:
+          default: user
+          description: The role of the user
+          type: string
+          enum:
+            - admin
+            - user
+          x-nestjs_zod-parent-additional-properties: false
+        hasApiKey:
+          description: Indicates whether or not the user has generated an API key
+          type: boolean
+          x-nestjs_zod-parent-additional-properties: false
+        createdAt:
+          description: The create date of the account
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          x-nestjs_zod-parent-additional-properties: false
+        updatedAt:
+          description: The last time the account was updated
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - firstName
+        - lastName
+        - username
+        - hasApiKey
+        - createdAt
+        - updatedAt
+    UserResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/UserDto"
+      required:
+        - apiVersion
+        - data
     ErrorDto:
       type: object
       properties:
@@ -453,12 +666,14 @@ components:
             - 1002
             - 1003
             - 1004
+            - 1005
             - 2000
             - 2001
             - 2002
             - 3000
             - 3001
             - 4000
+            - 4001
         message:
           description: The error message
           type: string
@@ -520,28 +735,15 @@ components:
           format: jwt
       required:
         - refreshToken
-    MeDto:
+    ApiKeyDto:
       type: object
       properties:
-        id:
+        apiKey:
+          description: The generated apiKey
           type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-        firstName:
-          type: string
-        lastName:
-          type: string
-        role:
-          type: string
-          enum:
-            - admin
-            - user
       required:
-        - id
-        - firstName
-        - lastName
-        - role
-    MeResponseDto:
+        - apiKey
+    ApiKeyResponseDto:
       type: object
       properties:
         apiVersion:
@@ -551,7 +753,7 @@ components:
         data:
           description: The data of the response
           allOf:
-            - $ref: "#/components/schemas/MeDto"
+            - $ref: "#/components/schemas/ApiKeyDto"
       required:
         - apiVersion
         - data

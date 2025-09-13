@@ -1,4 +1,5 @@
 // src/common/schemas/query-params.schema.ts
+import { Role } from "@api/modules/users/entities/user.entity";
 import type { UUID } from "crypto";
 import { z } from "zod";
 
@@ -72,3 +73,5 @@ export const sortDirectionQuerySchema = z
   })
   .transform((val) => val as "asc" | "desc" | undefined)
   .describe("Sort direction (ascending or descending)");
+
+export const roleSchema = z.enum(Role).describe("The role of the user");

@@ -1,21 +1,22 @@
+import { uuidSchema } from "@api/common/schemas/common.schema";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { createCarSchema } from "./create-car.dto"; // adjust path
+import { createCarSchema } from "./create-car.dto";
+
+export const carIdSchema = uuidSchema.describe(
+  "The unique id of the car (UUID)",
+);
 
 export const carSchema = createCarSchema
   .extend({
-    id: z.uuid().describe("The unique id of the car (UUID)"),
+    id: carIdSchema,
     createdBy: z.uuid().describe("The user who created this car"),
-    createdAt: z
-      .string()
-      .datetime()
-      .describe("When the car record was created"),
+    createdAt: z.iso.datetime().describe("When the car record was created"),
     updatedBy: z
       .uuid()
       .optional()
       .describe("The user who last updated this car"),
-    updatedAt: z
-      .string()
+    updatedAt: z.iso
       .datetime()
       .optional()
       .describe("When the car record was last updated"),

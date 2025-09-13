@@ -60,7 +60,7 @@ import { UsersModule } from "./modules/users/users.module";
   providers: [
     {
       provide: APP_PIPE,
-      useClass: ZodValidationPipe,
+      useClass: ZodValidationPipe, // Validates @Body DTOs
     },
     {
       provide: APP_INTERCEPTOR,
@@ -68,7 +68,7 @@ import { UsersModule } from "./modules/users/users.module";
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ResponseValidationInterceptor,
+      useClass: ResponseValidationInterceptor, // Validates outgoing DTOs and wraps them
     },
     {
       provide: APP_FILTER,
@@ -84,7 +84,7 @@ import { UsersModule } from "./modules/users/users.module";
     },
     {
       provide: APP_GUARD,
-      useClass: CustomThrottlerGuard,
+      useClass: CustomThrottlerGuard, // Ratelimiting
     },
   ],
 })

@@ -1,8 +1,8 @@
 "use client";
 
+import { useAuth } from "../lib/auth-context";
 import CarList from "./_components/CarList";
 import Navbar from "./_components/Navbar";
-import { useAuth } from "../lib/auth-context";
 
 export default function Home() {
   const { isLoading } = useAuth();
@@ -24,7 +24,9 @@ export default function Home() {
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
             Car Management System
           </h1>
-          <p className="text-slate-400 text-lg">Manage your car inventory with elegance</p>
+          <p className="text-slate-400 text-lg">
+            Manage your car inventory with elegance
+          </p>
         </div>
 
         <div className="flex flex-col items-center gap-8">

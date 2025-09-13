@@ -1,9 +1,9 @@
+import { Ctx } from "@api/common/ctx";
 import { BadRequestError } from "@api/common/errors/domain/bad-request.error";
 import { CarNotFoundError } from "@api/common/errors/domain/not-found.error";
 import { Injectable, Logger } from "@nestjs/common";
 import { randomUUID, UUID } from "crypto";
 import { Pagination } from "../../common/types/pagination";
-import { Role } from "../users/entities/user.entity";
 import { FindAllCarsOptions } from "./cars.type";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
@@ -21,11 +21,12 @@ export class CarsService {
     this.seedCars();
   }
 
-  create(createCarDto: CreateCarDto, createdBy: UUID) {
+  // region CREATE
+  create(createCarDto: CreateCarDto) {
     const car: Car = {
       id: randomUUID(),
       ...createCarDto,
-      createdBy,
+      createdBy: Ctx.userIdRequired(),
       createdAt: new Date(),
       favoritedBy: [],
     };
@@ -36,6 +37,7 @@ export class CarsService {
     return car;
   }
 
+  // region FIND
   findAll(options: FindAllCarsOptions): Pagination<Car> {
     const { brand, model, color, skip, limit, sortField, sortDirection } =
       options;
@@ -106,21 +108,25 @@ export class CarsService {
     return car;
   }
 
-  update(id: UUID, dto: UpdateCarDto, updatedBy: UUID, userRole?: Role): Car {
+  // region UPDATE
+  update(id: UUID, dto: UpdateCarDto): Car {
+    const principal = Ctx.principalRequired();
+    const role = Ctx.roleRequired();
+
     const car = this.cars.get(id);
     if (!car) {
       throw new CarNotFoundError();
     }
 
     // Authorization check: only car owners or admins can update
-    if (userRole !== "admin" && car.createdBy !== updatedBy) {
+    if (car.createdBy !== principal.id && principal.role !== "admin") {
       throw new BadRequestError("You can only update your own cars");
     }
 
     const updatedCar: Car = {
       ...car,
       ...dto,
-      updatedBy,
+      updatedBy: principal.id,
       updatedAt: new Date(),
     };
 
@@ -131,14 +137,18 @@ export class CarsService {
     return updatedCar;
   }
 
-  remove(id: UUID, userId?: UUID, userRole?: Role): void {
+  // region DELETE
+  delete(id: UUID): void {
+    const userId = Ctx.userIdRequired();
+    const role = Ctx.roleRequired();
+
     const car = this.cars.get(id);
     if (!car) {
       throw new CarNotFoundError();
     }
 
     // Authorization check: only car owners or admins can delete
-    if (userId && userRole !== "admin" && car.createdBy !== userId) {
+    if (car.createdBy !== userId && role !== "admin") {
       throw new BadRequestError("You can only delete your own cars");
     }
 

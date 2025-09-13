@@ -20,3 +20,12 @@ export class ConflictError extends ConflictBaseError {
     });
   }
 }
+
+export class UsernameAlreadyExistsError extends ConflictBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.USERNAME_ALREADY_EXISTS,
+      message: "Username already exists",
+    });
+  }
+}

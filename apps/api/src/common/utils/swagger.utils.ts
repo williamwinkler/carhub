@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SetMetadata, Type, applyDecorators } from "@nestjs/common";
-import { ApiProperty, ApiResponse, ApiResponseOptions } from "@nestjs/swagger";
+import {
+  HttpCode,
+  HttpStatus,
+  SetMetadata,
+  Type,
+  applyDecorators,
+} from "@nestjs/common";
+import {
+  ApiOperation,
+  ApiProperty,
+  ApiResponse,
+  ApiResponseOptions,
+} from "@nestjs/swagger";
 import z from "zod";
 import { GeneralResponseDto } from "../dto/general-response.dto";
 import { PaginationDto } from "../dto/pagination.dto";
@@ -66,25 +77,46 @@ function createResponseListDto<T>(classRef: new () => T) {
 }
 
 // Strongly-typed overloads
-export function ApiResponseDto<T>(
-  options: Omit<ApiResponseOptions, "type"> & { type: Type<T> },
+export function ApiEndpoint<T>(
+  options: Omit<ApiResponseOptions, "description"> & {
+    type: Type<T>;
+    status?: HttpStatus;
+    summary?: string;
+    successText?: string;
+  },
 ): <F extends MethodReturning<SingleResponse<T>>>(
   target: object,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
-export function ApiResponseDto<T>(
-  options: Omit<ApiResponseOptions, "type"> & { type: [Type<T>] },
+export function ApiEndpoint<T>(
+  options: Omit<ApiResponseOptions, "description"> & {
+    type: [Type<T>];
+    status?: HttpStatus;
+    summary?: string;
+    successText?: string;
+  },
 ): <F extends MethodReturning<ListResponse<T>>>(
   target: object,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
-export function ApiResponseDto<T>(
-  options: Omit<ApiResponseOptions, "type"> & { type: Type<T> | [Type<T>] },
+export function ApiEndpoint<T>(
+  options: Omit<ApiResponseOptions, "description"> & {
+    type: Type<T> | [Type<T>];
+    status?: HttpStatus;
+    summary?: string;
+    successText?: string;
+  },
 ) {
+  const summary = options.summary;
+  delete options.summary;
+  options.status = options.status ?? HttpStatus.OK;
+  (options as any).description = options.successText;
+  delete options.successText;
+
   const isList = Array.isArray(options.type);
   const classRef = (
     isList ? (options.type as [Type<T>])[0] : (options.type as Type<T>)
@@ -98,12 +130,14 @@ export function ApiResponseDto<T>(
   const schema = (classRef as any)?.schema;
 
   const base = applyDecorators(
-    ApiResponse({ status: 200, ...options, type: dtoClass }),
+    ApiResponse({ ...options, type: dtoClass }),
+    HttpCode(options.status),
     SetMetadata(RESPONSE_DTO_KEY, {
       classRef,
       isList,
       schema,
     } as ResponseDtoMeta<T>),
+    ...(summary ? [ApiOperation({ summary: summary })] : []),
   );
 
   if (isList) {

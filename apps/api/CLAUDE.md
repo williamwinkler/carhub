@@ -6,9 +6,11 @@ This file provides specific guidance for working with the NestJS API in this pro
 
 **CRITICAL**: When working on any code in this `/api` directory, Claude MUST:
 1. Write or rewrite comprehensive tests for all changes made
-2. Run the tests using `pnpm test` to verify functionality
-3. Ensure all tests pass before considering the task complete
-4. Never skip testing - this is mandatory for all API modifications
+2. Test BOTH success (sunshine) AND failure (error) scenarios extensively
+3. Run `pnpm test:cov` to verify 90%+ coverage requirement
+4. Run `pnpm test` to verify all tests pass
+5. Ensure all tests pass before considering the task complete
+6. Never skip testing - this is mandatory for all API modifications
 
 ## NestJS Patterns & Architecture
 
@@ -24,11 +26,20 @@ This file provides specific guidance for working with the NestJS API in this pro
 - All responses use `wrapResponse()` utility for consistency
 
 ### Testing Standards
-- **Unit Tests**: Test services and controllers in isolation
+- **Unit Tests**: Test services and controllers in isolation using auto-mocking patterns
 - **Integration Tests**: Test full request/response cycles
-- **Coverage**: Aim for high test coverage on business logic
+- **Coverage**: **MANDATORY 90%+ test coverage** on services, controllers, and business logic - run `pnpm test:cov` to verify
+- **Error Testing**: **CRITICAL** - Test ALL error scenarios including:
+  - UserNotFoundError, CarNotFoundError, UnauthorizedError
+  - Validation failures (invalid inputs, missing fields)
+  - Authorization failures (wrong roles, missing permissions)
+  - Business logic errors (duplicate usernames, etc.)
+  - Rate limiting exceeded scenarios
 - **Test Data**: Use factories or fixtures for consistent test data
-- **Mocking**: Mock external dependencies (databases, APIs, etc.)
+- **Mocking**: Mock external dependencies using ModuleMocker auto-mocking pattern
+- **Non-Sunshine Paths**: Every method must test both success AND failure cases
+- **Test Value**: **ALL TESTS MUST PROVIDE VALUE** - Remove tests that only test framework wiring or configuration without business logic
+- **Focus**: Test business logic, not framework setup. tRPC routers are just wiring - test the underlying services instead
 
 ### Rate Limiting Implementation
 - Use appropriate procedure types for tRPC endpoints:
@@ -64,11 +75,13 @@ This file provides specific guidance for working with the NestJS API in this pro
 3. Implement service methods with business logic
 4. Create controller endpoints with proper decorators
 5. Add tRPC procedures if needed for frontend consumption
-6. Write comprehensive tests for all functionality
-7. Run `pnpm test` to verify implementation
-8. Update Swagger documentation if needed
+6. Write comprehensive tests for all functionality (both success and error cases)
+7. Run `pnpm test:cov` to verify 90%+ coverage
+8. Run `pnpm test` to verify implementation
+9. Update Swagger documentation if needed
 
 ### Code Quality Checks
+- Run `pnpm test:cov` to verify 90%+ test coverage
 - Run `pnpm lint` before committing
 - Ensure all tests pass with `pnpm test`
 - Check type safety with TypeScript compiler

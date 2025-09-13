@@ -91,8 +91,6 @@ export interface RateLimitConfig {
   max: number; // Max requests per window
   message?: string; // Custom error message
   keyGenerator?: (ctx: TrpcContext & { principal?: Principal }) => string; // Custom key generator
-  skipSuccessfulRequests?: boolean; // Skip counting successful requests
-  skipFailedRequests?: boolean; // Skip counting failed requests
   rateLimitService?: TrpcRateLimitService; // Cache-based rate limiting service
 }
 
@@ -135,62 +133,38 @@ export const createRateLimitMiddleware = (config: RateLimitConfig) => {
     max,
     message = `Too many requests, please try again later.`,
     keyGenerator = defaultKeyGenerator,
-    skipSuccessfulRequests = false,
-    skipFailedRequests = false,
     rateLimitService,
   } = config;
 
   return t.middleware(async ({ ctx, next }) => {
     const key = keyGenerator(ctx);
 
-    if (rateLimitService) {
-      // Use cache-based rate limiting
-      const rateLimitResult = await rateLimitService.checkRateLimit(
-        key,
-        windowMs,
-        max,
-      );
+    if (!rateLimitService) {
+      throw new Error("RateLimitService not set");
+    }
 
-      if (!rateLimitResult.allowed) {
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: `${message} Retry after ${rateLimitResult.retryAfter} seconds.`,
-          cause: {
-            retryAfter: rateLimitResult.retryAfter,
-            limit: rateLimitResult.limit,
-            remaining: rateLimitResult.remaining,
-            resetTime: new Date(rateLimitResult.resetTime).toISOString(),
-          },
-        });
-      }
+    // Use cache-based rate limiting
+    const rateLimitResult = await rateLimitService.checkRateLimit(
+      key,
+      windowMs,
+      max,
+    );
 
-      // Execute the procedure
-      const result = await next();
-
-      // The counter was already incremented by checkRateLimit, but we might want to
-      // conditionally count based on success/failure
-      const shouldCount =
-        (!skipSuccessfulRequests || !result.ok) &&
-        (!skipFailedRequests || result.ok);
-
-      // If we need to adjust counting based on result, we can increment here
-      if (!shouldCount) {
-        // Note: We can't "undo" the increment easily with this API
-        // In a more sophisticated implementation, we might check first, then count
-      }
-
-      return result;
-    } else {
-      // Fallback to in-memory rate limiting (for backwards compatibility)
-      const now = Date.now();
-      const windowStart = Math.floor(now / windowMs) * windowMs;
-
-      // This fallback uses a simple in-memory store - not recommended for production
+    if (!rateLimitResult.allowed) {
       throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Rate limiting service not configured",
+        code: "TOO_MANY_REQUESTS",
+        message: `${message} Retry after ${rateLimitResult.retryAfter} seconds.`,
+        cause: {
+          retryAfter: rateLimitResult.retryAfter,
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          resetTime: new Date(rateLimitResult.resetTime).toISOString(),
+        },
       });
     }
+
+    // Execute the procedure
+    return await next();
   });
 };
 
