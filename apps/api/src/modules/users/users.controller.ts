@@ -23,7 +23,10 @@ export class UsersController {
   })
   async getMe() {
     const me = await this.usersService.findById(Ctx.userIdRequired());
-    if (!me) throw new UserNotFoundError();
+    if (!me) {
+      throw new UserNotFoundError();
+    }
+
     return this.usersAdapter.getMeDto(me);
   }
 }

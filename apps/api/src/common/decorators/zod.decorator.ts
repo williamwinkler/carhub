@@ -29,6 +29,7 @@ function createZodParamDecorator(
         if (!parsed.success) {
           throw new ValidationError(parsed.error);
         }
+
         return parsed.data;
       },
     )();

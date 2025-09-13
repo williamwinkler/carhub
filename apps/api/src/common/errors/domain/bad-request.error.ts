@@ -1,8 +1,8 @@
 import { HttpStatus } from "@nestjs/common";
-import { ZodError } from "zod";
+import type { ZodError } from "zod";
 import { BaseError } from "../base-error";
 import { ErrorCode } from "../error-codes.enum";
-import { ErrorDto } from "../error.dto";
+import type { ErrorDto } from "../error.dto";
 
 abstract class BadRequestBaseError extends BaseError {
   constructor(error: Omit<ErrorDto, "statusCode">) {

@@ -16,5 +16,4 @@ export enum ErrorCode {
 
   // Conflict
   CONFLICT = 4000,
-
 }

@@ -51,6 +51,7 @@ export class HttpErrorFilter implements ExceptionFilter {
     if (!parsed.success) {
       this.logger.error("Invalid ErrorDto shape", z.treeifyError(parsed.error));
       response.status(500).json(errorResponse);
+
       return;
     }
 

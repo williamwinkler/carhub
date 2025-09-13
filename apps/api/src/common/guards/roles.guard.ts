@@ -18,7 +18,9 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles?.length) return true;
+    if (!requiredRoles?.length) {
+      return true;
+    }
 
     const role = Ctx.role;
     if (!role || !requiredRoles.includes(role)) {

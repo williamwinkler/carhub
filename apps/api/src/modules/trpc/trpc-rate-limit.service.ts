@@ -47,6 +47,7 @@ export class TrpcRateLimitService {
       // Check if limit exceeded
       if (record.count >= max) {
         const retryAfter = Math.ceil((record.resetTime - now) / 1000);
+
         return {
           allowed: false,
           limit: max,
@@ -72,6 +73,7 @@ export class TrpcRateLimitService {
     } catch (error) {
       // If cache fails, allow the request (fail open)
       console.warn("Rate limit cache error:", error);
+
       return {
         allowed: true,
         limit: max,
@@ -146,6 +148,7 @@ export class TrpcRateLimitService {
       };
     } catch (error) {
       console.warn("Rate limit status error:", error);
+
       return {
         allowed: true,
         limit: max,
@@ -156,14 +159,6 @@ export class TrpcRateLimitService {
   }
 
   async clearRateLimit(key: string): Promise<void> {
-    try {
-      // Clear all rate limit entries for this key (all time windows)
-      const pattern = `rate-limit:${key}:*`;
-      // Note: cache-manager doesn't have a pattern delete, so this is a simplified approach
-      // In production, you might want to use Redis with pattern matching
-      await this.cacheManager.del(`rate-limit:${key}`);
-    } catch (error) {
-      console.warn("Rate limit clear error:", error);
-    }
+    await this.cacheManager.del(`rate-limit:${key}`);
   }
 }

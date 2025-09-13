@@ -10,8 +10,7 @@ export function setupContext(req: Request): void {
   const requestIdHeader = req.headers["x-request-id"];
   const correlationIdHeader = req.headers["x-correlation-id"];
 
-  Ctx.requestId =
-    uuid.safeParse(requestIdHeader).data ?? crypto.randomUUID();
+  Ctx.requestId = uuid.safeParse(requestIdHeader).data ?? crypto.randomUUID();
 
   Ctx.correlationId =
     uuid.safeParse(correlationIdHeader).data ?? crypto.randomUUID();

@@ -1,4 +1,4 @@
-import { INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule, getSchemaPath } from "@nestjs/swagger";
 import { writeFileSync } from "fs";
 import { resolve } from "path";

@@ -59,7 +59,7 @@ export class TrpcService {
   ) =>
     createRateLimitMiddleware({
       ...RateLimitTiers[tier],
-      message: message || "Rate limit exceeded",
+      message: message ?? "Rate limit exceeded",
       rateLimitService: this.rateLimitService,
     });
 

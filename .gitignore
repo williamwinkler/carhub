@@ -76,3 +76,4 @@ apps/*/.next/
 
 # Ignore local dev files
 *.local
+swagger.yml

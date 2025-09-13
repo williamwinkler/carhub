@@ -1,4 +1,4 @@
-import { Role } from "@api/modules/users/entities/user.entity";
+import type { Role } from "@api/modules/users/entities/user.entity";
 import type { UUID } from "crypto";
 import { ClsServiceManager } from "nestjs-cls";
 import { UnauthorizedError } from "./errors/domain/unauthorized.error";
@@ -52,7 +52,10 @@ export class Ctx {
 
   static userIdRequired(): UUID {
     const id = this.userId;
-    if (!id) throw new UnauthorizedError();
+    if (!id) {
+      throw new UnauthorizedError();
+    }
+
     return id;
   }
 
@@ -62,7 +65,10 @@ export class Ctx {
 
   static roleRequired(): Role {
     const role = this.principal?.role;
-    if (!role) throw new UnauthorizedError();
+    if (!role) {
+      throw new UnauthorizedError();
+    }
+
     return role;
   }
 

@@ -1,7 +1,7 @@
 import { HttpStatus } from "@nestjs/common";
 import { BaseError } from "../base-error";
 import { ErrorCode } from "../error-codes.enum";
-import { ErrorDto } from "../error.dto";
+import type { ErrorDto } from "../error.dto";
 
 abstract class NotFoundBaseError extends BaseError {
   constructor(error: Omit<ErrorDto, "statusCode">) {

@@ -38,7 +38,7 @@ export class AuthService {
 
   async verifyAccessToken(accessToken: string): Promise<TokenPayload> {
     try {
-      return this.jwtService.verifyAsync(accessToken);
+      return await this.jwtService.verifyAsync(accessToken);
     } catch {
       this.logger.debug("Invalid access token");
       throw new UnauthorizedError();
@@ -47,7 +47,10 @@ export class AuthService {
 
   async findUserByApiKey(apiKey: string): Promise<User> {
     const user = await this.usersService.findByApiKey(apiKey);
-    if (!user) throw new UnauthorizedError();
+    if (!user) {
+      throw new UnauthorizedError();
+    }
+
     return user;
   }
 
@@ -121,7 +124,9 @@ export class AuthService {
     const sub = Ctx.userId;
     const sid = Ctx.sessionId;
 
-    if (!sub || !sid) throw new UnauthorizedError();
+    if (!sub || !sid) {
+      throw new UnauthorizedError();
+    }
 
     await this.cacheManager.del(`refresh_tokens:${sub}:${sid}`);
     this.logger.log(`User ${sub} logged out of session ${sid}`);

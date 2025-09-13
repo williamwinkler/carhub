@@ -40,7 +40,7 @@ export class CarsService {
     const { brand, model, color, skip, limit, sortField, sortDirection } =
       options;
 
-    let cars = Array.from(this.cars.values()).filter((car) => {
+    const cars = Array.from(this.cars.values()).filter((car) => {
       if (brand && car.brand !== brand) {
         return false;
       }
@@ -62,11 +62,22 @@ export class CarsService {
         let aVal = a[sortField];
         let bVal = b[sortField];
 
-        if (typeof aVal === "string") aVal = aVal.toLowerCase();
-        if (typeof bVal === "string") bVal = bVal.toLowerCase();
+        if (typeof aVal === "string") {
+          aVal = aVal.toLowerCase();
+        }
 
-        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+        if (typeof bVal === "string") {
+          bVal = bVal.toLowerCase();
+        }
+
+        if (aVal < bVal) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+
+        if (aVal > bVal) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+
         return 0;
       });
     }

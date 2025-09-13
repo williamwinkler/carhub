@@ -1,4 +1,4 @@
-import { Role } from "@api/modules/users/entities/user.entity";
+import type { Role } from "@api/modules/users/entities/user.entity";
 import { applyDecorators, SetMetadata } from "@nestjs/common";
 import { Forbidden } from "./swagger-responses.decorator";
 

@@ -1,6 +1,6 @@
-import { CarBrandType } from "@repo/shared";
-import { z } from "zod";
-import {
+import type { CarBrandType } from "@repo/shared";
+import type { z } from "zod";
+import type {
   sortDirectionSchema,
   sortFieldSchema,
 } from "../../common/schemas/common.schema";

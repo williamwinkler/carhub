@@ -6,7 +6,7 @@ const meSchema = z.object({
   id: z.uuid(),
   firstName: z.string(),
   lastName: z.string(),
-  role: z.enum(roles)
-})
+  role: z.enum(roles),
+});
 
 export class MeDto extends createZodDto(meSchema) {}

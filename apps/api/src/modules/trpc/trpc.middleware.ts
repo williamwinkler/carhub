@@ -1,9 +1,9 @@
-// src/modules/trpc/trpc.middleware.ts
+import type { Principal } from "@api/common/ctx";
 import { Ctx } from "@api/common/ctx";
 import { BaseError } from "@api/common/errors/base-error";
 import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
 import { setupContext } from "@api/common/utils/context.utils";
-import { AuthService } from "@api/modules/auth/auth.service";
+import type { AuthService } from "@api/modules/auth/auth.service";
 import { HttpStatus } from "@nestjs/common";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { ClsServiceManager } from "nestjs-cls";
@@ -67,6 +67,7 @@ export const createAuthMiddleware = (authService: AuthService) => {
       if (!authorization.startsWith("Bearer ")) {
         throw new UnauthorizedError();
       }
+
       const token = authorization.slice(7);
       const payload = await authService.verifyAccessToken(token);
       Ctx.principal = authService.principalFromJwt(payload);
@@ -89,7 +90,7 @@ export interface RateLimitConfig {
   windowMs: number; // Time window in milliseconds
   max: number; // Max requests per window
   message?: string; // Custom error message
-  keyGenerator?: (ctx: TrpcContext & { principal?: any }) => string; // Custom key generator
+  keyGenerator?: (ctx: TrpcContext & { principal?: Principal }) => string; // Custom key generator
   skipSuccessfulRequests?: boolean; // Skip counting successful requests
   skipFailedRequests?: boolean; // Skip counting failed requests
   rateLimitService?: TrpcRateLimitService; // Cache-based rate limiting service
@@ -109,11 +110,11 @@ export const RateLimitTiers = {
 
 // Default key generator - prioritizes user ID over IP
 const defaultKeyGenerator = (
-  ctx: TrpcContext & { principal?: any },
+  ctx: TrpcContext & { principal?: Principal },
 ): string => {
   // Use user ID if authenticated
-  if (ctx.principal?.userId) {
-    return `user:${ctx.principal.userId}`;
+  if (ctx.principal?.id) {
+    return `user:${ctx.principal.id}`;
   }
 
   // Fall back to IP address
@@ -122,7 +123,7 @@ const defaultKeyGenerator = (
     ? Array.isArray(forwardedFor)
       ? forwardedFor[0]
       : forwardedFor.split(",")[0]
-    : ctx.req.socket?.remoteAddress || "unknown";
+    : (ctx.req.socket?.remoteAddress ?? "unknown");
 
   return `ip:${ip}`;
 };
@@ -140,7 +141,7 @@ export const createRateLimitMiddleware = (config: RateLimitConfig) => {
   } = config;
 
   return t.middleware(async ({ ctx, next }) => {
-    const key = keyGenerator(ctx as any);
+    const key = keyGenerator(ctx);
 
     if (rateLimitService) {
       // Use cache-based rate limiting

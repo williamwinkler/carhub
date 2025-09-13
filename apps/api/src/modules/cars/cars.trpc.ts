@@ -56,6 +56,7 @@ export class CarsTrpc {
       .input(createCarSchema)
       .mutation(async ({ input }) => {
         const userId = Ctx.userIdRequired();
+
         return await this.carsService.create(input, userId);
       }),
 
@@ -94,12 +95,14 @@ export class CarsTrpc {
       .input(z.object({ id: uuidSchema }))
       .mutation(async ({ input }) => {
         const userId = Ctx.userIdRequired();
+
         return await this.carsService.toggleFavorite(input.id, userId);
       }),
 
     // Authenticated route - get user's favorites (uses default rate limiting)
     getFavorites: this.trpc.authenticatedProcedure.query(async () => {
       const userId = Ctx.userIdRequired();
+
       return await this.carsService.getFavoritesByUser(userId);
     }),
 
@@ -107,6 +110,7 @@ export class CarsTrpc {
     getMyCars: this.trpc.authenticatedProcedure.query(async () => {
       const userId = Ctx.userIdRequired();
       const allCars = await this.carsService.findAll({ skip: 0, limit: 1000 });
+
       return allCars.items.filter((car) => car.createdBy === userId);
     }),
   });

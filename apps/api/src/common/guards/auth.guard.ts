@@ -41,6 +41,7 @@ export class AuthGuard implements CanActivate {
       const payload = await this.authService.verifyAccessToken(token);
       Ctx.principal = this.authService.principalFromJwt(payload);
       request.user = { ...payload, roles: [payload.role] };
+
       return true;
     }
 
@@ -48,6 +49,7 @@ export class AuthGuard implements CanActivate {
       const user = await this.authService.findUserByApiKey(apiKey);
       Ctx.principal = this.authService.principalFromUser(user);
       request.user = { id: user.id, roles: [user.role] };
+
       return true;
     }
 
@@ -56,12 +58,16 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
+
     return type === "Bearer" ? token : undefined;
   }
 
   private extractApiKeyFromHeader(request: Request): string | undefined {
     const apiKey = request.headers["x-api-key"];
-    if (Array.isArray(apiKey)) return undefined;
+    if (Array.isArray(apiKey)) {
+      return undefined;
+    }
+
     return apiKey;
   }
 }

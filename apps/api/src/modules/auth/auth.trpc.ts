@@ -25,6 +25,7 @@ export class AuthTrpc {
     // Logout - authenticated with default rate limiting
     logout: this.trpc.authenticatedProcedure.mutation(async () => {
       await this.authService.logout();
+
       return { success: true };
     }),
 
@@ -44,7 +45,9 @@ export class AuthTrpc {
       }
 
       // Don't return sensitive fields
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, apiKey, ...safeUser } = user;
+
       return safeUser;
     }),
   });
