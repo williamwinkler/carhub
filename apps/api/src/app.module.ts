@@ -7,13 +7,15 @@ import {
 } from "@nestjs/common";
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { ClsModule } from "nestjs-cls";
 import { ZodValidationPipe } from "nestjs-zod";
 import { HttpErrorFilter } from "./common/filters/http-error.filter";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
-import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
+import { CustomThrottlerGuard } from "./common/guards/throttler.guard";
 import { ResponseValidationInterceptor } from "./common/interceptors/response-validation.interceptor";
+import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
 import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CarsModule } from "./modules/cars/cars.module";
@@ -32,6 +34,23 @@ import { UsersModule } from "./modules/users/users.module";
     CacheModule.register({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: "short",
+        ttl: 1000, // 1 second
+        limit: 3, // 3 requests per second
+      },
+      {
+        name: "medium",
+        ttl: 10000, // 10 seconds
+        limit: 20, // 20 requests per 10 seconds
+      },
+      {
+        name: "long",
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
+      },
+    ]),
     AuthModule,
     UsersModule,
     TrpcModule,
@@ -62,6 +81,10 @@ import { UsersModule } from "./modules/users/users.module";
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
     },
   ],
 })

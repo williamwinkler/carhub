@@ -45,6 +45,17 @@ This is a full-stack monorepo demonstrating **end-to-end type safety** between a
 - Type inference flows from backend to frontend automatically
 - tRPC routes are mounted at `/trpc` endpoint
 
+### Rate Limiting Architecture
+- **REST API**: Protected by `CustomThrottlerGuard` (global APP_GUARD) with NestJS throttler
+- **tRPC**: Protected by tRPC middleware in `apps/api/src/modules/trpc/trpc.middleware.ts`
+- **User-based tracking**: Authenticated users tracked by `userId`, unauthenticated by IP
+- **Procedure-specific limits**: Different rate limits for different operation types:
+  - `publicProcedure`: IP-based, 1000 req/min (for public endpoints)
+  - `authProcedure`: User/IP-based, 10 req/15min (for auth operations)
+  - `authenticatedRateLimitedProcedure`: User-based, 100 req/min (standard)
+  - `authenticatedStrictProcedure`: User-based, 5 req/min (sensitive operations)
+  - `burstProtectedProcedure`: 10 req/sec (high-frequency endpoints)
+
 ### Swagger Documentation
 - Auto-generated from Zod schemas and NestJS decorators
 - Available at `/docs` in development

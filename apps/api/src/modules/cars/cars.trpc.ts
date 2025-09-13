@@ -25,7 +25,7 @@ export class CarsTrpc {
   ) {}
 
   router = this.trpc.router({
-    // Public route - anyone can list cars
+    // Public route - anyone can list cars (uses default LONG rate limit)
     list: this.trpc.procedure
       .input(
         z
@@ -44,23 +44,23 @@ export class CarsTrpc {
         return await this.carsService.findAll({ skip: 0, limit: 10, ...input });
       }),
 
-    // Public route - anyone can view car details
+    // Public route - anyone can view car details (uses default LONG rate limit)
     getById: this.trpc.procedure
       .input(z.object({ id: uuidSchema }))
       .query(async ({ input }) => {
         return await this.carsService.findById(input.id);
       }),
 
-    // Authenticated route - only logged-in users can create cars
-    create: this.trpc.authenticatedProcedure
+    // Authenticated route - creating cars with medium rate limiting for protection
+    create: this.trpc.authenticatedMediumProcedure
       .input(createCarSchema)
       .mutation(async ({ input }) => {
         const userId = Ctx.userIdRequired();
         return await this.carsService.create(input, userId);
       }),
 
-    // Authenticated route - only car owners or admins can update
-    update: this.trpc.authenticatedProcedure
+    // Authenticated route - updating cars with medium rate limiting for protection
+    update: this.trpc.authenticatedMediumProcedure
       .input(
         z.object({
           id: uuidSchema,
@@ -79,8 +79,8 @@ export class CarsTrpc {
         );
       }),
 
-    // Authenticated route - only car owners or admins can delete
-    deleteById: this.trpc.authenticatedProcedure
+    // Authenticated route - deleting cars with short rate limiting (most restrictive)
+    deleteById: this.trpc.authenticatedShortProcedure
       .input(z.object({ id: uuidSchema }))
       .mutation(async ({ input }) => {
         const userId = Ctx.userIdRequired();
@@ -89,7 +89,7 @@ export class CarsTrpc {
         return await this.carsService.remove(input.id, userId, userRole);
       }),
 
-    // Authenticated route - toggle favorite
+    // Authenticated route - toggle favorite (uses default rate limiting)
     toggleFavorite: this.trpc.authenticatedProcedure
       .input(z.object({ id: uuidSchema }))
       .mutation(async ({ input }) => {
@@ -97,13 +97,13 @@ export class CarsTrpc {
         return await this.carsService.toggleFavorite(input.id, userId);
       }),
 
-    // Authenticated route - get user's favorites
+    // Authenticated route - get user's favorites (uses default rate limiting)
     getFavorites: this.trpc.authenticatedProcedure.query(async () => {
       const userId = Ctx.userIdRequired();
       return await this.carsService.getFavoritesByUser(userId);
     }),
 
-    // Authenticated route - get user's own cars
+    // Authenticated route - get user's own cars (uses default rate limiting)
     getMyCars: this.trpc.authenticatedProcedure.query(async () => {
       const userId = Ctx.userIdRequired();
       const allCars = await this.carsService.findAll({ skip: 0, limit: 1000 });
