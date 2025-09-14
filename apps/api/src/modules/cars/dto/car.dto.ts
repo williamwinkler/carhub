@@ -12,13 +12,9 @@ export const carSchema = createCarSchema
     id: carIdSchema,
     createdBy: z.uuid().describe("The user who created this car"),
     createdAt: z.iso.datetime().describe("When the car record was created"),
-    updatedBy: z
-      .uuid()
-      .optional()
-      .describe("The user who last updated this car"),
+    updatedBy: z.uuid().describe("The user who last updated this car"),
     updatedAt: z.iso
       .datetime()
-      .optional()
       .describe("When the car record was last updated"),
     favoritedBy: z
       .array(z.uuid())

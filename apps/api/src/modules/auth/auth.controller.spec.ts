@@ -57,6 +57,7 @@ describe("AuthController", () => {
             any
           >;
           const Mock = moduleMocker.generateFromMetadata(metadata);
+
           return new Mock();
         }
       })

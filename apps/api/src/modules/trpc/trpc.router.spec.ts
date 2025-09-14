@@ -33,6 +33,7 @@ describe("TrpcRouter", () => {
           if (token === TrpcService) {
             const mock = new Mock();
             mock.router = jest.fn((routes) => routes);
+
             return mock;
           }
 
@@ -40,6 +41,7 @@ describe("TrpcRouter", () => {
           if (token === AuthTrpc) {
             const mock = new Mock();
             mock.router = { login: "mock-auth-login" };
+
             return mock;
           }
 
@@ -47,6 +49,7 @@ describe("TrpcRouter", () => {
           if (token === CarsTrpc) {
             const mock = new Mock();
             mock.router = { list: "mock-cars-list" };
+
             return mock;
           }
 

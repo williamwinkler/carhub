@@ -124,7 +124,7 @@ export class AuthService {
       return apiKey;
     }
 
-    this.logger.error("Failed generating API key 3 times in a row...");
+    this.logger.log("Failed generating API key 3 times in a row...");
     throw new InternalServerError();
   }
 

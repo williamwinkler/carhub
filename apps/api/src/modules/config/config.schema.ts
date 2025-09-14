@@ -8,6 +8,13 @@ export const configSchema = z.object({
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
   PORT: z.coerce.number().default(3001),
+
+  // Postgres
+  POSTGRES_HOST: z.string(),
+  POSTGRES_PORT: z.coerce.number(),
+  POSTGRES_DATABASE: z.string(),
+  POSTGRES_USERNAME: z.string(),
+  POSTGRES_PASSWORD: z.string(),
 });
 
 export type ConfigSchema = z.infer<typeof configSchema>;

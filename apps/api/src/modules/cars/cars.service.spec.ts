@@ -3,6 +3,7 @@ import type { TestingModule } from "@nestjs/testing";
 import { Test } from "@nestjs/testing";
 import type { MockMetadata } from "jest-mock";
 import { ModuleMocker } from "jest-mock";
+import * as CtxModule from "@api/common/ctx";
 import type { UUID } from "crypto";
 import { randomUUID } from "crypto";
 import { BadRequestError } from "../../common/errors/domain/bad-request.error";
@@ -34,7 +35,18 @@ describe("CarsService", () => {
     authType: "jwt" as const,
   };
 
-  const { Ctx } = require("@api/common/ctx");
+  const { Ctx } = CtxModule;
+
+  // Type the mocked functions
+  const mockUserIdRequired = Ctx.userIdRequired as jest.MockedFunction<
+    typeof Ctx.userIdRequired
+  >;
+  const mockPrincipalRequired = Ctx.principalRequired as jest.MockedFunction<
+    typeof Ctx.principalRequired
+  >;
+  const mockRoleRequired = Ctx.roleRequired as jest.MockedFunction<
+    typeof Ctx.roleRequired
+  >;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -47,6 +59,7 @@ describe("CarsService", () => {
             any
           >;
           const Mock = moduleMocker.generateFromMetadata(metadata);
+
           return new Mock();
         }
       })
@@ -59,9 +72,9 @@ describe("CarsService", () => {
     (cleanService as unknown as { cars: Map<string, unknown> }).cars.clear();
 
     // Setup default mocks
-    Ctx.userIdRequired.mockReturnValue(mockUserId);
-    Ctx.principalRequired.mockReturnValue(mockPrincipal);
-    Ctx.roleRequired.mockReturnValue("user");
+    mockUserIdRequired.mockReturnValue(mockUserId);
+    mockPrincipalRequired.mockReturnValue(mockPrincipal);
+    mockRoleRequired.mockReturnValue("user");
 
     jest.clearAllMocks();
   });
@@ -94,7 +107,7 @@ describe("CarsService", () => {
       expect(result.createdBy).toBe(mockUserId);
       expect(result.createdAt).toBeInstanceOf(Date);
       expect(result.favoritedBy).toEqual([]);
-      expect(Ctx.userIdRequired).toHaveBeenCalled();
+      expect(mockUserIdRequired).toHaveBeenCalled();
     });
 
     it("should create cars with different brands", () => {
@@ -303,11 +316,12 @@ describe("CarsService", () => {
 
     it("should update car successfully when user is owner", () => {
       // Mock that the current user is the owner
-      Ctx.principalRequired.mockReturnValue({
+      mockPrincipalRequired.mockReturnValue({
         id: testCar.createdBy,
         role: "user",
+        authType: "jwt",
       });
-      Ctx.roleRequired.mockReturnValue("user");
+      mockRoleRequired.mockReturnValue("user");
 
       const updateDto: UpdateCarDto = {
         color: "Red",
@@ -324,11 +338,12 @@ describe("CarsService", () => {
 
     it("should allow admin to update any car", () => {
       const adminUserId = randomUUID();
-      Ctx.principalRequired.mockReturnValue({
+      mockPrincipalRequired.mockReturnValue({
         id: adminUserId,
         role: "admin",
+        authType: "jwt",
       });
-      Ctx.roleRequired.mockReturnValue("admin");
+      mockRoleRequired.mockReturnValue("admin");
 
       const updateDto: UpdateCarDto = {
         model: "Civic Si",
@@ -342,11 +357,12 @@ describe("CarsService", () => {
 
     it("should throw BadRequestError when non-owner user tries to update", () => {
       const otherUserId = randomUUID();
-      Ctx.principalRequired.mockReturnValue({
+      mockPrincipalRequired.mockReturnValue({
         id: otherUserId,
         role: "user",
+        authType: "jwt",
       });
-      Ctx.roleRequired.mockReturnValue("user");
+      mockRoleRequired.mockReturnValue("user");
 
       const updateDto: UpdateCarDto = {
         color: "Blue",
@@ -385,8 +401,8 @@ describe("CarsService", () => {
     });
 
     it("should remove car successfully when user is owner", () => {
-      Ctx.userIdRequired.mockReturnValue(testCar.createdBy);
-      Ctx.roleRequired.mockReturnValue("user");
+      mockUserIdRequired.mockReturnValue(testCar.createdBy);
+      mockRoleRequired.mockReturnValue("user");
 
       expect(() => cleanService.delete(testCar.id)).not.toThrow();
 
@@ -395,8 +411,8 @@ describe("CarsService", () => {
 
     it("should allow admin to remove any car", () => {
       const adminUserId = randomUUID();
-      Ctx.userIdRequired.mockReturnValue(adminUserId);
-      Ctx.roleRequired.mockReturnValue("admin");
+      mockUserIdRequired.mockReturnValue(adminUserId);
+      mockRoleRequired.mockReturnValue("admin");
 
       expect(() => cleanService.delete(testCar.id)).not.toThrow();
 
@@ -405,8 +421,8 @@ describe("CarsService", () => {
 
     it("should throw BadRequestError when non-owner user tries to remove", () => {
       const otherUserId = randomUUID();
-      Ctx.userIdRequired.mockReturnValue(otherUserId);
-      Ctx.roleRequired.mockReturnValue("user");
+      mockUserIdRequired.mockReturnValue(otherUserId);
+      mockRoleRequired.mockReturnValue("user");
 
       expect(() => cleanService.delete(testCar.id)).toThrow(BadRequestError);
     });

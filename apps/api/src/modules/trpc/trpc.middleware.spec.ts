@@ -4,6 +4,7 @@ import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error"
 import { TRPCError } from "@trpc/server";
 import { ClsServiceManager } from "nestjs-cls";
 import { createAuthMiddleware, RateLimitTiers } from "./trpc.middleware";
+import * as CtxModule from "@api/common/ctx";
 
 // Mock dependencies
 jest.mock("nestjs-cls");
@@ -34,7 +35,7 @@ beforeEach(() => {
   (ClsServiceManager.getClsService as jest.Mock).mockReturnValue(
     mockClsService,
   );
-  require("@api/common/ctx").Ctx = mockCtx;
+  (CtxModule as any).Ctx = mockCtx;
 });
 
 describe("tRPC Middleware", () => {

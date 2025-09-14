@@ -7,6 +7,7 @@ import type { Cache } from "cache-manager";
 import { randomUUID } from "crypto";
 import type { MockMetadata } from "jest-mock";
 import { ModuleMocker } from "jest-mock";
+import * as CtxModule from "@api/common/ctx";
 import {
   BadRequestError,
   InvalidCredentialsError,
@@ -284,7 +285,7 @@ describe("AuthService", () => {
   describe("createApiKey", () => {
     beforeEach(() => {
       // Mock Ctx for createApiKey tests
-      require("@api/common/ctx").Ctx = {
+      (CtxModule as any).Ctx = {
         role: "user",
         userIdRequired: jest.fn().mockReturnValue(mockUser.id),
       };
@@ -308,7 +309,7 @@ describe("AuthService", () => {
 
     it("should create API key for specific user when admin", async () => {
       const targetUserId = randomUUID();
-      require("@api/common/ctx").Ctx.role = "admin";
+      (CtxModule as any).Ctx.role = "admin";
 
       configService.get.mockReturnValue("test");
       usersService.update.mockResolvedValue(mockUser);
@@ -324,7 +325,7 @@ describe("AuthService", () => {
 
     it("should throw BadRequestError when non-admin tries to create key for another user", async () => {
       const targetUserId = randomUUID();
-      require("@api/common/ctx").Ctx.role = "user";
+      (CtxModule as any).Ctx.role = "user";
 
       await expect(service.createApiKey(targetUserId)).rejects.toThrow(
         "Only admins can create apiKeys on behalf of other users",
@@ -354,7 +355,7 @@ describe("AuthService", () => {
 
   describe("logout", () => {
     it("should logout successfully", async () => {
-      require("@api/common/ctx").Ctx = {
+      (CtxModule as any).Ctx = {
         userId: mockUser.id,
         sessionId: mockTokenPayload.sid,
       };
@@ -369,7 +370,7 @@ describe("AuthService", () => {
     });
 
     it("should throw UnauthorizedError for missing userId", async () => {
-      require("@api/common/ctx").Ctx = {
+      (CtxModule as any).Ctx = {
         userId: null,
         sessionId: mockTokenPayload.sid,
       };
@@ -378,7 +379,7 @@ describe("AuthService", () => {
     });
 
     it("should throw UnauthorizedError for missing sessionId", async () => {
-      require("@api/common/ctx").Ctx = {
+      (CtxModule as any).Ctx = {
         userId: mockUser.id,
         sessionId: null,
       };

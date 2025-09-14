@@ -20,6 +20,8 @@ describe("CarsController", () => {
   let carsService: jest.Mocked<CarsService>;
   let carsAdapter: jest.Mocked<CarsAdapter>;
 
+  const userId = randomUUID();
+  const now = new Date();
   const mockCar: Car = {
     id: randomUUID(),
     brand: CarBrand.BMW,
@@ -28,8 +30,10 @@ describe("CarsController", () => {
     color: "Black",
     kmDriven: 1000,
     price: 50000,
-    createdBy: randomUUID(),
-    createdAt: new Date(),
+    createdBy: userId,
+    createdAt: now,
+    updatedBy: userId,
+    updatedAt: now,
     favoritedBy: [],
   };
 
@@ -43,6 +47,8 @@ describe("CarsController", () => {
     price: mockCar.price,
     createdBy: mockCar.createdBy,
     createdAt: mockCar.createdAt.toISOString(),
+    updatedBy: mockCar.createdBy,
+    updatedAt: mockCar.createdAt.toISOString(),
     favoritedBy: mockCar.favoritedBy,
   };
 

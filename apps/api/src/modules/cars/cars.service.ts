@@ -23,11 +23,16 @@ export class CarsService {
 
   // region CREATE
   create(createCarDto: CreateCarDto) {
+    const userId = Ctx.userIdRequired();
+    const now = new Date();
+
     const car: Car = {
       id: randomUUID(),
       ...createCarDto,
-      createdBy: Ctx.userIdRequired(),
-      createdAt: new Date(),
+      createdBy: userId,
+      createdAt: now,
+      updatedBy: userId,
+      updatedAt: now,
       favoritedBy: [],
     };
     this.cars.set(car.id, car);
@@ -194,6 +199,8 @@ export class CarsService {
         ...carData,
         createdBy: "00000000-0000-0000-0000-000000000000", // System user for seed data
         createdAt: new Date(),
+        updatedBy: "00000000-0000-0000-0000-000000000000", // System user for seed data
+        updatedAt: new Date(),
         favoritedBy: [],
       };
       this.cars.set(car.id, car);

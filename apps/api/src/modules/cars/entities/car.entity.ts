@@ -1,4 +1,5 @@
 import type { UUID } from "crypto";
+import { Entity } from "typeorm";
 
 export const CarBrand = {
   BMW: "BMW",
@@ -14,6 +15,7 @@ export const CarBrand = {
 
 export type CarBrandType = (typeof CarBrand)[keyof typeof CarBrand];
 
+@Entity({ name: "cars" })
 export class Car {
   id!: UUID;
   brand!: CarBrandType;
@@ -25,8 +27,8 @@ export class Car {
 
   createdBy!: UUID;
   createdAt!: Date;
-  updatedBy?: UUID;
-  updatedAt?: Date;
+  updatedBy!: UUID;
+  updatedAt!: Date;
 
   favoritedBy!: UUID[];
 }
