@@ -38,3 +38,12 @@ export class UserNotFoundError extends NotFoundBaseError {
     });
   }
 }
+
+export class ModelNotFoundError extends NotFoundBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.CAR_MODEL_NOT_FOUND,
+      message: "Car model not found",
+    });
+  }
+}

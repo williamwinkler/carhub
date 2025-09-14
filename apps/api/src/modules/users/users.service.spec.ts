@@ -159,7 +159,7 @@ describe("UsersService", () => {
     });
 
     it("should return user when API key lookup hash matches", async () => {
-      const result = await service.getByApiKeyLookupHash(testApiKeyLookupHash);
+      const result = await service.findBy(testApiKeyLookupHash);
 
       expect(result).toBeDefined();
       expect(result?.username).toBe("testuser");
@@ -167,7 +167,7 @@ describe("UsersService", () => {
     });
 
     it("should return null for invalid API key lookup hash", async () => {
-      const result = await service.getByApiKeyLookupHash("invalid-hash");
+      const result = await service.findBy("invalid-hash");
 
       expect(result).toBeNull();
     });

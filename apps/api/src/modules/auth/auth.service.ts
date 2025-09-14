@@ -1,10 +1,8 @@
 import { Ctx, Principal } from "@api/common/ctx";
 import {
-  BadRequestError,
   InvalidCredentialsError,
   InvalidRefreshTokenError,
 } from "@api/common/errors/domain/bad-request.error";
-import { InternalServerError } from "@api/common/errors/domain/internal-server-error";
 import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
 import { hash } from "@api/common/utils/common.utils";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
@@ -65,7 +63,7 @@ export class AuthService {
 
     // Find user by API key lookup hash
     const foundUser =
-      await this.usersService.getByApiKeyLookupHash(apiKeyLookupHash);
+      await this.usersService.findByApiKeyLookupHash(apiKeyLookupHash);
 
     // Verify user exists and the apiKey is valid
     if (
@@ -88,44 +86,25 @@ export class AuthService {
     return this.usersService.create({ ...dto, hashedPassword });
   }
 
-  async createApiKey(userId?: UUID): Promise<string> {
-    if (userId && Ctx.role !== "admin") {
-      throw new BadRequestError(
-        "Only admins can create apiKeys on behalf of other users",
-      );
-    }
+  async createApiKey(): Promise<string> {
+    const prefix = "ak"; // (a)pi (k)ey
+    const env =
+      this.configService.get("NODE_ENV") === "production" ? "live" : "test";
+    const randomString = randomBytes(32).toString("hex");
 
-    // Set the userId if present otherwise the id of the requsting user
-    userId = userId ?? Ctx.userIdRequired();
+    const apiKey = `${prefix}_${env}_${randomString}`;
 
-    for (let i = 0; i < 3; i++) {
-      const prefix = "ak"; // (a)pi (k)ey
-      const env =
-        this.configService.get("NODE_ENV") === "production" ? "live" : "test";
-      const randomString = randomBytes(32).toString("hex");
+    const apiKeyLookupHash = hash(apiKey);
+    const apiKeySecret = await bcrypt.hash(apiKey, this.saltRounds);
 
-      const apiKey = `${prefix}_${env}_${randomString}`;
+    // Update the user with the new API key
+    const userId = Ctx.userIdRequired();
+    await this.usersService.update(userId, {
+      apiKeyLookupHash,
+      apiKeySecret,
+    });
 
-      const apiKeyLookupHash = hash(apiKey);
-      const apiKeySecret = await bcrypt.hash(apiKey, this.saltRounds);
-
-      try {
-        // Update the user with the new API key
-        await this.usersService.update(userId, {
-          apiKeyLookupHash,
-          apiKeySecret,
-        });
-      } catch {
-        // If apikey unique constraint error
-        // TODO: fix when using real db
-        continue;
-      }
-
-      return apiKey;
-    }
-
-    this.logger.log("Failed generating API key 3 times in a row...");
-    throw new InternalServerError();
+    return apiKey;
   }
 
   async login(username: string, pass: string): Promise<JwtDto> {

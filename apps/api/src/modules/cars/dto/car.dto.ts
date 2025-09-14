@@ -16,10 +16,9 @@ export const carSchema = createCarSchema
     updatedAt: z.iso
       .datetime()
       .describe("When the car record was last updated"),
-    favoritedBy: z
-      .array(z.uuid())
-      .default([])
-      .describe("List of user IDs who favorited this car"),
+    isFavorite: z
+      .boolean()
+      .describe("Indicates if the user has favorited the car or not"),
   })
   .strict();
 

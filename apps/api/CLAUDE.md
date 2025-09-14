@@ -17,7 +17,20 @@ This file provides specific guidance for working with the NestJS API in this pro
 ### Module Structure
 - Follow NestJS module pattern: `module.ts`, `controller.ts`, `service.ts`
 - DTOs in `dto/` folder using Zod schemas
+- Entities in `entities/` folder using TypeORM decorators
 - Tests in `*.spec.ts` files alongside source files
+
+### TypeORM Database Integration
+- **Database ORM**: Using TypeORM for database operations and entity management
+- **Entities**: All database models extend `AbstractEntity` base class with UUID primary keys
+- **Repository Pattern**: Inject repositories using `@InjectRepository(Entity)` decorator
+- **Relationships**: Use TypeORM decorators (`@ManyToOne`, `@OneToMany`, etc.) for entity relationships
+- **Entity Structure**:
+  - All entities extend `AbstractEntity` (provides UUID primary key)
+  - Use `@Entity()` decorator with table name specification
+  - Include audit fields: `createdAt`, `updatedAt`, `deletedAt` (for soft deletes)
+  - Use appropriate column types and constraints
+- **Service Integration**: Services should use injected repositories instead of in-memory storage
 
 ### Schema-First Development
 - Define Zod schemas in `dto/` folder first
@@ -70,15 +83,16 @@ This file provides specific guidance for working with the NestJS API in this pro
 ## Development Workflow
 
 ### Adding New Endpoints
-1. Define Zod schemas in `dto/` folder
-2. Create NestJS DTOs using `createZodDto()`
-3. Implement service methods with business logic
-4. Create controller endpoints with proper decorators
-5. Add tRPC procedures if needed for frontend consumption
-6. Write comprehensive tests for all functionality (both success and error cases)
-7. Run `pnpm test:cov` to verify 90%+ coverage
-8. Run `pnpm test` to verify implementation
-9. Update Swagger documentation if needed
+1. Create TypeORM entities in `entities/` folder extending `AbstractEntity`
+2. Define Zod schemas in `dto/` folder for validation
+3. Create NestJS DTOs using `createZodDto()`
+4. Implement service methods with TypeORM repository operations
+5. Create controller endpoints with proper decorators
+6. Add tRPC procedures if needed for frontend consumption
+7. Write comprehensive tests for all functionality (both success and error cases)
+8. Run `pnpm test:cov` to verify 90%+ coverage
+9. Run `pnpm test` to verify implementation
+10. Update Swagger documentation if needed
 
 ### Code Quality Checks
 - Run `pnpm test:cov` to verify 90%+ test coverage
@@ -111,8 +125,12 @@ return wrapResponse(data, 'Success message');
 src/
 ├── common/          # Shared utilities, guards, interceptors
 ├── modules/         # Feature modules
+│   ├── database/    # TypeORM configuration and base entities
+│   │   ├── abstract.entity.ts
+│   │   └── database.module.ts
 │   ├── cars/        # Example feature module
 │   │   ├── dto/     # Zod schemas and DTOs
+│   │   ├── entities/ # TypeORM entities
 │   │   ├── cars.controller.ts
 │   │   ├── cars.service.ts
 │   │   ├── cars.module.ts

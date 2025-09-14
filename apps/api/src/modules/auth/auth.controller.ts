@@ -1,11 +1,8 @@
 import { Public } from "@api/common/decorators/public.decorator";
 import { BadRequestDecorator } from "@api/common/decorators/swagger-responses.decorator";
-import { zQuery } from "@api/common/decorators/zod.decorator";
-import { uuidSchema } from "@api/common/schemas/common.schema";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiNoContentResponse } from "@nestjs/swagger";
-import { UUID } from "crypto";
 import { UserDto } from "../users/dto/user.dto";
 import { UsersAdapter } from "../users/users.adapter";
 import { AuthService } from "./auth.service";
@@ -75,11 +72,8 @@ export class AuthController {
     successText: "The API key was successfully generated",
     type: ApiKeyDto,
   })
-  async createApiKey(
-    @zQuery("userId", uuidSchema.optional().describe("userId to generate for"))
-    userId?: UUID,
-  ) {
-    const apiKey = await this.authService.createApiKey(userId);
+  async createApiKey() {
+    const apiKey = await this.authService.createApiKey();
 
     return { apiKey };
   }

@@ -1,45 +1,51 @@
 import { Ctx } from "@api/common/ctx";
 import { BadRequestError } from "@api/common/errors/domain/bad-request.error";
-import { CarNotFoundError } from "@api/common/errors/domain/not-found.error";
+import {
+  CarNotFoundError,
+  ModelNotFoundError,
+} from "@api/common/errors/domain/not-found.error";
 import { Injectable, Logger } from "@nestjs/common";
-import { randomUUID, UUID } from "crypto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UUID } from "crypto";
+import { Repository } from "typeorm";
 import { Pagination } from "../../common/types/pagination";
+import { ModelsService } from "../models/models.service";
 import { FindAllCarsOptions } from "./cars.type";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
 import { Car } from "./entities/car.entity";
-import { seedData } from "./entities/data";
 
 @Injectable()
 export class CarsService {
   private readonly logger = new Logger(CarsService.name);
 
-  /** In Memory database for POC purposes */
-  private cars = new Map<UUID, Car>();
-
-  constructor() {
-    this.seedCars();
-  }
+  constructor(
+    @InjectRepository(Car)
+    private readonly carsRepo: Repository<Car>,
+    private readonly modelsService: ModelsService,
+  ) {}
 
   // region CREATE
-  create(createCarDto: CreateCarDto) {
+  async create(createCarDto: CreateCarDto) {
     const userId = Ctx.userIdRequired();
-    const now = new Date();
 
-    const car: Car = {
-      id: randomUUID(),
+    const model = await this.modelsService.findById(createCarDto.modelId);
+    if (!model) {
+      throw new ModelNotFoundError();
+    }
+
+    const newCar = this.carsRepo.create({
       ...createCarDto,
       createdBy: userId,
-      createdAt: now,
-      updatedBy: userId,
-      updatedAt: now,
-      favoritedBy: [],
-    };
-    this.cars.set(car.id, car);
+    });
 
-    this.logger.log("New car created: " + car.id);
+    const savedCar = await this.carsRepo.save(newCar);
 
-    return car;
+    this.logger.log(
+      `New car created, a ${model.manufacturer.name} ${model.name}, with ID ${savedCar.id} `,
+    );
+
+    return savedCar;
   }
 
   // region FIND
@@ -188,22 +194,5 @@ export class CarsService {
     return Array.from(this.cars.values()).filter((car) =>
       car.favoritedBy.includes(userId),
     );
-  }
-
-  // region PRIVATE
-
-  private seedCars() {
-    seedData.forEach((carData) => {
-      const car: Car = {
-        id: randomUUID(),
-        ...carData,
-        createdBy: "00000000-0000-0000-0000-000000000000", // System user for seed data
-        createdAt: new Date(),
-        updatedBy: "00000000-0000-0000-0000-000000000000", // System user for seed data
-        updatedAt: new Date(),
-        favoritedBy: [],
-      };
-      this.cars.set(car.id, car);
-    });
   }
 }

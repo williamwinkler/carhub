@@ -23,11 +23,12 @@ async function bootstrap() {
     allowedHeaders: [
       "Content-Type",
       "Authorization",
-      "x-trpc-source",
-      "x-trpc-batch",
       "Accept",
       "Accept-Language",
       "Content-Language",
+      "x-trpc-source",
+      "x-trpc-batch",
+      "x-api-key",
     ],
     credentials: true,
     optionsSuccessStatus: 200,
@@ -73,13 +74,14 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  const port = process.env.PORT ?? 3001;
+  const port = configService.get("PORT");
   await app.listen(port);
   if (configService.get("NODE_ENV") === "development") {
     console.log(`✨ Application started (v${pkg.version}) ✨`);
     console.log(`🚀 Server ready on: http://localhost:${port}`);
     console.log(`📡 tRPC ready on:   http://localhost:${port}/trpc`);
     console.log(`📚 Swagger UI:      http://localhost:${port}/docs`);
+    console.log(`🐘 PG Admin:        http://localhost:${5050}`);
   }
 }
 

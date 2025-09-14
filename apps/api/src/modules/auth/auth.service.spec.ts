@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as CtxModule from "@api/common/ctx";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { JwtService } from "@nestjs/jwt";
 import type { TestingModule } from "@nestjs/testing";
@@ -7,13 +8,10 @@ import type { Cache } from "cache-manager";
 import { randomUUID } from "crypto";
 import type { MockMetadata } from "jest-mock";
 import { ModuleMocker } from "jest-mock";
-import * as CtxModule from "@api/common/ctx";
 import {
-  BadRequestError,
   InvalidCredentialsError,
   InvalidRefreshTokenError,
 } from "../../common/errors/domain/bad-request.error";
-import { InternalServerError } from "../../common/errors/domain/internal-server-error";
 import { UnauthorizedError } from "../../common/errors/domain/unauthorized.error";
 import { ConfigService } from "../config/config.service";
 import type { RoleType, User } from "../users/entities/user.entity";
@@ -125,12 +123,12 @@ describe("AuthService", () => {
 
       expect(result).toEqual(mockUser);
       expect(cacheManager.get).toHaveBeenCalled();
-      expect(usersService.getByApiKeyLookupHash).not.toHaveBeenCalled();
+      expect(usersService.findBy).not.toHaveBeenCalled();
     });
 
     it("should throw UnauthorizedError when user not found", async () => {
       cacheManager.get.mockResolvedValue(null);
-      usersService.getByApiKeyLookupHash.mockResolvedValue(null);
+      usersService.findBy.mockResolvedValue(null);
 
       await expect(service.findUserByApiKey("invalid-api-key")).rejects.toThrow(
         UnauthorizedError,
@@ -392,7 +390,7 @@ describe("AuthService", () => {
     it("should throw UnauthorizedError when user has no apiKeySecret", async () => {
       const userWithoutSecret = { ...mockUser, apiKeySecret: "" };
       cacheManager.get.mockResolvedValue(null);
-      usersService.getByApiKeyLookupHash.mockResolvedValue(userWithoutSecret);
+      usersService.findBy.mockResolvedValue(userWithoutSecret);
 
       await expect(service.findUserByApiKey("valid-api-key")).rejects.toThrow(
         UnauthorizedError,
@@ -401,7 +399,7 @@ describe("AuthService", () => {
 
     it("should cache user after successful API key validation", async () => {
       cacheManager.get.mockResolvedValue(null);
-      usersService.getByApiKeyLookupHash.mockResolvedValue(mockUser);
+      usersService.findBy.mockResolvedValue(mockUser);
       cacheManager.set.mockResolvedValue(undefined);
 
       const result = await service.findUserByApiKey("valid-api-key");

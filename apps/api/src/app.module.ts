@@ -20,13 +20,16 @@ import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { ConfigModule } from "./modules/config/config.module";
+import { ManufacturersModule } from "./modules/manufacturers/manufacturers.module";
+import { ModelsModule } from "./modules/models/models.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 import { UsersModule } from "./modules/users/users.module";
+import { DatabaseModule } from "./modules/database/database.module";
 
 @Module({
   imports: [
-    JwtModule,
     ConfigModule,
+    DatabaseModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true }, // Wrap each request in the CLS context
@@ -51,9 +54,12 @@ import { UsersModule } from "./modules/users/users.module";
         limit: 100, // 100 requests per minute
       },
     ]),
+    JwtModule,
     AuthModule,
     UsersModule,
     TrpcModule,
+    ManufacturersModule,
+    ModelsModule,
     CarsModule,
   ],
   controllers: [],

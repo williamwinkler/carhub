@@ -1,16 +1,6 @@
+import { uuidSchema } from "@api/common/schemas/common.schema";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { CarBrand } from "../entities/car.entity";
-
-export const carBrandSchema = z
-  .enum(CarBrand)
-  .describe("The brand of the car.");
-
-export const carModelSchema = z
-  .string()
-  .min(1, "Model name is required")
-  .max(100, "Model name must be at most 100 characters long")
-  .describe("The model of the car.");
 
 export const carYearSchema = z
   .number()
@@ -27,12 +17,16 @@ export const carColorSchema = z
 
 export const createCarSchema = z
   .object({
-    brand: carBrandSchema,
-    model: carModelSchema,
+    modelId: uuidSchema.describe("The ID of the model"),
     year: carYearSchema,
     color: carColorSchema,
-    kmDriven: z.number().int().gte(0).max(10_000_000),
-    price: z.number().min(0),
+    kmDriven: z
+      .number()
+      .int()
+      .gte(0)
+      .max(10_000_000)
+      .describe("The amount of kilometers the car has driven"),
+    price: z.number().int().min(0).describe("Price of the car in €"),
   })
   .strict();
 

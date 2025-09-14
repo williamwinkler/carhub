@@ -901,6 +901,8 @@ components:
         - id
         - createdBy
         - createdAt
+        - updatedBy
+        - updatedAt
     CarResponseDto:
       type: object
       properties:
