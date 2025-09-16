@@ -17,35 +17,21 @@ async function bootstrap() {
     logger: new CustomLogger(),
   });
 
-  app.enableCors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Accept",
-      "Accept-Language",
-      "Content-Language",
-      "x-trpc-source",
-      "x-trpc-batch",
-      "x-api-key",
-    ],
-    credentials: true,
-    optionsSuccessStatus: 200,
-  });
+  const configService = app.get(ConfigService);
 
+  app.enableCors(configService.getCorsConfig());
+
+  const versioningConfig = configService.getVersioningConfig();
   app.enableVersioning({
     type: VersioningType.URI,
-    prefix: "v",
-    defaultVersion: "1",
+    prefix: versioningConfig.prefix,
+    defaultVersion: versioningConfig.defaultVersion,
   });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
   app.useGlobalPipes(new ZodValidationPipe()); // for tRPC
-
-  const configService = app.get(ConfigService);
 
   if (configService.get("NODE_ENV") === "development") {
     const trpcLogger = new Logger("tRPC");

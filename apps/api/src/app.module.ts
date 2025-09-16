@@ -20,8 +20,9 @@ import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { ConfigModule } from "./modules/config/config.module";
-import { ManufacturersModule } from "./modules/manufacturers/manufacturers.module";
-import { ModelsModule } from "./modules/models/models.module";
+import { ConfigService } from "./modules/config/config.service";
+import { ManufacturersModule } from "./modules/car-manufacturers/manufacturers.module";
+import { ModelsModule } from "./modules/car-models/models.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 import { UsersModule } from "./modules/users/users.module";
 import { DatabaseModule } from "./modules/database/database.module";
@@ -37,23 +38,12 @@ import { DatabaseModule } from "./modules/database/database.module";
     CacheModule.register({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: "short",
-        ttl: 1000, // 1 second
-        limit: 3, // 3 requests per second
-      },
-      {
-        name: "medium",
-        ttl: 10000, // 10 seconds
-        limit: 20, // 20 requests per 10 seconds
-      },
-      {
-        name: "long",
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) =>
+        configService.getThrottlerConfig(),
+      inject: [ConfigService],
+    }),
     JwtModule,
     AuthModule,
     UsersModule,
