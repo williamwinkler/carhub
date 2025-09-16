@@ -103,9 +103,22 @@ export function ApiEndpoint<T>(
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
+export function ApiEndpoint(
+  options: Omit<ApiResponseOptions, "description"> & {
+    type: null;
+    status?: HttpStatus;
+    summary?: string;
+    successText?: string;
+  },
+): <F extends MethodReturning<Promise<void>>>(
+  target: object,
+  propertyKey: string | symbol,
+  descriptor: TypedPropertyDescriptor<F>,
+) => void;
+
 export function ApiEndpoint<T>(
   options: Omit<ApiResponseOptions, "description"> & {
-    type: Type<T> | [Type<T>];
+    type: Type<T> | [Type<T>] | null;
     status?: HttpStatus;
     summary?: string;
     successText?: string;
@@ -117,27 +130,38 @@ export function ApiEndpoint<T>(
   (options as any).description = options.successText;
   delete options.successText;
 
+  let dtoClass: Type<unknown> | undefined = undefined;
+  let classRef: Type<T> | undefined = undefined;
+  let schema: any = undefined;
+
   const isList = Array.isArray(options.type);
-  const classRef = (
-    isList ? (options.type as [Type<T>])[0] : (options.type as Type<T>)
-  ) as Type<T>;
 
-  const dtoClass = isList
-    ? createResponseListDto(classRef)
-    : createResponseDto(classRef);
+  if (options.type) {
+    classRef = (
+      isList ? (options.type as [Type<T>])[0] : (options.type as Type<T>)
+    ) as Type<T>;
 
-  // Grab zod schema if the DTO was made with createZodDto
-  const schema = (classRef as any)?.schema;
+    dtoClass = isList
+      ? createResponseListDto(classRef)
+      : createResponseDto(classRef);
+
+    // Grab zod schema if the DTO was made with createZodDto
+    schema = (classRef as any)?.schema;
+  }
 
   const base = applyDecorators(
-    ApiResponse({ ...options, type: dtoClass }),
     HttpCode(options.status),
-    SetMetadata(RESPONSE_DTO_KEY, {
-      classRef,
-      isList,
-      schema,
-    } as ResponseDtoMeta<T>),
     ...(summary ? [ApiOperation({ summary: summary })] : []),
+    ...(dtoClass
+      ? [
+          ApiResponse({ ...options, type: dtoClass }),
+          SetMetadata(RESPONSE_DTO_KEY, {
+            classRef,
+            isList,
+            schema,
+          } as ResponseDtoMeta<T>),
+        ]
+      : []),
   );
 
   if (isList) {

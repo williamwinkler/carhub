@@ -39,7 +39,7 @@ export class UserNotFoundError extends NotFoundBaseError {
   }
 }
 
-export class ModelNotFoundError extends NotFoundBaseError {
+export class CarModelNotFoundError extends NotFoundBaseError {
   constructor() {
     super({
       errorCode: ErrorCode.CAR_MODEL_NOT_FOUND,

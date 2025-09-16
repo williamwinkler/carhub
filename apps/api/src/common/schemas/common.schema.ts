@@ -36,7 +36,7 @@ export const sortFieldSchema = z
   .describe("Field to sort by");
 
 export const sortDirectionSchema = z
-  .enum(["asc", "desc"])
+  .enum(["ASC", "DESC"])
   .describe("Sort direction (ascending or descending)");
 
 // Query param versions (for REST API)

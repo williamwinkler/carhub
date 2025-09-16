@@ -29,3 +29,12 @@ export class OnlyAdminsCanUpdateRolesError extends ForbiddenBaseError {
     });
   }
 }
+
+export class UsersCanOnlyUpdateOwnCarsError extends ForbiddenBaseError {
+  constructor() {
+    super({
+      errorCode: ErrorCode.USERS_CAN_ONLY_UPDATE_OWN_CARS,
+      message: "You can only update your own cars",
+    });
+  }
+}
