@@ -1,5 +1,8 @@
 import { Public } from "@api/common/decorators/public.decorator";
-import { BadRequestDecorator } from "@api/common/decorators/swagger-responses.decorator";
+import {
+  BadRequestDecorator,
+  ConflictDecorator,
+} from "@api/common/decorators/swagger-responses.decorator";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiNoContentResponse } from "@nestjs/swagger";
@@ -27,6 +30,7 @@ export class AuthController {
     successText: "Account created successfully",
     type: UserDto,
   })
+  @ConflictDecorator()
   async createAccount(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
 

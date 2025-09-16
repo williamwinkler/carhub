@@ -26,6 +26,8 @@ describe("AuthController", () => {
     lastName: "Doe",
     username: "johndoe",
     password: "hashedPassword123",
+    cars: [],
+    favorites: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -81,7 +83,6 @@ describe("AuthController", () => {
         lastName: "Doe",
         username: "johndoe",
         password: "password123",
-        role: "user",
       };
 
       authService.register.mockResolvedValue(mockUser);
@@ -100,7 +101,6 @@ describe("AuthController", () => {
         lastName: "User",
         username: "admin",
         password: "adminpass123",
-        role: "admin",
       };
 
       const adminUser = { ...mockUser, role: "admin" as const };
@@ -175,19 +175,18 @@ describe("AuthController", () => {
 
       const result = await controller.createApiKey();
 
-      expect(authService.createApiKey).toHaveBeenCalledWith(undefined);
+      expect(authService.createApiKey).toHaveBeenCalledWith();
       expect(result).toEqual({ apiKey: mockApiKey });
     });
 
-    it("should create API key for specific userId", async () => {
-      const userId = randomUUID();
+    it("should create API key for current user", async () => {
       const mockApiKey = "ak_test_api_key_1234567890abcdef";
 
       authService.createApiKey.mockResolvedValue(mockApiKey);
 
-      const result = await controller.createApiKey(userId);
+      const result = await controller.createApiKey();
 
-      expect(authService.createApiKey).toHaveBeenCalledWith(userId);
+      expect(authService.createApiKey).toHaveBeenCalledWith();
       expect(result).toEqual({ apiKey: mockApiKey });
     });
   });

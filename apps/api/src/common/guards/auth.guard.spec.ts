@@ -31,6 +31,8 @@ describe("AuthGuard", () => {
     firstName: "Test",
     lastName: "User",
     password: "hashedpassword",
+    cars: [],
+    favorites: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };

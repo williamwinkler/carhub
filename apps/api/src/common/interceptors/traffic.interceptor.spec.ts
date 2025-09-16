@@ -23,7 +23,9 @@ describe("TrafficInterceptor", () => {
     interceptor = module.get<TrafficInterceptor>(TrafficInterceptor);
 
     // Mock Logger - spy on the interceptor's logger instance
-    loggerDebugSpy = jest.spyOn((interceptor as any).logger, "debug").mockImplementation();
+    loggerDebugSpy = jest
+      .spyOn((interceptor as any).logger, "debug")
+      .mockImplementation();
 
     // Mock Request
     mockRequest = {
@@ -71,7 +73,10 @@ describe("TrafficInterceptor", () => {
         mockCallHandler.handle.mockReturnValue(of(responseData));
         mockResponse.statusCode = 200;
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (data) => {
@@ -81,7 +86,9 @@ describe("TrafficInterceptor", () => {
             // Add a small delay to ensure finalize has executed
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/GET \/api\/test \| Status: 200 \| Duration: \d+ms/)
+                expect.stringMatching(
+                  /GET \/api\/test \| Status: 200 \| Duration: \d+ms/,
+                ),
               );
               done();
             }, 0);
@@ -95,13 +102,18 @@ describe("TrafficInterceptor", () => {
         mockCallHandler.handle.mockReturnValue(of({ id: 1 }));
         mockResponse.statusCode = 201;
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/POST \/api\/users \| Status: 201 \| Duration: \d+ms/)
+                expect.stringMatching(
+                  /POST \/api\/users \| Status: 201 \| Duration: \d+ms/,
+                ),
               );
               done();
             }, 0);
@@ -115,13 +127,18 @@ describe("TrafficInterceptor", () => {
         mockCallHandler.handle.mockReturnValue(of({}));
         mockResponse.statusCode = 204;
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/PUT \/api\/cars\/123 \| Status: 204 \| Duration: \d+ms/)
+                expect.stringMatching(
+                  /PUT \/api\/cars\/123 \| Status: 204 \| Duration: \d+ms/,
+                ),
               );
               done();
             }, 0);
@@ -131,19 +148,23 @@ describe("TrafficInterceptor", () => {
 
       it("should measure actual duration time", (done) => {
         const startTime = Date.now();
-        jest.spyOn(Date, "now")
+        jest
+          .spyOn(Date, "now")
           .mockReturnValueOnce(startTime)
           .mockReturnValueOnce(startTime + 150);
 
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Duration: 150ms")
+                expect.stringContaining("Duration: 150ms"),
               );
               done();
             }, 0);
@@ -154,17 +175,25 @@ describe("TrafficInterceptor", () => {
 
     describe("HTTP exceptions", () => {
       it("should log error status code when HttpException is thrown", (done) => {
-        const httpError = new HttpException("Bad Request", HttpStatus.BAD_REQUEST);
+        const httpError = new HttpException(
+          "Bad Request",
+          HttpStatus.BAD_REQUEST,
+        );
         mockCallHandler.handle.mockReturnValue(throwError(() => httpError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(httpError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/GET \/api\/test \| Status: 400 \| Duration: \d+ms/)
+                expect.stringMatching(
+                  /GET \/api\/test \| Status: 400 \| Duration: \d+ms/,
+                ),
               );
               done();
             }, 0);
@@ -173,17 +202,23 @@ describe("TrafficInterceptor", () => {
       });
 
       it("should handle different HTTP error status codes", (done) => {
-        const notFoundError = new HttpException("Not Found", HttpStatus.NOT_FOUND);
+        const notFoundError = new HttpException(
+          "Not Found",
+          HttpStatus.NOT_FOUND,
+        );
         mockCallHandler.handle.mockReturnValue(throwError(() => notFoundError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(notFoundError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 404")
+                expect.stringContaining("Status: 404"),
               );
               done();
             }, 0);
@@ -192,17 +227,25 @@ describe("TrafficInterceptor", () => {
       });
 
       it("should handle unauthorized error", (done) => {
-        const unauthorizedError = new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
-        mockCallHandler.handle.mockReturnValue(throwError(() => unauthorizedError));
+        const unauthorizedError = new HttpException(
+          "Unauthorized",
+          HttpStatus.UNAUTHORIZED,
+        );
+        mockCallHandler.handle.mockReturnValue(
+          throwError(() => unauthorizedError),
+        );
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(unauthorizedError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 401")
+                expect.stringContaining("Status: 401"),
               );
               done();
             }, 0);
@@ -211,17 +254,23 @@ describe("TrafficInterceptor", () => {
       });
 
       it("should handle internal server error", (done) => {
-        const serverError = new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        const serverError = new HttpException(
+          "Internal Server Error",
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
         mockCallHandler.handle.mockReturnValue(throwError(() => serverError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(serverError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 500")
+                expect.stringContaining("Status: 500"),
               );
               done();
             }, 0);
@@ -233,7 +282,10 @@ describe("TrafficInterceptor", () => {
         const httpError = new HttpException("Forbidden", HttpStatus.FORBIDDEN);
         mockCallHandler.handle.mockReturnValue(throwError(() => httpError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
@@ -253,14 +305,17 @@ describe("TrafficInterceptor", () => {
         const genericError = new Error("Unexpected error");
         mockCallHandler.handle.mockReturnValue(throwError(() => genericError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(genericError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 500")
+                expect.stringContaining("Status: 500"),
               );
               done();
             }, 0);
@@ -272,7 +327,10 @@ describe("TrafficInterceptor", () => {
         const typeError = new TypeError("Type mismatch");
         mockCallHandler.handle.mockReturnValue(throwError(() => typeError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
@@ -289,14 +347,17 @@ describe("TrafficInterceptor", () => {
       it("should handle null/undefined errors", (done) => {
         mockCallHandler.handle.mockReturnValue(throwError(() => null));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(null);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 500")
+                expect.stringContaining("Status: 500"),
               );
               done();
             }, 0);
@@ -308,14 +369,17 @@ describe("TrafficInterceptor", () => {
         const stringError = "Something went wrong";
         mockCallHandler.handle.mockReturnValue(throwError(() => stringError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (err) => {
             expect(err).toBe(stringError);
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 500")
+                expect.stringContaining("Status: 500"),
               );
               done();
             }, 0);
@@ -329,13 +393,16 @@ describe("TrafficInterceptor", () => {
         mockRequest.url = "";
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/GET  \| Status: 200 \| Duration: \d+ms/)
+                expect.stringMatching(/GET  \| Status: 200 \| Duration: \d+ms/),
               );
               done();
             }, 0);
@@ -347,13 +414,16 @@ describe("TrafficInterceptor", () => {
         mockRequest.url = "/api/users?page=1&limit=10";
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("GET /api/users?page=1&limit=10")
+                expect.stringContaining("GET /api/users?page=1&limit=10"),
               );
               done();
             }, 0);
@@ -362,17 +432,21 @@ describe("TrafficInterceptor", () => {
       });
 
       it("should handle long URLs", (done) => {
-        const longUrl = "/api/very/long/path/with/many/segments/and/parameters?param1=value1&param2=value2&param3=value3";
+        const longUrl =
+          "/api/very/long/path/with/many/segments/and/parameters?param1=value1&param2=value2&param3=value3";
         mockRequest.url = longUrl;
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining(`GET ${longUrl}`)
+                expect.stringContaining(`GET ${longUrl}`),
               );
               done();
             }, 0);
@@ -386,13 +460,16 @@ describe("TrafficInterceptor", () => {
 
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Duration: 0ms")
+                expect.stringContaining("Duration: 0ms"),
               );
               done();
             }, 0);
@@ -404,13 +481,16 @@ describe("TrafficInterceptor", () => {
         mockResponse.statusCode = 0;
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 0")
+                expect.stringContaining("Status: 0"),
               );
               done();
             }, 0);
@@ -420,19 +500,25 @@ describe("TrafficInterceptor", () => {
 
       it("should prefer error status code over response status code when error occurs", (done) => {
         mockResponse.statusCode = 200;
-        const conflictError = new HttpException("Conflict", HttpStatus.CONFLICT);
+        const conflictError = new HttpException(
+          "Conflict",
+          HttpStatus.CONFLICT,
+        );
         mockCallHandler.handle.mockReturnValue(throwError(() => conflictError));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Status: 409")
+                expect.stringContaining("Status: 409"),
               );
               expect(loggerDebugSpy).not.toHaveBeenCalledWith(
-                expect.stringContaining("Status: 200")
+                expect.stringContaining("Status: 200"),
               );
               done();
             }, 0);
@@ -450,14 +536,19 @@ describe("TrafficInterceptor", () => {
       it("should call logger.debug with correct message format", (done) => {
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           complete: () => {
             setTimeout(() => {
               expect(loggerDebugSpy).toHaveBeenCalledTimes(1);
               expect(loggerDebugSpy).toHaveBeenCalledWith(
-                expect.stringMatching(/^[A-Z]+ .+ \| Status: \d+ \| Duration: \d+ms$/)
+                expect.stringMatching(
+                  /^[A-Z]+ .+ \| Status: \d+ \| Duration: \d+ms$/,
+                ),
               );
               done();
             }, 0);
@@ -471,7 +562,10 @@ describe("TrafficInterceptor", () => {
         const testData = { id: 123, name: "test" };
         mockCallHandler.handle.mockReturnValue(of(testData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (data) => {
@@ -483,12 +577,18 @@ describe("TrafficInterceptor", () => {
 
       it("should not modify observable data", (done) => {
         const complexData = {
-          users: [{ id: 1, name: "John" }, { id: 2, name: "Jane" }],
+          users: [
+            { id: 1, name: "John" },
+            { id: 2, name: "Jane" },
+          ],
           metadata: { total: 2, page: 1 },
         };
         mockCallHandler.handle.mockReturnValue(of(complexData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (data) => {
@@ -507,7 +607,10 @@ describe("TrafficInterceptor", () => {
         });
         mockCallHandler.handle.mockReturnValue(observable);
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
         const emissions: string[] = [];
 
         result$.subscribe({

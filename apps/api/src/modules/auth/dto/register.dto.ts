@@ -1,4 +1,3 @@
-import { roleSchema } from "@api/common/schemas/common.schema";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 
@@ -8,7 +7,6 @@ export const registerSchema = z
     lastName: z.string().min(1, "Last name is required"),
     username: z.string().min(3, "Username must be at least 3 characters"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    role: roleSchema.default("user"),
   })
   .strict();
 

@@ -50,7 +50,9 @@ describe("ResponseValidationInterceptor", () => {
       ],
     }).compile();
 
-    interceptor = module.get<ResponseValidationInterceptor<any>>(ResponseValidationInterceptor);
+    interceptor = module.get<ResponseValidationInterceptor<any>>(
+      ResponseValidationInterceptor,
+    );
     reflector = module.get(Reflector) as jest.Mocked<Reflector>;
 
     // Mock Logger
@@ -96,7 +98,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(of(mockUserData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -104,7 +109,10 @@ describe("ResponseValidationInterceptor", () => {
               apiVersion: "1.2.3",
               data: mockUserData,
             });
-            expect(reflector.get).toHaveBeenCalledWith(RESPONSE_DTO_KEY, mockExecutionContext.getHandler());
+            expect(reflector.get).toHaveBeenCalledWith(
+              RESPONSE_DTO_KEY,
+              mockExecutionContext.getHandler(),
+            );
             done();
           },
         });
@@ -119,7 +127,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(mockMeta);
         mockCallHandler.handle.mockReturnValue(of(mockUserData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -136,7 +147,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(of(null));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -153,7 +167,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(of(undefined));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -169,7 +186,9 @@ describe("ResponseValidationInterceptor", () => {
 
     describe("with single item schema validation", () => {
       const mockMeta: ResponseDtoMeta = {
-        classRef: class UserDto { name = "UserDto"; },
+        classRef: class UserDto {
+          name = "UserDto";
+        },
         isList: false,
         schema: userSchema,
       };
@@ -178,7 +197,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(mockMeta);
         mockCallHandler.handle.mockReturnValue(of(mockUserData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -196,13 +218,18 @@ describe("ResponseValidationInterceptor", () => {
         const invalidData = { id: "invalid", name: 123 }; // invalid types
         mockCallHandler.handle.mockReturnValue(of(invalidData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
             expect(error).toBeInstanceOf(InternalServerError);
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringMatching(/Outgoing response validation failed for schema UserDto at GET \/api\/users\/1:/)
+              expect.stringMatching(
+                /Outgoing response validation failed for schema UserDto at GET \/api\/users\/1:/,
+              ),
             );
           },
         });
@@ -213,7 +240,10 @@ describe("ResponseValidationInterceptor", () => {
         const incompleteData = { id: 1 }; // missing name and email
         mockCallHandler.handle.mockReturnValue(of(incompleteData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
@@ -225,10 +255,16 @@ describe("ResponseValidationInterceptor", () => {
 
       it("should handle extra fields in data", (done) => {
         reflector.get.mockReturnValue(mockMeta);
-        const dataWithExtra = { ...mockUserData, extraField: "should be ignored" };
+        const dataWithExtra = {
+          ...mockUserData,
+          extraField: "should be ignored",
+        };
         mockCallHandler.handle.mockReturnValue(of(dataWithExtra));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -241,7 +277,9 @@ describe("ResponseValidationInterceptor", () => {
 
     describe("with list schema validation", () => {
       const mockListMeta: ResponseDtoMeta = {
-        classRef: class UserDto { name = "UserDto"; },
+        classRef: class UserDto {
+          name = "UserDto";
+        },
         isList: true,
         schema: userSchema,
       };
@@ -256,7 +294,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(paginatedData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -279,7 +320,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(invalidPaginatedData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
@@ -299,7 +343,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(emptyPaginatedData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -323,7 +370,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(mixedValidData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
@@ -341,7 +391,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(dataWithNullItems));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
@@ -354,7 +407,9 @@ describe("ResponseValidationInterceptor", () => {
 
     describe("error handling and logging", () => {
       const mockMeta: ResponseDtoMeta = {
-        classRef: class TestDto { name = "TestDto"; },
+        classRef: class TestDto {
+          name = "TestDto";
+        },
         isList: false,
         schema: userSchema,
       };
@@ -364,12 +419,17 @@ describe("ResponseValidationInterceptor", () => {
         const invalidData = { id: "not-a-number" };
         mockCallHandler.handle.mockReturnValue(of(invalidData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringMatching(/Outgoing response validation failed for schema TestDto at GET \/api\/users\/1:/)
+              expect.stringMatching(
+                /Outgoing response validation failed for schema TestDto at GET \/api\/users\/1:/,
+              ),
             );
           },
         });
@@ -381,12 +441,15 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(mockMeta);
         mockCallHandler.handle.mockReturnValue(of({ invalid: "data" }));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringContaining("POST /api/users")
+              expect.stringContaining("POST /api/users"),
             );
           },
         });
@@ -397,12 +460,15 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(mockMeta);
         mockCallHandler.handle.mockReturnValue(of({ invalid: "data" }));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringContaining("/api/complex/path?param=value")
+              expect.stringContaining("/api/complex/path?param=value"),
             );
           },
         });
@@ -410,19 +476,22 @@ describe("ResponseValidationInterceptor", () => {
 
       it("should use UnknownDto when classRef has no name", () => {
         const metaWithoutName: ResponseDtoMeta = {
-          classRef: class { }, // no name property
+          classRef: class {}, // no name property
           isList: false,
           schema: userSchema,
         };
         reflector.get.mockReturnValue(metaWithoutName);
         mockCallHandler.handle.mockReturnValue(of({ invalid: "data" }));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringContaining("for schema")
+              expect.stringContaining("for schema"),
             );
           },
         });
@@ -437,12 +506,15 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(metaWithUndefinedClass);
         mockCallHandler.handle.mockReturnValue(of({ invalid: "data" }));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: () => {
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringContaining("UnknownDto")
+              expect.stringContaining("UnknownDto"),
             );
           },
         });
@@ -465,7 +537,9 @@ describe("ResponseValidationInterceptor", () => {
         });
 
         const mockMeta: ResponseDtoMeta = {
-          classRef: class NestedDto { name = "NestedDto"; },
+          classRef: class NestedDto {
+            name = "NestedDto";
+          },
           isList: false,
           schema: nestedSchema,
         };
@@ -485,7 +559,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(validNestedData));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -503,7 +580,9 @@ describe("ResponseValidationInterceptor", () => {
         });
 
         const mockMeta: ResponseDtoMeta = {
-          classRef: class TransformDto { name = "TransformDto"; },
+          classRef: class TransformDto {
+            name = "TransformDto";
+          },
           isList: false,
           schema: transformSchema,
         };
@@ -516,7 +595,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(dataToTransform));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -538,7 +620,9 @@ describe("ResponseValidationInterceptor", () => {
         });
 
         const mockMeta: ResponseDtoMeta = {
-          classRef: class OptionalDto { name = "OptionalDto"; },
+          classRef: class OptionalDto {
+            name = "OptionalDto";
+          },
           isList: false,
           schema: optionalSchema,
         };
@@ -550,7 +634,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(dataWithoutOptional));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -568,7 +655,9 @@ describe("ResponseValidationInterceptor", () => {
         });
 
         const mockMeta: ResponseDtoMeta = {
-          classRef: class ThrowingDto { name = "ThrowingDto"; },
+          classRef: class ThrowingDto {
+            name = "ThrowingDto";
+          },
           isList: false,
           schema: throwingSchema,
         };
@@ -576,13 +665,16 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(mockMeta);
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
             expect(error).toBeInstanceOf(InternalServerError);
             expect(loggerErrorSpy).toHaveBeenCalledWith(
-              expect.stringContaining("String error")
+              expect.stringContaining("String error"),
             );
           },
         });
@@ -590,7 +682,9 @@ describe("ResponseValidationInterceptor", () => {
 
       it("should handle very large datasets", (done) => {
         const mockMeta: ResponseDtoMeta = {
-          classRef: class LargeDto { name = "LargeDto"; },
+          classRef: class LargeDto {
+            name = "LargeDto";
+          },
           isList: true,
           schema: userSchema,
         };
@@ -606,7 +700,10 @@ describe("ResponseValidationInterceptor", () => {
         };
         mockCallHandler.handle.mockReturnValue(of(largeDataset));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -621,7 +718,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           next: (response) => {
@@ -639,7 +739,10 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(observableError);
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe({
           error: (error) => {
@@ -656,10 +759,16 @@ describe("ResponseValidationInterceptor", () => {
         reflector.get.mockReturnValue(undefined);
         mockCallHandler.handle.mockReturnValue(of({}));
 
-        const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+        const result$ = interceptor.intercept(
+          mockExecutionContext,
+          mockCallHandler,
+        );
 
         result$.subscribe(() => {
-          expect(reflector.get).toHaveBeenCalledWith(RESPONSE_DTO_KEY, mockHandler);
+          expect(reflector.get).toHaveBeenCalledWith(
+            RESPONSE_DTO_KEY,
+            mockHandler,
+          );
           expect(mockExecutionContext.getHandler).toHaveBeenCalled();
         });
       });

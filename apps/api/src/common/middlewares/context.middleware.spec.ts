@@ -35,7 +35,9 @@ describe("ContextMiddleware", () => {
     middleware = module.get<ContextMiddleware>(ContextMiddleware);
 
     // Reset mocks
-    setupContextSpy = jest.spyOn(ContextUtils, "setupContext").mockImplementation();
+    setupContextSpy = jest
+      .spyOn(ContextUtils, "setupContext")
+      .mockImplementation();
 
     // Mock Request
     mockRequest = {} as jest.Mocked<Request>;
@@ -71,7 +73,10 @@ describe("ContextMiddleware", () => {
 
       middleware.use(mockRequest, mockResponse, mockNext);
 
-      expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", testRequestId);
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        "x-request-id",
+        testRequestId,
+      );
     });
 
     it("should set x-correlation-id header from Ctx.correlationId", () => {
@@ -80,7 +85,10 @@ describe("ContextMiddleware", () => {
 
       middleware.use(mockRequest, mockResponse, mockNext);
 
-      expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", testCorrelationId);
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        "x-correlation-id",
+        testCorrelationId,
+      );
     });
 
     it("should set both headers when both IDs are available", () => {
@@ -91,8 +99,14 @@ describe("ContextMiddleware", () => {
 
       middleware.use(mockRequest, mockResponse, mockNext);
 
-      expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", testRequestId);
-      expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", testCorrelationId);
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        "x-request-id",
+        testRequestId,
+      );
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        "x-correlation-id",
+        testCorrelationId,
+      );
       expect(mockResponse.setHeader).toHaveBeenCalledTimes(2);
     });
 
@@ -112,6 +126,7 @@ describe("ContextMiddleware", () => {
 
       (mockResponse.setHeader as jest.Mock).mockImplementation(() => {
         callOrder.push("setHeader");
+
         return mockResponse;
       });
 
@@ -137,8 +152,14 @@ describe("ContextMiddleware", () => {
 
         middleware.use(mockRequest, mockResponse, mockNext);
 
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", undefined);
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", testCorrelationId);
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-request-id",
+          undefined,
+        );
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          testCorrelationId,
+        );
         expect(mockNext).toHaveBeenCalled();
       });
 
@@ -149,8 +170,14 @@ describe("ContextMiddleware", () => {
 
         middleware.use(mockRequest, mockResponse, mockNext);
 
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", testRequestId);
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", undefined);
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-request-id",
+          testRequestId,
+        );
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          undefined,
+        );
         expect(mockNext).toHaveBeenCalled();
       });
 
@@ -160,8 +187,14 @@ describe("ContextMiddleware", () => {
 
         middleware.use(mockRequest, mockResponse, mockNext);
 
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", null);
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", null);
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-request-id",
+          null,
+        );
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          null,
+        );
         expect(mockNext).toHaveBeenCalled();
       });
 
@@ -172,7 +205,10 @@ describe("ContextMiddleware", () => {
         middleware.use(mockRequest, mockResponse, mockNext);
 
         expect(mockResponse.setHeader).toHaveBeenCalledWith("x-request-id", "");
-        expect(mockResponse.setHeader).toHaveBeenCalledWith("x-correlation-id", "");
+        expect(mockResponse.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          "",
+        );
         expect(mockNext).toHaveBeenCalled();
       });
     });
@@ -275,10 +311,22 @@ describe("ContextMiddleware", () => {
         middleware.use(request2, response2, next2);
 
         expect(setupContextSpy).toHaveBeenCalledTimes(2);
-        expect(response1.setHeader).toHaveBeenCalledWith("x-request-id", "req-1");
-        expect(response1.setHeader).toHaveBeenCalledWith("x-correlation-id", "corr-1");
-        expect(response2.setHeader).toHaveBeenCalledWith("x-request-id", "req-2");
-        expect(response2.setHeader).toHaveBeenCalledWith("x-correlation-id", "corr-2");
+        expect(response1.setHeader).toHaveBeenCalledWith(
+          "x-request-id",
+          "req-1",
+        );
+        expect(response1.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          "corr-1",
+        );
+        expect(response2.setHeader).toHaveBeenCalledWith(
+          "x-request-id",
+          "req-2",
+        );
+        expect(response2.setHeader).toHaveBeenCalledWith(
+          "x-correlation-id",
+          "corr-2",
+        );
         expect(next1).toHaveBeenCalled();
         expect(next2).toHaveBeenCalled();
       });
