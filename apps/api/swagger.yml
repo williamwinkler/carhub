@@ -23,6 +23,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "429":
           description: Too Many Requests
           content:
@@ -149,13 +155,7 @@ paths:
   /v1/auth/apiKey:
     post:
       operationId: AuthController_createApiKey_v1
-      parameters:
-        - name: userId
-          required: false
-          in: query
-          description: userId to generate for
-          schema:
-            type: string
+      parameters: []
       responses:
         "201":
           description: The API key was successfully generated
@@ -163,12 +163,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponseDto"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
         "401":
           description: Unauthorized
           content:
@@ -285,18 +279,10 @@ paths:
           schema:
             type: string
             maxLength: 100
-        - name: model
+        - name: modelId
           required: false
           in: query
-          description: The model of the car.
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 100
-        - name: brand
-          required: false
-          in: query
-          description: The brand of the car.
+          description: The unique id of the car (UUID)
           schema:
             type: string
       responses:
@@ -442,8 +428,6 @@ paths:
           schema:
             type: string
       responses:
-        "204":
-          description: Car deleted successfully
         "400":
           description: Bad Request
           content:
@@ -485,6 +469,116 @@ paths:
       security:
         - bearer: []
         - apiKey: []
+  /v1/cars/{id}/favorite:
+    patch:
+      operationId: CarsController_toggleFavorite_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car (UUID)
+          schema:
+            type: string
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      summary: Toggle favorite status for a car
+      tags: *a2
+      security:
+        - bearer: []
+        - apiKey: []
+  /v1/cars/favorites:
+    get:
+      operationId: CarsController_getMyFavorites_v1
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: The limit of items to be returned.
+          schema:
+            type: string
+        - name: skip
+          required: false
+          in: query
+          description: The amount of items to skip.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User favorites retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarResponseListDto"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "429":
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+      summary: Get current user's favorite cars
+      tags: *a2
+      security:
+        - bearer: []
+        - apiKey: []
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.
@@ -503,98 +597,6 @@ components:
       in: header
       name: x-api-key
   schemas:
-    RegisterDto:
-      type: object
-      properties:
-        firstName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        lastName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        username:
-          type: string
-          minLength: 3
-          x-nestjs_zod-parent-additional-properties: false
-        password:
-          type: string
-          minLength: 6
-          x-nestjs_zod-parent-additional-properties: false
-        role:
-          default: user
-          description: The role of the user
-          type: string
-          enum:
-            - admin
-            - user
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - firstName
-        - lastName
-        - username
-        - password
-    UserDto:
-      type: object
-      properties:
-        firstName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        lastName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        username:
-          type: string
-          minLength: 3
-          x-nestjs_zod-parent-additional-properties: false
-        role:
-          default: user
-          description: The role of the user
-          type: string
-          enum:
-            - admin
-            - user
-          x-nestjs_zod-parent-additional-properties: false
-        hasApiKey:
-          description: Indicates whether or not the user has generated an API key
-          type: boolean
-          x-nestjs_zod-parent-additional-properties: false
-        createdAt:
-          description: The create date of the account
-          type: string
-          format: date-time
-          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
-        updatedAt:
-          description: The last time the account was updated
-          type: string
-          format: date-time
-          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - firstName
-        - lastName
-        - username
-        - hasApiKey
-        - createdAt
-        - updatedAt
-    UserResponseDto:
-      type: object
-      properties:
-        apiVersion:
-          type: string
-          description: The version of the API
-          example: 1.0.0
-        data:
-          description: The data of the response
-          allOf:
-            - $ref: "#/components/schemas/UserDto"
-      required:
-        - apiVersion
-        - data
     ErrorDto:
       type: object
       properties:
@@ -670,8 +672,11 @@ components:
             - 2000
             - 2001
             - 2002
+            - 2003
             - 3000
             - 3001
+            - 3002
+            - 3003
             - 4000
             - 4001
         message:
@@ -685,6 +690,90 @@ components:
         - statusCode
         - errorCode
         - message
+    RegisterDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        lastName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        username:
+          type: string
+          minLength: 3
+          x-nestjs_zod-parent-additional-properties: false
+        password:
+          type: string
+          minLength: 6
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - firstName
+        - lastName
+        - username
+        - password
+    UserDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        lastName:
+          type: string
+          minLength: 1
+          x-nestjs_zod-parent-additional-properties: false
+        username:
+          type: string
+          minLength: 3
+          x-nestjs_zod-parent-additional-properties: false
+        role:
+          description: The role of the user
+          type: string
+          enum:
+            - admin
+            - user
+          x-nestjs_zod-parent-additional-properties: false
+        hasApiKey:
+          description: Indicates whether or not the user has generated an API key
+          type: boolean
+          x-nestjs_zod-parent-additional-properties: false
+        createdAt:
+          description: The create date of the account
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          x-nestjs_zod-parent-additional-properties: false
+        updatedAt:
+          description: The last time the account was updated
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - firstName
+        - lastName
+        - username
+        - role
+        - hasApiKey
+        - createdAt
+        - updatedAt
+    UserResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/UserDto"
+      required:
+        - apiVersion
+        - data
     LoginDto:
       type: object
       properties:
@@ -760,25 +849,11 @@ components:
     CreateCarDto:
       type: object
       properties:
-        brand:
-          description: The brand of the car.
+        modelId:
+          description: The ID of the model
           type: string
-          enum:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-          x-nestjs_zod-parent-additional-properties: false
-        model:
-          description: The model of the car.
-          type: string
-          minLength: 1
-          maxLength: 100
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
@@ -793,17 +868,19 @@ components:
           maxLength: 100
           x-nestjs_zod-parent-additional-properties: false
         kmDriven:
+          description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
-          type: number
+          description: Price of the car in €
+          type: integer
           minimum: 0
+          maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
       required:
-        - brand
-        - model
+        - modelId
         - year
         - color
         - kmDriven
@@ -811,26 +888,6 @@ components:
     CarDto:
       type: object
       properties:
-        brand:
-          description: The brand of the car.
-          type: string
-          enum:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-          x-nestjs_zod-parent-additional-properties: false
-        model:
-          description: The model of the car.
-          type: string
-          minLength: 1
-          maxLength: 100
-          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
           type: integer
@@ -844,13 +901,16 @@ components:
           maxLength: 100
           x-nestjs_zod-parent-additional-properties: false
         kmDriven:
+          description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
-          type: number
+          description: Price of the car in €
+          type: integer
           minimum: 0
+          maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
         id:
           description: The unique id of the car (UUID)
@@ -870,30 +930,17 @@ components:
           format: date-time
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
           x-nestjs_zod-parent-additional-properties: false
-        updatedBy:
-          description: The user who last updated this car
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
         updatedAt:
           description: When the car record was last updated
           type: string
           format: date-time
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
           x-nestjs_zod-parent-additional-properties: false
-        favoritedBy:
-          description: List of user IDs who favorited this car
-          default: []
-          type: array
-          items:
-            type: string
-            format: uuid
-            pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        isFavorite:
+          description: Indicates if the user has favorited the car or not
+          type: boolean
           x-nestjs_zod-parent-additional-properties: false
       required:
-        - brand
-        - model
         - year
         - color
         - kmDriven
@@ -901,8 +948,8 @@ components:
         - id
         - createdBy
         - createdAt
-        - updatedBy
         - updatedAt
+        - isFavorite
     CarResponseDto:
       type: object
       properties:
@@ -969,25 +1016,11 @@ components:
     UpdateCarDto:
       type: object
       properties:
-        brand:
-          description: The brand of the car.
+        modelId:
+          description: The ID of the model
           type: string
-          enum:
-            - BMW
-            - Mercedes
-            - Porsche
-            - Audi
-            - Toyota
-            - Honda
-            - Ford
-            - Tesla
-            - Volkswagen
-          x-nestjs_zod-parent-additional-properties: false
-        model:
-          description: The model of the car.
-          type: string
-          minLength: 1
-          maxLength: 100
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the it was manufactored.
@@ -1002,11 +1035,14 @@ components:
           maxLength: 100
           x-nestjs_zod-parent-additional-properties: false
         kmDriven:
+          description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
           x-nestjs_zod-parent-additional-properties: false
         price:
-          type: number
+          description: Price of the car in €
+          type: integer
           minimum: 0
+          maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
