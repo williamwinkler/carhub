@@ -82,4 +82,22 @@ export class ConfigService {
       defaultVersion: this.get("API_DEFAULT_VERSION"),
     };
   }
+
+  /**
+   * Get test database configuration
+   * Falls back to main database config if test-specific variables are not set
+   */
+  getTestDatabaseConfig() {
+    return {
+      type: "postgres" as const,
+      host: this.get("TEST_POSTGRES_HOST") || this.get("POSTGRES_HOST"),
+      port: this.get("TEST_POSTGRES_PORT") || this.get("POSTGRES_PORT"),
+      database: this.get("TEST_POSTGRES_DATABASE") || this.get("POSTGRES_DATABASE"),
+      username: this.get("TEST_POSTGRES_USERNAME") || this.get("POSTGRES_USERNAME"),
+      password: this.get("TEST_POSTGRES_PASSWORD") || this.get("POSTGRES_PASSWORD"),
+      synchronize: true, // Always sync in tests
+      dropSchema: false, // Don't drop schema by default (allow override via env)
+      logging: process.env.NODE_ENV === "development" ? ["error"] : false,
+    };
+  }
 }
