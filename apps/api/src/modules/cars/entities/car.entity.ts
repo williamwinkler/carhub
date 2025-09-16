@@ -1,5 +1,5 @@
-import { AbstractEntity } from "@api/modules/database/abstract.entity";
-import { User } from "@api/modules/users/entities/user.entity";
+import { AbstractEntity } from "../../database/abstract.entity";
+import { User } from "../../users/entities/user.entity";
 import type { UUID } from "crypto";
 import {
   Column,

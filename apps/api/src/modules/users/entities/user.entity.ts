@@ -1,5 +1,5 @@
-import { Car } from "@api/modules/cars/entities/car.entity";
-import { AbstractEntity } from "@api/modules/database/abstract.entity";
+import { Car } from "../../cars/entities/car.entity";
+import { AbstractEntity } from "../../database/abstract.entity";
 import {
   Column,
   CreateDateColumn,

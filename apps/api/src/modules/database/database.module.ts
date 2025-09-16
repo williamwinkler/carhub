@@ -9,7 +9,7 @@ import { ConfigService } from "../config/config.service";
       imports: [forwardRef(() => ConfigModule)],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        type: "postgres" as const,
+        type: "postgres",
         host: configService.get("POSTGRES_HOST"),
         port: configService.get("POSTGRES_PORT"),
         database: configService.get("POSTGRES_DATABASE"),

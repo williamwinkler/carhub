@@ -1,4 +1,4 @@
-import { AbstractEntity } from "@api/modules/database/abstract.entity";
+import { AbstractEntity } from "../../database/abstract.entity";
 import {
   Column,
   CreateDateColumn,

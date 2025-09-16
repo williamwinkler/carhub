@@ -16,6 +16,6 @@ import { Car } from "./entities/car.entity";
   ],
   controllers: [CarsController],
   providers: [CarsService, CarsAdapter, CarsTrpc],
-  exports: [CarsTrpc],
+  exports: [CarsTrpc, CarsService, CarsAdapter],
 })
 export class CarsModule {}
