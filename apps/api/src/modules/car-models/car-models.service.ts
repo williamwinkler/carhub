@@ -5,8 +5,8 @@ import { Repository } from "typeorm";
 import { CarModel } from "./entities/car-model.entity";
 
 @Injectable()
-export class ModelsService {
-  private readonly logger = new Logger(ModelsService.name);
+export class CarModelsService {
+  private readonly logger = new Logger(CarModelsService.name);
 
   constructor(
     @InjectRepository(CarModel)
@@ -30,7 +30,7 @@ export class ModelsService {
 
   async findByManufacturerId(manufacturerId: UUID): Promise<CarModel[]> {
     return this.modelsRepository.find({
-      where: { manufacturer: { id: manufacturerId as any } },
+      where: { manufacturer: { id: manufacturerId } },
       relations: ["manufacturer"],
     });
   }
@@ -38,7 +38,7 @@ export class ModelsService {
   async create(name: string, manufacturerId: UUID): Promise<CarModel> {
     const model = this.modelsRepository.create({
       name,
-      manufacturer: { id: manufacturerId as any },
+      manufacturer: { id: manufacturerId },
     });
 
     const savedModel = await this.modelsRepository.save(model);

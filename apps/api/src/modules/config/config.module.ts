@@ -8,6 +8,8 @@ import { ConfigService } from "./config.service";
     NestConfigModule.forRoot({
       isGlobal: true,
       validate: (env) => validateEnv(env),
+      envFilePath: '.env',
+      expandVariables: true,
     }),
   ],
   providers: [ConfigService],

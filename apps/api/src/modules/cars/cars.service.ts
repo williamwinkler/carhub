@@ -10,7 +10,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
 import { Repository } from "typeorm";
 import { Pagination } from "../../common/types/pagination";
-import { ModelsService } from "../car-models/models.service";
+import { CarModelsService } from "../car-models/car-models.service";
 import { User } from "../users/entities/user.entity";
 import { FindAllCarsOptions, GetAllFavoritesOptions } from "./cars.types";
 import { CreateCarDto } from "./dto/create-car.dto";
@@ -24,7 +24,7 @@ export class CarsService {
   constructor(
     @InjectRepository(Car)
     private readonly carsRepo: Repository<Car>,
-    private readonly modelsService: ModelsService,
+    private readonly modelsService: CarModelsService,
   ) {}
 
   // region CREATE

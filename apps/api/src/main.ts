@@ -19,13 +19,26 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  app.enableCors(configService.getCorsConfig());
+  app.enableCors({
+    origin: configService.get("CORS_ORIGINS"),
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept",
+      "Accept-Language",
+      "Content-Language",
+      "x-trpc-source",
+      "x-trpc-batch",
+      "x-api-key",
+    ],
+    optionsSuccessStatus: 200,
+  });
 
-  const versioningConfig = configService.getVersioningConfig();
   app.enableVersioning({
     type: VersioningType.URI,
-    prefix: versioningConfig.prefix,
-    defaultVersion: versioningConfig.defaultVersion,
+    prefix: "v",
+    defaultVersion: "1",
   });
 
   app.use(express.json());

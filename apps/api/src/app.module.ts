@@ -18,14 +18,13 @@ import { ResponseValidationInterceptor } from "./common/interceptors/response-va
 import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
 import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { AuthModule } from "./modules/auth/auth.module";
+import { CarManufacturersModule } from "./modules/car-manufacturers/car-manufacturers.module";
+import { CarModelsModule } from "./modules/car-models/car-models.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { ConfigModule } from "./modules/config/config.module";
-import { ConfigService } from "./modules/config/config.service";
-import { ManufacturersModule } from "./modules/car-manufacturers/manufacturers.module";
-import { ModelsModule } from "./modules/car-models/models.module";
+import { DatabaseModule } from "./modules/database/database.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 import { UsersModule } from "./modules/users/users.module";
-import { DatabaseModule } from "./modules/database/database.module";
 
 @Module({
   imports: [
@@ -38,18 +37,29 @@ import { DatabaseModule } from "./modules/database/database.module";
     CacheModule.register({
       isGlobal: true,
     }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        configService.getThrottlerConfig(),
-      inject: [ConfigService],
-    }),
+    ThrottlerModule.forRoot([
+      {
+        name: "short",
+        ttl: 1000,
+        limit: 3,
+      },
+      {
+        name: "medium",
+        ttl: 10000,
+        limit: 20,
+      },
+      {
+        name: "long",
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     JwtModule,
     AuthModule,
     UsersModule,
     TrpcModule,
-    ManufacturersModule,
-    ModelsModule,
+    CarManufacturersModule,
+    CarModelsModule,
     CarsModule,
   ],
   controllers: [],

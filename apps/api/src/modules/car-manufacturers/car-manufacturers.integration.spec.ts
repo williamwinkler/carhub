@@ -5,8 +5,8 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { randomUUID } from "crypto";
 import type { QueryRunner } from "typeorm";
 import { DataSource } from "typeorm";
+import { ManufacturersService } from "./car-manufacturers.service";
 import { CarManufacturer } from "./entities/car-manufacturer.entity";
-import { ManufacturersService } from "./manufacturers.service";
 
 /**
  * Transactional Integration Tests for ManufacturersService

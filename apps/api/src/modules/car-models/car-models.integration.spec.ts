@@ -6,8 +6,8 @@ import { randomUUID } from "crypto";
 import type { QueryRunner } from "typeorm";
 import { DataSource } from "typeorm";
 import { CarManufacturer } from "../car-manufacturers/entities/car-manufacturer.entity";
+import { CarModelsService } from "./car-models.service";
 import { CarModel } from "./entities/car-model.entity";
-import { ModelsService } from "./models.service";
 
 /**
  * Transactional Integration Tests for ModelsService
@@ -19,7 +19,7 @@ describe("ModelsService Transactional Integration Tests", () => {
   let module: TestingModule;
   let dataSource: DataSource;
   let queryRunner: QueryRunner;
-  let service: ModelsService;
+  let service: CarModelsService;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -27,11 +27,11 @@ describe("ModelsService Transactional Integration Tests", () => {
         TypeOrmModule.forRoot(TEST_DATABASE_CONFIG),
         TypeOrmModule.forFeature([CarModel, CarManufacturer]),
       ],
-      providers: [ModelsService],
+      providers: [CarModelsService],
     }).compile();
 
     dataSource = module.get<DataSource>(DataSource);
-    service = module.get<ModelsService>(ModelsService);
+    service = module.get<CarModelsService>(CarModelsService);
   });
 
   afterAll(async () => {
