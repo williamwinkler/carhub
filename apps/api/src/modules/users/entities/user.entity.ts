@@ -5,7 +5,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
+  Unique,
   UpdateDateColumn,
 } from "typeorm";
 
@@ -16,6 +20,7 @@ export const Role = {
 export type RoleType = (typeof Role)[keyof typeof Role];
 
 @Entity({ name: "users" })
+@Unique("users_username_unique", ["username"])
 export class User extends AbstractEntity {
   @Column({
     type: "enum",
@@ -29,7 +34,7 @@ export class User extends AbstractEntity {
   @Column()
   lastName: string;
 
-  @Column({ unique: true })
+  @Column()
   username: string;
 
   @Column()
@@ -43,6 +48,16 @@ export class User extends AbstractEntity {
 
   @OneToMany(() => Car, (car) => car.createdBy)
   cars!: Car[];
+
+  @ManyToMany(() => Car, (car) => car.favoritedBy, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: "user_favorite_cars",
+    joinColumn: { name: "user_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "car_id", referencedColumnName: "id" },
+  })
+  favorites!: Car[];
 
   @CreateDateColumn({ type: "timestamptz" })
   createdAt!: Date;

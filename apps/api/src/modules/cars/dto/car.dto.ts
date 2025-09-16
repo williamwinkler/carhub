@@ -8,11 +8,11 @@ export const carIdSchema = uuidSchema.describe(
 );
 
 export const carSchema = createCarSchema
+  .omit({ modelId: true })
   .extend({
     id: carIdSchema,
     createdBy: z.uuid().describe("The user who created this car"),
     createdAt: z.iso.datetime().describe("When the car record was created"),
-    updatedBy: z.uuid().describe("The user who last updated this car"),
     updatedAt: z.iso
       .datetime()
       .describe("When the car record was last updated"),

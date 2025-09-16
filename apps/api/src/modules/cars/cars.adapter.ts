@@ -1,3 +1,4 @@
+import { Ctx } from "@api/common/ctx";
 import { Injectable } from "@nestjs/common";
 import { PaginationDto } from "../../common/dto/pagination.dto";
 import { Pagination } from "../../common/types/pagination";
@@ -7,19 +8,21 @@ import { Car } from "./entities/car.entity";
 @Injectable()
 export class CarsAdapter {
   public getDto(car: Car): CarDto {
+    const userId = Ctx.userId;
+
     return {
       id: car.id,
-      brand: car.brand,
-      model: car.model,
+      // model: car.model,
       year: car.year,
       color: car.color,
       kmDriven: car.kmDriven,
       price: car.price,
       createdBy: car.createdBy,
       createdAt: car.createdAt.toISOString(),
-      updatedBy: car.updatedBy,
       updatedAt: car.updatedAt?.toISOString(),
-      favoritedBy: car.favoritedBy,
+      isFavorite:
+        (userId && car?.favoritedBy?.some((user) => user.id === userId)) ??
+        false,
     };
   }
 

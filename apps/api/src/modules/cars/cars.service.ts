@@ -1,16 +1,18 @@
 import { Ctx } from "@api/common/ctx";
 import { BadRequestError } from "@api/common/errors/domain/bad-request.error";
+import { UsersCanOnlyUpdateOwnCarsError } from "@api/common/errors/domain/forbidden.error";
 import {
+  CarModelNotFoundError,
   CarNotFoundError,
-  ModelNotFoundError,
 } from "@api/common/errors/domain/not-found.error";
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
 import { Repository } from "typeorm";
 import { Pagination } from "../../common/types/pagination";
-import { ModelsService } from "../models/models.service";
-import { FindAllCarsOptions } from "./cars.type";
+import { ModelsService } from "../car-models/models.service";
+import { User } from "../users/entities/user.entity";
+import { FindAllCarsOptions, GetAllFavoritesOptions } from "./cars.types";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
 import { Car } from "./entities/car.entity";
@@ -31,11 +33,15 @@ export class CarsService {
 
     const model = await this.modelsService.findById(createCarDto.modelId);
     if (!model) {
-      throw new ModelNotFoundError();
+      throw new CarModelNotFoundError();
     }
 
     const newCar = this.carsRepo.create({
-      ...createCarDto,
+      year: createCarDto.year,
+      color: createCarDto.color,
+      kmDriven: createCarDto.kmDriven,
+      price: createCarDto.price,
+      model: model,
       createdBy: userId,
     });
 
@@ -49,150 +55,162 @@ export class CarsService {
   }
 
   // region FIND
-  findAll(options: FindAllCarsOptions): Pagination<Car> {
-    const { brand, model, color, skip, limit, sortField, sortDirection } =
-      options;
+  async findAll(options: FindAllCarsOptions): Promise<Pagination<Car>> {
+    const { modelId, color, skip, limit, sortField, sortDirection } = options;
 
-    const cars = Array.from(this.cars.values()).filter((car) => {
-      if (brand && car.brand !== brand) {
-        return false;
-      }
+    const queryBuilder = this.carsRepo
+      .createQueryBuilder("car")
+      .leftJoinAndSelect("car.model", "model")
+      .leftJoinAndSelect("model.manufacturer", "manufacturer");
 
-      if (model && car.model.toLowerCase() !== model.toLowerCase()) {
-        return false;
-      }
+    // Apply filters
+    if (modelId) {
+      queryBuilder.andWhere("car.modelId = :modelId", { modelId });
+    }
 
-      if (color && car.color.toLowerCase() !== color.toLowerCase()) {
-        return false;
-      }
-
-      return true;
-    });
+    if (color) {
+      queryBuilder.andWhere("car.color = :color", { color });
+    }
 
     // Apply sorting
     if (sortField && sortDirection) {
-      cars.sort((a, b) => {
-        let aVal = a[sortField];
-        let bVal = b[sortField];
-
-        if (typeof aVal === "string") {
-          aVal = aVal.toLowerCase();
-        }
-
-        if (typeof bVal === "string") {
-          bVal = bVal.toLowerCase();
-        }
-
-        if (aVal < bVal) {
-          return sortDirection === "asc" ? -1 : 1;
-        }
-
-        if (aVal > bVal) {
-          return sortDirection === "asc" ? 1 : -1;
-        }
-
-        return 0;
-      });
+      queryBuilder.orderBy(`car.${sortField}`, sortDirection);
     }
 
     // Apply pagination
-    const paginatedCars = cars.slice(skip, skip + limit);
+    if (skip) {
+      queryBuilder.skip(skip);
+    }
+
+    if (limit) {
+      queryBuilder.take(limit);
+    }
+
+    const [items, totalItems] = await queryBuilder.getManyAndCount();
 
     return {
-      items: paginatedCars,
+      items,
       meta: {
-        totalItems: cars.length,
-        limit,
-        skipped: skip,
-        count: paginatedCars.length,
+        totalItems,
+        limit: limit || totalItems,
+        skipped: skip || 0,
+        count: items.length,
       },
     };
   }
 
-  findById(id: UUID): Car {
-    const car = this.cars.get(id);
-
-    if (!car) {
-      throw new CarNotFoundError();
-    }
-
-    return car;
+  async findById(id: UUID): Promise<Car | null> {
+    return await this.carsRepo.findOneBy({ id });
   }
 
   // region UPDATE
-  update(id: UUID, dto: UpdateCarDto): Car {
-    const principal = Ctx.principalRequired();
-    const role = Ctx.roleRequired();
-
-    const car = this.cars.get(id);
+  async update(id: UUID, dto: UpdateCarDto): Promise<Car> {
+    const car = await this.findById(id);
     if (!car) {
       throw new CarNotFoundError();
     }
 
     // Authorization check: only car owners or admins can update
+    const principal = Ctx.principalRequired();
     if (car.createdBy !== principal.id && principal.role !== "admin") {
-      throw new BadRequestError("You can only update your own cars");
+      throw new UsersCanOnlyUpdateOwnCarsError();
     }
 
-    const updatedCar: Car = {
+    const updatedCar = this.carsRepo.create({
       ...car,
       ...dto,
-      updatedBy: principal.id,
-      updatedAt: new Date(),
-    };
+    });
 
-    this.cars.set(id, updatedCar);
+    if (dto.modelId) {
+      const carModel = await this.modelsService.findById(dto.modelId);
+      if (!carModel) {
+        throw new CarModelNotFoundError();
+      }
 
+      updatedCar.model = carModel;
+    }
+
+    const saved = await this.carsRepo.save(updatedCar);
     this.logger.log("Updated car: " + id);
 
-    return updatedCar;
+    return saved;
   }
 
   // region DELETE
-  delete(id: UUID): void {
-    const userId = Ctx.userIdRequired();
-    const role = Ctx.roleRequired();
-
-    const car = this.cars.get(id);
+  async softDelete(id: UUID): Promise<void> {
+    const car = await this.findById(id);
     if (!car) {
       throw new CarNotFoundError();
     }
 
     // Authorization check: only car owners or admins can delete
-    if (car.createdBy !== userId && role !== "admin") {
+    const principal = Ctx.principalRequired();
+    if (car.createdBy !== principal.id && principal.role !== "admin") {
       throw new BadRequestError("You can only delete your own cars");
     }
 
-    const isDeleted = this.cars.delete(id);
-    if (!isDeleted) {
-      throw new CarNotFoundError();
-    }
+    await this.carsRepo.softDelete({ id });
 
     this.logger.log("Car deleted: " + id);
   }
 
-  toggleFavorite(carId: UUID, userId: UUID): Car {
-    const car = this.cars.get(carId);
+  async toggleFavoriteForUser(id: UUID, userId: UUID): Promise<void> {
+    const car = await this.carsRepo.findOne({
+      where: { id },
+      relations: ["favoritedBy"],
+    });
+
     if (!car) {
       throw new CarNotFoundError();
     }
 
-    const favoriteIndex = car.favoritedBy.indexOf(userId);
-    if (favoriteIndex === -1) {
-      car.favoritedBy.push(userId);
+    const isFavorited = car.favoritedBy.some((user) => user.id === userId);
+
+    if (isFavorited) {
+      // Remove user from favorites
+      car.favoritedBy = car.favoritedBy.filter((user) => user.id !== userId);
     } else {
-      car.favoritedBy.splice(favoriteIndex, 1);
+      // Add user to favorites - we need to create a user reference
+      car.favoritedBy.push({ id: userId } as User);
     }
 
-    this.cars.set(carId, car);
-    this.logger.log(`User ${userId} toggled favorite for car: ${carId}`);
-
-    return car;
+    await this.carsRepo.save(car);
+    this.logger.log(
+      `User ${userId} toggled favorite for car ${id} to ${!isFavorited}`,
+    );
   }
 
-  getFavoritesByUser(userId: UUID): Car[] {
-    return Array.from(this.cars.values()).filter((car) =>
-      car.favoritedBy.includes(userId),
-    );
+  async getFavoritesByUser(
+    options: GetAllFavoritesOptions,
+  ): Promise<Pagination<Car>> {
+    const { userId, skip, limit } = options;
+
+    const queryBuilder = this.carsRepo
+      .createQueryBuilder("car")
+      .leftJoinAndSelect("car.model", "model")
+      .leftJoinAndSelect("model.manufacturer", "manufacturer")
+      .innerJoin("car.favoritedBy", "user")
+      .where("user.id = :userId", { userId });
+
+    // Apply pagination
+    if (skip) {
+      queryBuilder.skip(skip);
+    }
+
+    if (limit) {
+      queryBuilder.take(limit);
+    }
+
+    const [items, totalItems] = await queryBuilder.getManyAndCount();
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        limit: limit || totalItems,
+        skipped: skip || 0,
+        count: items.length,
+      },
+    };
   }
 }

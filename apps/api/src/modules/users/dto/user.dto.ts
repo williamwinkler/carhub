@@ -1,3 +1,4 @@
+import { roleSchema } from "@api/common/schemas/common.schema";
 import { registerSchema } from "@api/modules/auth/dto/register.dto";
 import { createZodDto } from "nestjs-zod";
 import z from "zod";
@@ -5,6 +6,7 @@ import z from "zod";
 const userSchema = registerSchema
   .omit({ password: true })
   .extend({
+    role: roleSchema,
     hasApiKey: z
       .boolean()
       .describe("Indicates whether or not the user has generated an API key"),

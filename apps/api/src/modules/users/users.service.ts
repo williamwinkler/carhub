@@ -6,9 +6,8 @@ import { UserNotFoundError } from "@api/common/errors/domain/not-found.error";
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
-import { EntityManager, Repository } from "typeorm";
+import { QueryFailedError, Repository } from "typeorm";
 import { Car } from "../cars/entities/car.entity";
-import { isUniqueViolation } from "../database/database.utils";
 import { User } from "./entities/user.entity";
 import { CreateUser, UpdateUser } from "./users.types";
 
@@ -19,21 +18,32 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
-    private readonly entityManager: EntityManager,
   ) {}
 
   async create(options: CreateUser): Promise<User> {
     const { firstName, lastName, username, hashedPassword } = options;
 
-    const newUser = this.usersRepo.create({
-      firstName,
-      lastName,
-      username,
-      password: hashedPassword,
-    });
+    try {
+      const newUser = this.usersRepo.create({
+        firstName,
+        lastName,
+        username,
+        password: hashedPassword,
+        role: "user",
+      });
 
-    const savedUser = await this.usersRepo.save(newUser).catch((error) => {
-      if (isUniqueViolation(error, { constraint: "users_username_key" })) {
+      const savedUser = await this.usersRepo.save(newUser);
+
+      this.logger.log(
+        `New user created with username ${savedUser.username} and ID ${savedUser.id}`,
+      );
+
+      return savedUser;
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError?.code === "23505"
+      ) {
         this.logger.debug(
           `Uniqueness constraint: username "${username}" already exists`,
         );
@@ -42,13 +52,7 @@ export class UsersService {
 
       this.logger.error(`Error saving new user`, error);
       throw new InternalServerError();
-    });
-
-    this.logger.log(
-      `New user created with username ${savedUser.username} and ID ${savedUser.id}`,
-    );
-
-    return savedUser;
+    }
   }
 
   async findById(id: UUID): Promise<User | null> {
@@ -80,7 +84,6 @@ export class UsersService {
 
     const updatedUser = this.usersRepo.create({ ...existingUser, ...data });
     const savedUser = await this.usersRepo.save(updatedUser);
-
     this.logger.log(`User ${savedUser.id} updated by ${principal.id}`);
 
     return savedUser;
