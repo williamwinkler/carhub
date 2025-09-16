@@ -9,12 +9,7 @@ import { Injectable } from "@nestjs/common";
 import { z } from "zod";
 import { TrpcService } from "../trpc/trpc.service";
 import { CarsService } from "./cars.service";
-import {
-  carBrandSchema,
-  carColorSchema,
-  carModelSchema,
-  createCarSchema,
-} from "./dto/create-car.dto";
+import { carColorSchema, createCarSchema } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
 
 @Injectable()
@@ -30,8 +25,6 @@ export class CarsTrpc {
       .input(
         z
           .object({
-            brand: carBrandSchema.optional(),
-            model: carModelSchema.optional(),
             color: carColorSchema.optional(),
             skip: z.number().int().min(0).default(0),
             limit: z.number().int().min(0).max(100).optional().default(10),
@@ -74,7 +67,7 @@ export class CarsTrpc {
     deleteById: this.trpc.authenticatedShortProcedure
       .input(z.object({ id: uuidSchema }))
       .mutation(async ({ input }) => {
-        return await this.carsService.delete(input.id);
+        return await this.carsService.softDelete(input.id);
       }),
 
     // Authenticated route - toggle favorite (uses default rate limiting)
@@ -83,22 +76,7 @@ export class CarsTrpc {
       .mutation(async ({ input }) => {
         const userId = Ctx.userIdRequired();
 
-        return await this.carsService.toggleFavorite(input.id, userId);
+        return await this.carsService.toggleFavoriteForUser(input.id, userId);
       }),
-
-    // Authenticated route - get user's favorites (uses default rate limiting)
-    getFavorites: this.trpc.authenticatedProcedure.query(async () => {
-      const userId = Ctx.userIdRequired();
-
-      return await this.carsService.getFavoritesByUser(userId);
-    }),
-
-    // Authenticated route - get user's own cars (uses default rate limiting)
-    getMyCars: this.trpc.authenticatedProcedure.query(async () => {
-      const userId = Ctx.userIdRequired();
-      const allCars = await this.carsService.findAll({ skip: 0, limit: 1000 });
-
-      return allCars.items.filter((car) => car.createdBy === userId);
-    }),
   });
 }

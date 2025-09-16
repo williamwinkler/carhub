@@ -1,19 +1,21 @@
+import { Ctx } from "@api/common/ctx";
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
 import { NotFoundDecorator } from "@api/common/decorators/swagger-responses.decorator";
 import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
+import { CarNotFoundError } from "@api/common/errors/domain/not-found.error";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import {
   Body,
   Controller,
   Delete,
   Get,
-  HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Put,
 } from "@nestjs/common";
-import { ApiNoContentResponse, ApiOperation } from "@nestjs/swagger";
+import { ApiOperation } from "@nestjs/swagger";
 import { UUID } from "crypto";
 import {
   limitSchema,
@@ -23,16 +25,10 @@ import {
 } from "../../common/schemas/common.schema";
 import { CarsAdapter } from "./cars.adapter";
 import { CarsService } from "./cars.service";
-import { SortDirection, SortField } from "./cars.type";
+import { SortDirection, SortField } from "./cars.types";
 import { CarDto, carIdSchema } from "./dto/car.dto";
-import {
-  carBrandSchema,
-  carColorSchema,
-  carModelSchema,
-  CreateCarDto,
-} from "./dto/create-car.dto";
+import { carColorSchema, CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
-import { CarBrandType } from "./entities/car.entity";
 
 @Controller("cars")
 export class CarsController {
@@ -50,7 +46,7 @@ export class CarsController {
     type: CarDto,
   })
   async create(@Body() dto: CreateCarDto) {
-    const car = this.carsService.create(dto);
+    const car = await this.carsService.create(dto);
     const data = this.carsAdapter.getDto(car);
 
     return data;
@@ -65,8 +61,7 @@ export class CarsController {
     type: [CarDto],
   })
   async findAll(
-    @zQuery("brand", carBrandSchema.optional()) brand?: CarBrandType,
-    @zQuery("model", carModelSchema.optional()) model?: string,
+    @zQuery("modelId", carIdSchema.optional()) modelId?: UUID,
     @zQuery("color", carColorSchema.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
@@ -74,9 +69,8 @@ export class CarsController {
     @zQuery("sortDirection", sortDirectionQuerySchema)
     sortDirection?: SortDirection,
   ) {
-    const cars = this.carsService.findAll({
-      brand,
-      model,
+    const cars = await this.carsService.findAll({
+      modelId,
       color,
       skip,
       limit,
@@ -84,8 +78,6 @@ export class CarsController {
       sortDirection,
     });
     const data = this.carsAdapter.getListDto(cars);
-
-    // (data.items as any)[2].whoops = "should not be here";
 
     return data;
   }
@@ -99,10 +91,12 @@ export class CarsController {
   })
   @NotFoundDecorator()
   async findOne(@zParam("id", carIdSchema) id: UUID) {
-    const car = this.carsService.findById(id);
-    const data = this.carsAdapter.getDto(car);
+    const car = await this.carsService.findById(id);
+    if (!car) {
+      throw new CarNotFoundError();
+    }
 
-    // (data as any).not_okay = "should not be here";
+    const data = this.carsAdapter.getDto(car);
 
     return data;
   }
@@ -116,18 +110,35 @@ export class CarsController {
   })
   @NotFoundDecorator()
   async update(@zParam("id", carIdSchema) id: UUID, @Body() dto: UpdateCarDto) {
-    const car = this.carsService.update(id, dto);
+    const car = await this.carsService.update(id, dto);
 
     return this.carsAdapter.getDto(car);
   }
 
   @Delete(":id")
-  @ApiOperation({ summary: "Delete a car" })
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles("user")
-  @ApiNoContentResponse({ description: "Car deleted successfully" })
+  @ApiEndpoint({
+    status: HttpStatus.NO_CONTENT,
+    summary: "Delete a car",
+    successText: "Car deleted successfully",
+    type: null,
+  })
   @NotFoundDecorator()
   async remove(@zParam("id", carIdSchema) id: UUID) {
-    this.carsService.delete(id);
+    await this.carsService.softDelete(id);
+  }
+
+  @Patch(":id/favorite")
+  @Roles("user")
+  @ApiEndpoint({
+    status: HttpStatus.NO_CONTENT,
+    summary: "Toggle favorite status for a car",
+    successText: "Car favorite status toggled successfully",
+    type: null,
+  })
+  @NotFoundDecorator()
+  async toggleFavorite(@zParam("id", carIdSchema) id: UUID) {
+    const userId = Ctx.userIdRequired();
+    await this.carsService.toggleFavoriteForUser(id, userId);
   }
 }
