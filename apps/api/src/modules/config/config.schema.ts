@@ -33,13 +33,6 @@ export const configSchema = z.object({
   POSTGRES_DATABASE: z.string(),
   POSTGRES_USERNAME: z.string(),
   POSTGRES_PASSWORD: z.string(),
-
-  // Test Database Configuration (defaults to main DB if not specified)
-  TEST_POSTGRES_HOST: z.string().optional(),
-  TEST_POSTGRES_PORT: z.coerce.number().optional(),
-  TEST_POSTGRES_DATABASE: z.string().optional(),
-  TEST_POSTGRES_USERNAME: z.string().optional(),
-  TEST_POSTGRES_PASSWORD: z.string().optional(),
 });
 
 export type ConfigSchema = z.infer<typeof configSchema>;
