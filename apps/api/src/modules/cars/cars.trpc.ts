@@ -1,15 +1,15 @@
 // src/modules/cars/cars.trpc.ts
 import { Ctx } from "@api/common/ctx";
 import {
-  sortDirectionSchema,
-  sortFieldSchema,
+  sortDirectionQuerySchema,
   uuidSchema,
 } from "@api/common/schemas/common.schema";
 import { Injectable } from "@nestjs/common";
 import { z } from "zod";
 import { TrpcService } from "../trpc/trpc.service";
 import { CarsService } from "./cars.service";
-import { carColorSchema, createCarSchema } from "./dto/create-car.dto";
+import { carFields, carSortFieldQuerySchema } from "./cars.schema";
+import { createCarSchema } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
 
 @Injectable()
@@ -25,11 +25,11 @@ export class CarsTrpc {
       .input(
         z
           .object({
-            color: carColorSchema.optional(),
+            color: carFields.color.optional(),
             skip: z.number().int().min(0).default(0),
             limit: z.number().int().min(0).max(100).optional().default(10),
-            sortField: sortFieldSchema.optional(),
-            sortDirection: sortDirectionSchema.optional(),
+            sortField: carSortFieldQuerySchema.optional(),
+            sortDirection: sortDirectionQuerySchema.optional(),
           })
           .optional(),
       )
@@ -77,6 +77,27 @@ export class CarsTrpc {
         const userId = Ctx.userIdRequired();
 
         return await this.carsService.toggleFavoriteForUser(input.id, userId);
+      }),
+
+    // Authenticated route - get user's favorite cars (uses default rate limiting)
+    getFavorites: this.trpc.authenticatedProcedure
+      .input(
+        z
+          .object({
+            skip: z.number().int().min(0).default(0),
+            limit: z.number().int().min(0).max(100).optional().default(10),
+          })
+          .optional(),
+      )
+      .query(async ({ input }) => {
+        const userId = Ctx.userIdRequired();
+
+        return await this.carsService.getFavoritesByUser({
+          userId,
+          skip: 0,
+          limit: 10,
+          ...input,
+        });
       }),
   });
 }

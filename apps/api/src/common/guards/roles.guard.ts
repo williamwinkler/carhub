@@ -1,13 +1,10 @@
 import { RoleType } from "@api/modules/users/entities/user.entity";
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { Ctx } from "../ctx"; // use your CLS context
+import { Ctx } from "../ctx";
 import { ROLES_KEY } from "../decorators/roles.decorator";
+import { AppError } from "../errors/app-error";
+import { Errors } from "../errors/errors";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -22,9 +19,9 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const role = Ctx.role;
-    if (!role || !requiredRoles.includes(role)) {
-      throw new ForbiddenException("Insufficient role");
+    const role = Ctx.roleRequired();
+    if (role !== "admin" && !requiredRoles.includes(role)) {
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     return true;

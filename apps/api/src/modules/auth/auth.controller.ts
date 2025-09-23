@@ -1,8 +1,6 @@
 import { Public } from "@api/common/decorators/public.decorator";
-import {
-  BadRequestDecorator,
-  ConflictDecorator,
-} from "@api/common/decorators/swagger-responses.decorator";
+import { ApiErrorResponse } from "@api/common/decorators/swagger-responses.decorator";
+import { Errors } from "@api/common/errors/errors";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiNoContentResponse } from "@nestjs/swagger";
@@ -30,7 +28,7 @@ export class AuthController {
     successText: "Account created successfully",
     type: UserDto,
   })
-  @ConflictDecorator()
+  @ApiErrorResponse(Errors.USERNAME_ALREADY_EXISTS)
   async createAccount(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
 
@@ -44,7 +42,7 @@ export class AuthController {
     successText: "User successfully logged in",
     type: JwtDto,
   })
-  @BadRequestDecorator()
+  @ApiErrorResponse(Errors.INVALID_CREDENTIALS)
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.username, dto.password);
   }
@@ -57,7 +55,7 @@ export class AuthController {
     successText: "Session succesfully refreshed",
     type: JwtDto,
   })
-  @BadRequestDecorator()
+  @ApiErrorResponse(Errors.INVALID_REFRESH_TOKEN)
   async refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refreshTokens(dto.refreshToken);
   }

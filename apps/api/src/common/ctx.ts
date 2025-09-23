@@ -2,7 +2,8 @@ import type { RoleType } from "@api/modules/users/entities/user.entity";
 import { Logger } from "@nestjs/common";
 import type { UUID } from "crypto";
 import { ClsServiceManager } from "nestjs-cls";
-import { UnauthorizedError } from "./errors/domain/unauthorized.error";
+import { AppError } from "./errors/app-error";
+import { Errors } from "./errors/errors";
 
 export type Principal = {
   id: UUID;
@@ -47,7 +48,7 @@ export class Ctx {
     const principal = this.cls().get("principal");
     if (!principal) {
       this.logger.debug("User unauthorized - no principal");
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     return principal;
@@ -65,7 +66,7 @@ export class Ctx {
     const id = this.userId;
     if (!id) {
       this.logger.debug("User unauthorized - no userId");
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     return id;
@@ -79,7 +80,7 @@ export class Ctx {
     const role = this.principal?.role;
     if (!role) {
       this.logger.debug("User unauthorized - no role");
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     return role;

@@ -13,11 +13,19 @@
     "start:debug": "NODE_ENV=development nest start --debug --watch",
     "start:prod": "NODE_ENV=production node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test": "jest --projects test/jest-unit.config.js test/jest-integration.config.js",
+    "test:unit": "jest --config test/jest-unit.config.js",
+    "test:integration": "jest --config test/jest-integration.config.js",
+    "test:e2e": "jest --config test/jest-e2e.config.js",
+    "test:db": "jest --projects test/jest-integration.config.js test/jest-e2e.config.js",
+    "test:all": "jest --projects test/jest-unit.config.js test/jest-integration.config.js test/jest-e2e.config.js",
+    "test:watch": "jest --config test/jest-unit.config.js --watch",
+    "test:watch:integration": "jest --config test/jest-integration.config.js --watch",
+    "test:cov": "jest --projects test/jest-unit.config.js test/jest-integration.config.js --coverage",
+    "test:cov:unit": "jest --config test/jest-unit.config.js --coverage",
+    "test:cov:integration": "jest --config test/jest-integration.config.js --coverage",
+    "test:cov:db": "jest --projects test/jest-integration.config.js test/jest-e2e.config.js --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config test/jest-unit.config.js --runInBand",
     "migrations:generate": "typeorm-ts-node-commonjs migration:generate -d data-source.ts",
     "migrations:create": "typeorm-ts-node-commonjs migration:create",
     "migrations:run": "typeorm-ts-node-commonjs migration:run -d data-source.ts",
@@ -25,7 +33,7 @@
     "migrations:show": "typeorm-ts-node-commonjs migration:show -d data-source.ts",
     "schema:sync": "typeorm-ts-node-commonjs schema:sync -d data-source.ts",
     "schema:drop": "typeorm-ts-node-commonjs schema:drop -d data-source.ts",
-    "seed": "tsx scripts/seed"
+    "seed": "ts-node -r tsconfig-paths/register scripts/seed.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
@@ -42,6 +50,7 @@
     "@trpc/server": "^11.5.1",
     "bcrypt": "^6.0.0",
     "cache-manager": "^7.2.0",
+    "github-slugger": "^2.0.0",
     "ms": "^2.1.3",
     "nestjs-cls": "^6.0.1",
     "nestjs-zod": "^5.0.1",
@@ -75,28 +84,9 @@
     "yaml": "^2.8.1"
   },
   "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": [
-        "ts-jest",
-        {
-          "tsconfig": "tsconfig.test.json"
-        }
-      ]
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "^@api/(.*)$": "<rootDir>/$1"
-    }
+    "projects": [
+      "<rootDir>/test/jest-unit.config.js",
+      "<rootDir>/test/jest-integration.config.js"
+    ]
   }
 }

@@ -1,20 +1,17 @@
+import type { SortDirection } from "@api/common/types/common.types";
 import type { UUID } from "crypto";
 import type { z } from "zod";
-import type {
-  sortDirectionSchema,
-  sortFieldSchema,
-} from "../../common/schemas/common.schema";
+import type { carSortFieldQuerySchema } from "./cars.schema";
 
-export type SortField = z.infer<typeof sortFieldSchema>;
-export type SortDirection = z.infer<typeof sortDirectionSchema>;
+export type CarSortField = z.infer<typeof carSortFieldQuerySchema>;
 
 export type FindAllCarsOptions = {
   modelId?: UUID;
   color?: string;
+  sortField?: CarSortField;
+  sortDirection?: SortDirection;
   skip: number;
   limit: number;
-  sortField?: SortField;
-  sortDirection?: SortDirection;
 };
 
 export type GetAllFavoritesOptions = {

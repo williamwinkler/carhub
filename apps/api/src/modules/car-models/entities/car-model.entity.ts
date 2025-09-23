@@ -15,6 +15,9 @@ export class CarModel extends AbstractEntity {
   @Column({ unique: true })
   name!: string;
 
+  @Column({ unique: true })
+  slug!: string;
+
   @ManyToOne(() => CarManufacturer, (manufacturer) => manufacturer.models, {
     nullable: false,
     onDelete: "RESTRICT",

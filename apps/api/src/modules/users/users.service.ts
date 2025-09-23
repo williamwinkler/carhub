@@ -1,15 +1,15 @@
 import { Ctx } from "@api/common/ctx";
-import { UsernameAlreadyExistsError } from "@api/common/errors/domain/conflict.error";
-import { OnlyAdminsCanUpdateRolesError } from "@api/common/errors/domain/forbidden.error";
-import { InternalServerError } from "@api/common/errors/domain/internal-server-error";
-import { UserNotFoundError } from "@api/common/errors/domain/not-found.error";
-import { Injectable, Logger } from "@nestjs/common";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
 import { QueryFailedError, Repository } from "typeorm";
 import { Car } from "../cars/entities/car.entity";
 import { User } from "./entities/user.entity";
 import { CreateUser, UpdateUser } from "./users.types";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import type { Cache } from "cache-manager";
 
 @Injectable()
 export class UsersService {
@@ -18,6 +18,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(options: CreateUser): Promise<User> {
@@ -30,6 +31,8 @@ export class UsersService {
         username,
         password: hashedPassword,
         role: "user",
+        apiKeyLookupHash: null,
+        apiKeySecret: null,
       });
 
       const savedUser = await this.usersRepo.save(newUser);
@@ -47,16 +50,24 @@ export class UsersService {
         this.logger.debug(
           `Uniqueness constraint: username "${username}" already exists`,
         );
-        throw new UsernameAlreadyExistsError();
+        throw new AppError(Errors.USERNAME_ALREADY_EXISTS);
       }
 
       this.logger.error(`Error saving new user`, error);
-      throw new InternalServerError();
+      throw new AppError(Errors.UNEXPECTED_ERROR);
     }
   }
 
-  async findById(id: UUID): Promise<User | null> {
-    return await this.usersRepo.findOneBy({ id });
+  async findById(id: UUID): Promise<User | null>;
+  async findById<K extends (keyof User)[]>(
+    id: UUID,
+    select?: K,
+  ): Promise<Pick<User, K[number]> | null>;
+  async findById(id: UUID, select?: (keyof User)[]): Promise<User | null> {
+    return await this.usersRepo.findOne({
+      where: { id },
+      select,
+    });
   }
 
   async findByUsername(username: string): Promise<User | null> {
@@ -73,13 +84,13 @@ export class UsersService {
     });
 
     if (!existingUser) {
-      throw new UserNotFoundError();
+      throw new AppError(Errors.USER_NOT_FOUND);
     }
 
     const principal = Ctx.principalRequired();
 
     if (data.role && principal.role !== "admin") {
-      throw new OnlyAdminsCanUpdateRolesError();
+      throw new AppError(Errors.ONLY_ADMINS_CAN_UPDATE_ROLES);
     }
 
     const updatedUser = this.usersRepo.create({ ...existingUser, ...data });
@@ -96,7 +107,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new UserNotFoundError();
+      throw new AppError(Errors.USER_NOT_FOUND);
     }
 
     await this.usersRepo.manager.transaction(async (manager) => {
@@ -106,6 +117,11 @@ export class UsersService {
       // Soft delete all cars owned by the user
       if (user.cars.length > 0) {
         await carsRepo.softDelete({ createdBy: user.id });
+      }
+
+      // Remove from cache
+      if (user.apiKeyLookupHash) {
+        await this.cacheManager.del(`user:apikey:${user.apiKeyLookupHash}`);
       }
 
       // Soft delete the user

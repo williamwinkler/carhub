@@ -18,29 +18,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "409":
-          description: Conflict
+          description: Username already exists
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: USERNAME_ALREADY_EXISTS Error
+                  value:
+                    statusCode: 409
+                    errorCode: USERNAME_ALREADY_EXISTS
+                    message: Username already exists
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Register an account
       tags: &a1
         - Auth
@@ -62,23 +97,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/JwtResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: INVALID_CREDENTIALS Error
+                  value:
+                    statusCode: 401
+                    errorCode: INVALID_CREDENTIALS
+                    message: Invalid credentials
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       tags: *a1
   /v1/auth/refresh:
     post:
@@ -98,23 +174,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/JwtResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: INVALID_REFRESH_TOKEN Error
+                  value:
+                    statusCode: 401
+                    errorCode: INVALID_REFRESH_TOKEN
+                    message: Invalid refresh token
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Get a new access token with your refresh token
       tags: *a1
   /v1/auth/logout:
@@ -125,29 +242,57 @@ paths:
         "204":
           description: User logged out successfully
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       tags: *a1
       security:
         - bearer: []
@@ -164,88 +309,126 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponseDto"
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Generate an API key
       tags: *a1
       security:
         - bearer: []
         - apiKey: []
-  /v1/users/me/favorite-cars:
+  /v1/users/me:
     get:
-      operationId: UsersController_getMyFavoriteCars_v1
-      parameters:
-        - name: limit
-          required: false
-          in: query
-          description: The limit of items to be returned.
-          schema:
-            type: string
-        - name: skip
-          required: false
-          in: query
-          description: The amount of items to skip.
-          schema:
-            type: string
+      operationId: UsersController_getMe_v1
+      parameters: []
       responses:
         "200":
-          description: User favorites retrieved successfully
+          description: User information retrieved
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CarResponseListDto"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
+                $ref: "#/components/schemas/UserResponseDto"
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-      summary: Get current user's favorite cars
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Get my user information
       tags:
         - Users
       security:
@@ -263,41 +446,83 @@ paths:
               $ref: "#/components/schemas/CreateCarDto"
       responses:
         "201":
-          description: ar created successfully
+          description: Car created successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Create a car
       tags: &a2
         - Cars
@@ -316,7 +541,6 @@ paths:
         - name: sortField
           required: false
           in: query
-          description: Field to sort by
           schema:
             type: string
         - name: limit
@@ -324,19 +548,22 @@ paths:
           in: query
           description: The limit of items to be returned.
           schema:
-            type: string
+            type: number
+            default: 0
         - name: skip
           required: false
           in: query
           description: The amount of items to skip.
           schema:
-            type: string
+            type: number
+            default: 0
         - name: color
           required: false
           in: query
-          description: The color of the car.
+          description: The color of the car
           schema:
             type: string
+            minLength: 1
             maxLength: 100
         - name: modelId
           required: false
@@ -345,30 +572,58 @@ paths:
           schema:
             type: string
       responses:
-        "201":
-          description: ist of cars
+        "200":
+          description: List of cars
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseListDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: List cars
       tags: *a2
   /v1/cars/{id}:
@@ -389,29 +644,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "404":
-          description: Not Found
+          description: Car not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_NOT_FOUND
+                    message: Car not found
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Get a car
       tags: *a2
     put:
@@ -431,47 +721,96 @@ paths:
               $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
-          description: car was successfully updated
+          description: Car was successfully updated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CarResponseDto"
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "404":
-          description: Not Found
+          description: Car not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_NOT_FOUND
+                    message: Car not found
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Update a car
       tags: *a2
       security:
@@ -488,41 +827,90 @@ paths:
             type: string
       responses:
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "404":
-          description: Not Found
+          description: Car not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_NOT_FOUND
+                    message: Car not found
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Delete a car
       tags: *a2
       security:
@@ -540,46 +928,1247 @@ paths:
             type: string
       responses:
         "400":
-          description: Bad Request
+          description: Validation failed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
         "401":
-          description: Unauthorized
+          description: You need to be authorized to perform this action
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
         "404":
-          description: Not Found
+          description: Car not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_NOT_FOUND
+                    message: Car not found
         "429":
-          description: Too Many Requests
+          description: Too many requests, try again later
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
         "500":
-          description: Internal Server Error
+          description: An unexpected error occurred
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
       summary: Toggle favorite status for a car
       tags: *a2
       security:
         - bearer: []
         - apiKey: []
+  /v1/cars/favorites:
+    get:
+      operationId: CarsController_getFavorites_v1
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          description: The limit of items to be returned.
+          schema:
+            type: number
+            default: 0
+        - name: skip
+          required: false
+          in: query
+          description: The amount of items to skip.
+          schema:
+            type: number
+            default: 0
+      responses:
+        "200":
+          description: User's favorite cars retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarResponseListDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Get user's favorite cars
+      tags: *a2
+      security:
+        - bearer: []
+        - apiKey: []
+  /v1/car-manufacturers:
+    post:
+      operationId: CarManufacturersController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarManufacturerDto"
+      responses:
+        "201":
+          description: Car manufacturer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarManufacturerResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "409":
+          description: Car manufacturer already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MANUFACTURER_ALREADY_EXISTS Error
+                  value:
+                    statusCode: 409
+                    errorCode: CAR_MANUFACTURER_ALREADY_EXISTS
+                    message: Car manufacturer already exists
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Create a car manufacturer
+      tags: &a3
+        - CarManufacturers
+      security:
+        - bearer: []
+        - apiKey: []
+    get:
+      operationId: CarManufacturersController_findAll_v1
+      parameters:
+        - name: sortDirection
+          required: false
+          in: query
+          description: Sort direction (ascending or descending)
+          schema:
+            type: string
+        - name: sortField
+          required: false
+          in: query
+          description: Field to sort car manufacturers by
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: The limit of items to be returned.
+          schema:
+            type: number
+            default: 0
+        - name: skip
+          required: false
+          in: query
+          description: The amount of items to skip.
+          schema:
+            type: number
+            default: 0
+      responses:
+        "200":
+          description: List of car manufacturers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarManufacturerResponseListDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: List car manufacturers
+      tags: *a3
+  /v1/car-manufacturers/{id}:
+    get:
+      operationId: CarManufacturersController_findOne_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car manufacturer (UUID)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Car manufacturer successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarManufacturerResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "404":
+          description: Car manufacturer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MANUFACTURER_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MANUFACTURER_NOT_FOUND
+                    message: Car manufacturer not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Get a car manufacturer
+      tags: *a3
+    put:
+      operationId: CarManufacturersController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car manufacturer (UUID)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCarManufacturerDto"
+      responses:
+        "200":
+          description: Car manufacturer was successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarManufacturerResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "404":
+          description: Car manufacturer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MANUFACTURER_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MANUFACTURER_NOT_FOUND
+                    message: Car manufacturer not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Update a car manufacturer
+      tags: *a3
+      security:
+        - bearer: []
+        - apiKey: []
+    delete:
+      operationId: CarManufacturersController_remove_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car manufacturer (UUID)
+          schema:
+            type: string
+      responses:
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "404":
+          description: Car manufacturer not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MANUFACTURER_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MANUFACTURER_NOT_FOUND
+                    message: Car manufacturer not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Delete a car manufacturer
+      tags: *a3
+      security:
+        - bearer: []
+        - apiKey: []
+  /v1/car-models:
+    post:
+      operationId: CarModelsController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCarModelDto"
+      responses:
+        "201":
+          description: Car model created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarModelResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "409":
+          description: Car model already exists. Ensure the model name is new and unqiue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_ALREADY_EXISTS Error
+                  value:
+                    statusCode: 409
+                    errorCode: CAR_MODEL_ALREADY_EXISTS
+                    message: Car model already exists. Ensure the model name is new and unqiue
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Create a car model
+      tags: &a4
+        - CarModels
+      security:
+        - bearer: []
+        - apiKey: []
+    get:
+      operationId: CarModelsController_findAll_v1
+      parameters:
+        - name: sortDirection
+          required: false
+          in: query
+          description: Sort direction (ascending or descending)
+          schema:
+            type: string
+        - name: sortField
+          required: false
+          in: query
+          description: Field to sort car models by
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          description: The limit of items to be returned.
+          schema:
+            type: number
+            default: 0
+        - name: skip
+          required: false
+          in: query
+          description: The amount of items to skip.
+          schema:
+            type: number
+            default: 0
+        - name: manufacturerId
+          required: false
+          in: query
+          description: id (UUID)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of car models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarModelResponseListDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: List car models
+      tags: *a4
+  /v1/car-models/{id}:
+    get:
+      operationId: CarModelsController_findOne_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car model (UUID)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Car model successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarModelResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "404":
+          description: Car model not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MODEL_NOT_FOUND
+                    message: Car model not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Get a car model
+      tags: *a4
+    put:
+      operationId: CarModelsController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car model (UUID)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCarModelDto"
+      responses:
+        "200":
+          description: Car model was successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarModelResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "404":
+          description: Car model not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MODEL_NOT_FOUND
+                    message: Car model not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Update a car model
+      tags: *a4
+      security:
+        - bearer: []
+        - apiKey: []
+    delete:
+      operationId: CarModelsController_remove_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: The unique id of the car model (UUID)
+          schema:
+            type: string
+      responses:
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "404":
+          description: Car model not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MODEL_NOT_FOUND
+                    message: Car model not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Delete a car model
+      tags: *a4
+      security:
+        - bearer: []
+        - apiKey: []
+  /v1/car-models/slug/{slug}:
+    get:
+      operationId: CarModelsController_findBySlug_v1
+      parameters:
+        - name: slug
+          required: true
+          in: path
+          description: The slug of the car model
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+      responses:
+        "200":
+          description: Car model succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarModelResponseDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: VALIDATION_ERROR Error
+                  value:
+                    statusCode: 400
+                    errorCode: VALIDATION_ERROR
+                    message: Validation failed
+                    errors:
+                      - field: email
+                        message: Invalid email format
+                        code: invalid_string
+                      - field: age
+                        message: Must be at least 18
+                        code: too_small
+        "404":
+          description: Car model not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MODEL_NOT_FOUND
+                    message: Car model not found
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      summary: Get a car model by it's slug
+      tags: *a4
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.
@@ -662,31 +2251,26 @@ components:
             - 508
         errorCode:
           description: The application specific error code
-          type: number
-          enum:
-            - 1000
-            - 1001
-            - 1002
-            - 1003
-            - 1004
-            - 1005
-            - 2000
-            - 2001
-            - 2002
-            - 2003
-            - 3000
-            - 3001
-            - 3002
-            - 3003
-            - 4000
-            - 4001
+          type: string
         message:
           description: The error message
           type: string
         errors:
           description: Zod validation errors
           type: array
-          items: {}
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+            required:
+              - field
+              - message
+              - code
       required:
         - statusCode
         - errorCode
@@ -731,7 +2315,6 @@ components:
           minLength: 3
           x-nestjs_zod-parent-additional-properties: false
         role:
-          description: The role of the user
           type: string
           enum:
             - admin
@@ -847,39 +2430,25 @@ components:
       required:
         - apiVersion
         - data
-    MetaPaginationDto:
+    CreateCarDto:
       type: object
       properties:
-        total:
-          type: number
-          description: The total number of items available across all pages
-        limit:
-          type: number
-          description: The limit of items
-        skipped:
-          type: number
-          description: Items skipped
-        count:
-          type: number
-          description: The count of items
-      required:
-        - total
-        - limit
-        - skipped
-        - count
-    CarDto:
-      type: object
-      properties:
+        modelId:
+          description: The unique id of the car model (UUID)
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
         year:
-          description: The year the it was manufactored.
+          description: The year the car was manufactured
           type: integer
           minimum: 1886
           maximum: 2026
           x-nestjs_zod-parent-additional-properties: false
         color:
-          description: The color of the car.
+          description: The color of the car
           type: string
-          minLength: 0
+          minLength: 1
           maxLength: 100
           x-nestjs_zod-parent-additional-properties: false
         kmDriven:
@@ -894,11 +2463,44 @@ components:
           minimum: 0
           maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
+      required:
+        - modelId
+        - year
+        - color
+        - kmDriven
+        - price
+    CarDto:
+      type: object
+      properties:
         id:
           description: The unique id of the car (UUID)
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
+        year:
+          description: The year the car was manufactured
+          type: integer
+          minimum: 1886
+          maximum: 2026
+          x-nestjs_zod-parent-additional-properties: false
+        color:
+          description: The color of the car
+          type: string
+          minLength: 1
+          maxLength: 100
+          x-nestjs_zod-parent-additional-properties: false
+        kmDriven:
+          description: The amount of kilometers the car has driven
+          type: integer
+          minimum: 0
+          maximum: 10000000
+          x-nestjs_zod-parent-additional-properties: false
+        price:
+          description: Price of the car in €
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
         createdBy:
           description: The user who created this car
@@ -922,16 +2524,81 @@ components:
           description: Indicates if the user has favorited the car or not
           type: boolean
           x-nestjs_zod-parent-additional-properties: false
+        model:
+          type: object
+          properties:
+            id:
+              description: The unique id of the car model (UUID)
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            name:
+              description: The name of the car model
+              type: string
+              minLength: 1
+              maxLength: 255
+            slug:
+              description: The slug of the car model
+              type: string
+              minLength: 1
+              maxLength: 255
+            manufacturerId:
+              description: The manufacturer ID this model belongs to
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          required:
+            - id
+            - name
+            - slug
+            - manufacturerId
+          additionalProperties: false
+          x-nestjs_zod-parent-additional-properties: false
       required:
+        - id
         - year
         - color
         - kmDriven
         - price
-        - id
         - createdBy
         - createdAt
         - updatedAt
         - isFavorite
+        - model
+    CarResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/CarDto"
+      required:
+        - apiVersion
+        - data
+    MetaPaginationDto:
+      type: object
+      properties:
+        totalItems:
+          type: number
+          description: The total number of items available across all pages
+        limit:
+          type: number
+          description: The limit of items
+        skipped:
+          type: number
+          description: Items skipped
+        count:
+          type: number
+          description: The count of items
+      required:
+        - totalItems
+        - limit
+        - skipped
+        - count
     PaginatedItemsDto:
       type: object
       properties:
@@ -961,25 +2628,25 @@ components:
       required:
         - apiVersion
         - data
-    CreateCarDto:
+    UpdateCarDto:
       type: object
       properties:
         modelId:
-          description: The ID of the model
+          description: The unique id of the car model (UUID)
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false
         year:
-          description: The year the it was manufactored.
+          description: The year the car was manufactured
           type: integer
           minimum: 1886
           maximum: 2026
           x-nestjs_zod-parent-additional-properties: false
         color:
-          description: The color of the car.
+          description: The color of the car
           type: string
-          minLength: 0
+          minLength: 1
           maxLength: 100
           x-nestjs_zod-parent-additional-properties: false
         kmDriven:
@@ -994,13 +2661,43 @@ components:
           minimum: 0
           maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
+    CreateCarManufacturerDto:
+      type: object
+      properties:
+        name:
+          description: The name of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
       required:
-        - modelId
-        - year
-        - color
-        - kmDriven
-        - price
-    CarResponseDto:
+        - name
+    CarManufacturerDto:
+      type: object
+      properties:
+        id:
+          description: The unique id of the car manufacturer (UUID)
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
+        name:
+          description: The name of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+        slug:
+          description: The slug of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - id
+        - name
+        - slug
+    CarManufacturerResponseDto:
       type: object
       properties:
         apiVersion:
@@ -1010,40 +2707,123 @@ components:
         data:
           description: The data of the response
           allOf:
-            - $ref: "#/components/schemas/CarDto"
+            - $ref: "#/components/schemas/CarManufacturerDto"
       required:
         - apiVersion
         - data
-    UpdateCarDto:
+    CarManufacturerResponseListDto:
       type: object
       properties:
-        modelId:
-          description: The ID of the model
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/PaginatedItemsDto"
+      required:
+        - apiVersion
+        - data
+    UpdateCarManufacturerDto:
+      type: object
+      properties:
+        name:
+          description: The name of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+    CreateCarModelDto:
+      type: object
+      properties:
+        name:
+          description: The name of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+        manufacturerId:
+          description: The manufacturer ID this model belongs to
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false
-        year:
-          description: The year the it was manufactored.
-          type: integer
-          minimum: 1886
-          maximum: 2026
-          x-nestjs_zod-parent-additional-properties: false
-        color:
-          description: The color of the car.
+      required:
+        - name
+        - manufacturerId
+    CarModelDto:
+      type: object
+      properties:
+        id:
+          description: The unique id of the car model (UUID)
           type: string
-          minLength: 0
-          maxLength: 100
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false
-        kmDriven:
-          description: The amount of kilometers the car has driven
-          type: integer
-          minimum: 0
-          maximum: 10000000
+        name:
+          description: The name of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
           x-nestjs_zod-parent-additional-properties: false
-        price:
-          description: Price of the car in €
-          type: integer
-          minimum: 0
-          maximum: 9007199254740991
+        slug:
+          description: The slug of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+        manufacturerId:
+          description: The manufacturer ID this model belongs to
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
+      required:
+        - id
+        - name
+        - slug
+        - manufacturerId
+    CarModelResponseDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/CarModelDto"
+      required:
+        - apiVersion
+        - data
+    CarModelResponseListDto:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: The version of the API
+          example: 1.0.0
+        data:
+          description: The data of the response
+          allOf:
+            - $ref: "#/components/schemas/PaginatedItemsDto"
+      required:
+        - apiVersion
+        - data
+    UpdateCarModelDto:
+      type: object
+      properties:
+        name:
+          description: The name of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
+          x-nestjs_zod-parent-additional-properties: false
+        manufacturerId:
+          description: The manufacturer ID this model belongs to
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
           x-nestjs_zod-parent-additional-properties: false

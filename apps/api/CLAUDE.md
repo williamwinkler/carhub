@@ -4,188 +4,284 @@ This file provides specific guidance for working with the NestJS API in this pro
 
 ## Architecture Overview
 
-This API follows **Domain-Driven Design** principles with a **Schema-First** approach:
-- **Schema-First Development**: Zod schemas are the single source of truth
+This API demonstrates **modern NestJS patterns** with a **Schema-First** approach using Zod:
+- **Schema-First Development**: Zod schemas are the single source of truth for validation and types
 - **Type Safety**: End-to-end type safety from database → service → controller → tRPC → frontend
-- **Layered Architecture**: Entity → Service → Controller → tRPC with clear separation of concerns
-- **Authorization**: Role-based access control with user-specific resource ownership
-- **Rate Limiting**: Multi-tiered rate limiting for different operation types
+- **Dual API Architecture**: REST endpoints for external integrations + tRPC for type-safe frontend communication
+- **Advanced Validation**: Custom decorators for query/path parameters with automatic Swagger documentation
+- **Tiered Rate Limiting**: Multi-tiered rate limiting for different operation sensitivities
+- **Role-Based Access Control**: JWT authentication with role-based authorization
 
-## Testing Requirements
+## Key Technologies
 
-**CRITICAL**: When working on any code in this `/api` directory, Claude MUST:
-1. Write or rewrite comprehensive tests for all changes made
-2. Test BOTH success (sunshine) AND failure (error) scenarios extensively
-3. Run `pnpm test:cov` to verify 90%+ coverage requirement
-4. Run `pnpm test` to verify all tests pass
-5. Ensure all tests pass before considering the task complete
-6. Never skip testing - this is mandatory for all API modifications
+### Database & ORM
+- **TypeORM**: Database integration with PostgreSQL
+- **Entity Management**: AbstractEntity base class with UUID primary keys
+- **Relationships**: Proper entity relationships with cascade options
+- **Migrations**: TypeORM migration system for schema management
+- **Seeding**: Comprehensive seed script with sample data
 
-## NestJS Patterns & Architecture
+### Validation & Documentation
+- **Zod Schemas**: Single source of truth for validation and types
+- **nestjs-zod**: Auto-generation of NestJS DTOs from Zod schemas
+- **Custom Decorators**: `@zQuery()` and `@zParam()` for validated parameters
+- **Swagger Integration**: Auto-generated OpenAPI documentation
+- **Error Handling**: Comprehensive error system with proper HTTP status codes
 
-### Module Structure
-- Follow NestJS module pattern: `module.ts`, `controller.ts`, `service.ts`
-- DTOs in `dto/` folder using Zod schemas
-- Entities in `entities/` folder using TypeORM decorators
-- Tests in `*.spec.ts` files alongside source files
+### Security & Performance
+- **JWT Authentication**: Access and refresh token system
+- **Rate Limiting**: Tiered rate limiting with different levels (public, auth, strict)
+- **CORS Configuration**: Proper CORS setup for frontend integration
+- **Input Validation**: All inputs validated through Zod schemas
 
-### TypeORM Database Integration
-- **Database ORM**: Using TypeORM for database operations and entity management
-- **Entities**: All database models extend `AbstractEntity` base class with UUID primary keys
-- **Repository Pattern**: Inject repositories using `@InjectRepository(Entity)` decorator
-- **Relationships**: Use TypeORM decorators (`@ManyToOne`, `@OneToMany`, etc.) for entity relationships
-- **Entity Structure**:
-  - All entities extend `AbstractEntity` (provides UUID primary key)
-  - Use `@Entity()` decorator with table name specification
-  - **IMPORTANT**: Add audit fields manually: `createdAt`, `updatedAt`, `deletedAt` for soft deletes
-  - Use appropriate column types and constraints (`@Column`, `@CreateDateColumn`, `@UpdateDateColumn`, `@DeleteDateColumn`)
-  - Define relationships with proper cascade and eager loading options
-- **Service Integration**: Services should use injected repositories instead of in-memory storage
-- **Query Building**: Use QueryBuilder for complex queries with joins, filtering, and pagination
-- **Soft Deletes**: Implement soft deletes using `@DeleteDateColumn()` and `softDelete()` method
+## API Features Demonstrated
 
-### Schema-First Development
-- Define Zod schemas in `dto/` folder first
-- Use `createZodDto(schema)` to generate NestJS DTOs
-- Schemas drive both validation and Swagger documentation
-- All responses use `wrapResponse()` utility for consistency
+### REST Endpoints (OpenAPI/Swagger)
 
-### Testing Standards
-- **Unit Tests**: Test services and controllers in isolation using auto-mocking patterns
-- **Integration Tests**: Test full request/response cycles
-- **Coverage**: **MANDATORY 90%+ test coverage** on services, controllers, and business logic - run `pnpm test:cov` to verify
-- **Error Testing**: **CRITICAL** - Test ALL error scenarios including:
-  - UserNotFoundError, CarNotFoundError, UnauthorizedError
-  - Validation failures (invalid inputs, missing fields)
-  - Authorization failures (wrong roles, missing permissions)
-  - Business logic errors (duplicate usernames, etc.)
-  - Rate limiting exceeded scenarios
-- **Test Data**: Use factories or fixtures for consistent test data
-- **Mocking**: Mock external dependencies using ModuleMocker auto-mocking pattern
-- **Non-Sunshine Paths**: Every method must test both success AND failure cases
-- **Test Value**: **ALL TESTS MUST PROVIDE VALUE** - Remove tests that only test framework wiring or configuration without business logic
-- **Focus**: Test business logic, not framework setup. tRPC routers are just wiring - test the underlying services instead
+#### Authentication (`/api/v1/auth`)
+- `POST /login` - User authentication with JWT tokens
+- `POST /refresh` - Refresh access tokens
+- `POST /logout` - Logout and token invalidation
 
-### Rate Limiting Implementation
-- **REST API**: Protected by `CustomThrottlerGuard` with tiered limits (short/medium/long)
-- **tRPC**: Use appropriate procedure types for different operation sensitivities:
-  - `publicProcedure`: 1000 req/min (IP-based, for public endpoints)
-  - `authProcedure`: 10 req/15min (auth operations like login/register)
-  - `authenticatedRateLimitedProcedure`: 100 req/min (standard authenticated operations)
-  - `authenticatedStrictProcedure`: 5 req/min (sensitive operations like deleting)
-  - `burstProtectedProcedure`: 10 req/sec (high-frequency endpoints)
-- **User Tracking**: Authenticated users tracked by `userId`, unauthenticated by IP address
-- **Configuration**: Rate limits defined in `app.module.ts` ThrottlerModule configuration
+#### Users (`/api/v1/users`)
+- `GET /users` - List users with pagination (admin only)
+- `GET /users/:id` - Get user by ID
+- `PUT /users/:id` - Update user profile
+- `DELETE /users/:id` - Delete user (admin only)
 
-### Error Handling
-- **Domain Errors**: Use custom error classes in `common/errors/domain/` (CarNotFoundError, etc.)
-- **HTTP Status Mapping**: Domain errors automatically map to appropriate HTTP status codes
-- **Zod Validation**: Automatic validation error handling via `ZodValidationPipe`
-- **Global Filter**: `HttpErrorFilter` catches and formats all exceptions consistently
-- **Authorization Errors**: Use specific error classes like `UsersCanOnlyUpdateOwnCarsError`
-- **Swagger Documentation**: Use `@NotFoundDecorator()` and similar for API documentation
-- **Error Response Format**: All errors follow consistent response wrapper format
+#### Car Manufacturers (`/api/v1/car-manufacturers`)
+- `GET /car-manufacturers` - List all manufacturers with pagination
+- `POST /car-manufacturers` - Create new manufacturer (admin)
+- `GET /car-manufacturers/:id` - Get manufacturer details
+- `PUT /car-manufacturers/:id` - Update manufacturer (admin)
+- `DELETE /car-manufacturers/:id` - Delete manufacturer (admin)
 
-### Security Best Practices
-- Never log or expose sensitive data
-- Use role-based authorization with `@Roles()` decorator
-- Validate all inputs with Zod schemas
-- Apply rate limiting to all endpoints
+#### Car Models (`/api/v1/car-models`)
+- `GET /car-models` - List models with manufacturer filtering
+- `POST /car-models` - Create new car model (admin)
+- `GET /car-models/:id` - Get model details
+- `PUT /car-models/:id` - Update car model (admin)
+- `DELETE /car-models/:id` - Delete car model (admin)
 
-### Swagger Documentation
-- Use `@ApiResponseDto()` and `@ApiResponseListDto()` for consistent responses
-- Document all endpoints with proper OpenAPI decorators
-- Zod schemas automatically generate parameter documentation
-- Available at `/docs` in development mode
+#### Cars (`/api/v1/cars`)
+- `GET /cars` - List cars with filtering, sorting, and pagination
+- `POST /cars` - Create new car listing (user)
+- `GET /cars/:id` - Get car details
+- `PUT /cars/:id` - Update car (owner/admin)
+- `DELETE /cars/:id` - Delete car (owner/admin)
+- `PATCH /cars/:id/favorite` - Toggle favorite status (user)
+- `GET /cars/favorites` - Get user's favorite cars
 
-## Development Workflow
+### tRPC Endpoints (`/trpc`)
 
-### Adding New Endpoints
-1. **Entity Creation**: Create TypeORM entities in `entities/` folder extending `AbstractEntity`
-   - Add audit columns: `@CreateDateColumn()`, `@UpdateDateColumn()`, `@DeleteDateColumn()`
-   - Define relationships with proper cascade options
-   - Use appropriate column types and constraints
-2. **Schema Definition**: Define Zod schemas in `dto/` folder for validation
-   - Create separate schemas for create, update, and response DTOs
-   - Export individual field schemas for reuse (e.g., `carIdSchema`)
-3. **DTO Generation**: Create NestJS DTOs using `createZodDto(schema)`
-4. **Service Implementation**: Implement service methods with TypeORM repository operations
-   - Use QueryBuilder for complex queries with joins
-   - Implement proper error handling with domain-specific errors
-   - Add authorization checks using `Ctx.principalRequired()`
-5. **Controller Creation**: Create controller endpoints with proper decorators
-   - Use `@ApiEndpoint()` for consistent Swagger documentation
-   - Apply `@Roles()` and `@Public()` decorators appropriately
-   - Use `@zQuery()` and `@zParam()` for validated parameters
-6. **Adapter Pattern**: Create adapters to convert entities to DTOs cleanly
-7. **tRPC Integration**: Add tRPC procedures if needed for frontend consumption
-8. **Testing**: Write comprehensive tests for all functionality (both success and error cases)
-9. **Coverage Verification**: Run `pnpm test:cov` to verify 90%+ coverage
-10. **Final Validation**: Run `pnpm test` and `pnpm lint` to verify implementation
+All REST functionality is also available through type-safe tRPC procedures:
 
-### Code Quality Checks
-- Run `pnpm test:cov` to verify 90%+ test coverage
-- Run `pnpm lint` before committing
-- Ensure all tests pass with `pnpm test`
-- Check type safety with TypeScript compiler
-- Verify Swagger docs are generated correctly
-
-## Common Utilities
-
-### Response Wrapping
 ```typescript
-return wrapResponse(data, 'Success message');
+// Frontend usage example
+const cars = await trpc.cars.findAll.query({
+  modelId: "uuid",
+  color: "red",
+  skip: 0,
+  limit: 20
+});
+// Types are automatically inferred!
 ```
 
-### Validation Decorators
+#### Procedure Types by Rate Limiting
+- **publicProcedure**: 1000 req/min (IP-based, for public endpoints)
+- **authProcedure**: 10 req/15min (auth operations like login/register)
+- **authenticatedRateLimitedProcedure**: 100 req/min (standard authenticated operations)
+- **authenticatedStrictProcedure**: 5 req/min (sensitive operations like deleting)
+- **burstProtectedProcedure**: 10 req/sec (high-frequency endpoints)
+
+## Schema-First Development Patterns
+
+### 1. Define Zod Schemas
+
 ```typescript
-@zQuery(QuerySchema)
-@zParam(ParamSchema)
+export const createCarSchema = z.object({
+  modelId: z.string().uuid(),
+  color: z.string().min(1).max(50),
+  year: z.number().int().gte(1900).lte(new Date().getFullYear() + 1),
+  mileage: z.number().int().gte(0),
+  price: z.number().min(0),
+});
+
+export const carQuerySchema = z.object({
+  modelId: z.string().uuid().optional(),
+  color: z.string().optional(),
+  skip: z.number().int().gte(0).default(0),
+  limit: z.number().int().gte(1).lte(100).default(20),
+});
 ```
 
-### Authentication Guards
+### 2. Generate DTOs
+
 ```typescript
-@UseGuards(AuthGuard)
-@Roles(UserRole.ADMIN)
+export class CreateCarDto extends createZodDto(createCarSchema) {}
+export class CarQueryDto extends createZodDto(carQuerySchema) {}
+```
+
+### 3. Use in Controllers with Custom Decorators
+
+```typescript
+@Post()
+@Roles("user")
+@ApiEndpoint({
+  status: HttpStatus.CREATED,
+  summary: "Create a car",
+  successText: "Car created successfully",
+  type: CarDto,
+})
+async create(@Body() dto: CreateCarDto) {
+  // Implementation
+}
+
+@Get()
+@Public()
+@ApiEndpoint({
+  status: HttpStatus.OK,
+  successText: "List of cars",
+  type: [CarDto],
+})
+async findAll(
+  @zQuery("modelId", carFields.id.optional()) modelId?: UUID,
+  @zQuery("color", carFields.color.optional()) color?: string,
+  @zQuery("skip", skipSchema.optional()) skip = 0,
+  @zQuery("limit", limitSchema.optional()) limit = 20,
+) {
+  // Implementation - all parameters are validated automatically
+}
+```
+
+## Advanced Features
+
+### Custom Zod Decorators
+- `@zQuery(name, schema)` - Validates query parameters with Zod
+- `@zParam(name, schema)` - Validates path parameters with Zod
+- Automatic Swagger documentation generation
+- Type-safe parameter extraction
+
+### Error Handling System
+```typescript
+// Centralized error definitions
+export const Errors = {
+  CAR_NOT_FOUND: {
+    status: HttpStatus.NOT_FOUND,
+    message: "Car not found",
+  },
+  CAR_ALREADY_EXISTS: {
+    status: HttpStatus.CONFLICT,
+    message: "Car already exists",
+  }
+};
+
+// Usage in services
+throw new AppError(Errors.CAR_NOT_FOUND);
+```
+
+### Rate Limiting Architecture
+- **REST API**: Global `CustomThrottlerGuard` with configurable limits
+- **tRPC**: Middleware-based rate limiting per procedure type
+- **User Tracking**: Authenticated users by `userId`, unauthenticated by IP
+- **Tiered Limits**: Different limits for different operation sensitivities
+
+### Role-Based Authorization
+```typescript
+@Roles("admin", "user") // Multiple roles
+@Roles("admin")         // Single role
+@Public()              // Skip authentication
+```
+
+## Development Setup
+
+### Database Setup
+```bash
+# Run migrations
+pnpm migrations:run
+
+# Seed database with sample data
+pnpm seed
+
+# Reset database (drops all data)
+pnpm schema:drop && pnpm migrations:run && pnpm seed
+```
+
+### Environment Configuration
+- **Development**: Uses `.env.local` file
+- **Test**: Uses `.env.test` file
+- **Production**: Uses environment variables
+
+### Testing
+```bash
+# Run all tests
+pnpm test
+
+# Run with coverage
+pnpm test:cov
+
+# Watch mode
+pnpm test:watch
 ```
 
 ## File Organization
+
 ```
 src/
-├── common/          # Shared utilities, guards, interceptors
-│   ├── decorators/  # Custom decorators (@zQuery, @ApiEndpoint, @Roles)
-│   ├── errors/      # Domain error classes
-│   ├── filters/     # Global exception filters
-│   ├── guards/      # Authentication, authorization, throttling guards
-│   ├── interceptors/ # Response validation, traffic logging
-│   ├── middlewares/ # Context middleware for CLS
-│   ├── schemas/     # Shared Zod schemas (pagination, sorting)
-│   └── utils/       # Utility functions (swagger, response wrapping)
-├── modules/         # Feature modules
-│   ├── database/    # TypeORM configuration and base entities
-│   │   ├── abstract.entity.ts
-│   │   └── database.module.ts
-│   ├── cars/        # Example feature module
-│   │   ├── dto/     # Zod schemas and DTOs
-│   │   ├── entities/ # TypeORM entities
-│   │   ├── cars.adapter.ts   # Entity-to-DTO conversion
-│   │   ├── cars.controller.ts # REST endpoints
-│   │   ├── cars.service.ts    # Business logic
-│   │   ├── cars.trpc.ts       # tRPC procedures
-│   │   ├── cars.module.ts     # Module definition
-│   │   ├── cars.types.ts      # Type definitions
-│   │   └── cars.*.spec.ts     # Tests
-│   ├── trpc/        # tRPC router and middleware
-│   └── auth/        # Authentication module
-├── app.module.ts    # Root module with global providers
-├── main.ts          # Application bootstrap
-└── setup-swagger.ts # Swagger configuration
+├── common/              # Shared utilities and infrastructure
+│   ├── decorators/      # Custom decorators (@zQuery, @ApiEndpoint, @Roles)
+│   ├── errors/          # Error handling system
+│   ├── filters/         # Global exception filters
+│   ├── guards/          # Authentication and authorization guards
+│   ├── interceptors/    # Response formatting and logging
+│   ├── middlewares/     # Context and rate limiting middleware
+│   ├── schemas/         # Shared Zod schemas
+│   └── utils/           # Utility functions
+├── modules/             # Feature modules
+│   ├── database/        # TypeORM configuration
+│   ├── auth/           # Authentication system
+│   ├── users/          # User management
+│   ├── car-manufacturers/ # Car manufacturer management
+│   ├── car-models/     # Car model management
+│   ├── cars/           # Car listing management
+│   └── trpc/           # tRPC router and procedures
+├── app.module.ts       # Root module
+├── main.ts             # Application bootstrap
+└── setup-swagger.ts    # Swagger configuration
 ```
 
-## Naming Conventions
-- **Modules**: Use kebab-case for module directories (`car-manufacturers`, not `manufacturers`)
-- **Files**: Use kebab-case with descriptive suffixes (`.service.ts`, `.controller.ts`, `.trpc.ts`)
-- **Classes**: Use PascalCase with descriptive suffixes (`CarsService`, `CarNotFoundError`)
-- **DTOs**: Always end with `Dto` suffix (`CreateCarDto`, `CarDto`)
-- **Entities**: Use singular nouns (`Car`, `User`, not `Cars`, `Users`)
-- **Endpoints**: Use RESTful conventions (`GET /cars`, `POST /cars`, `GET /cars/:id`)
+## Data Model
+
+### Entities
+- **User**: Authentication and profile management
+- **CarManufacturer**: Car brands (Toyota, BMW, etc.)
+- **CarModel**: Specific models (Camry, X5, etc.)
+- **Car**: Individual car listings with owner relationships
+
+### Relationships
+```
+User 1:N Car (owner relationship)
+CarManufacturer 1:N CarModel
+CarModel 1:N Car
+User M:N Car (favorites through join table)
+```
+
+## API Documentation
+
+### Swagger/OpenAPI
+- **Development**: Interactive docs at `/docs`
+- **Production**: YAML spec exported to `swagger.yml`
+- **Auto-generated**: From Zod schemas and decorators
+- **Consistent responses**: All endpoints follow standard response format
+
+### Response Format
+```json
+{
+  "apiVersion": "string",
+  "data": {
+    // Single item or paginated list with meta
+  }
+}
+```
+
+This API demonstrates production-ready patterns for building scalable, type-safe REST APIs with comprehensive documentation, security, and performance optimizations.

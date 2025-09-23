@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { DataSource } from "typeorm";
 
 // Load environment variables
-config({ quiet: true });
+config({ path: '.env.local', quiet: true });
 
 export const AppDataSource = new DataSource({
   type: "postgres",

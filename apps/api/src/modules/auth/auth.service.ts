@@ -1,9 +1,6 @@
 import { Ctx, Principal } from "@api/common/ctx";
-import {
-  InvalidCredentialsError,
-  InvalidRefreshTokenError,
-} from "@api/common/errors/domain/bad-request.error";
-import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import { hash } from "@api/common/utils/common.utils";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
@@ -34,30 +31,35 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly saltRounds = 12;
   private readonly refreshTTL = ms("7d");
+  private readonly apiKeyPrefix = "ak"; // (a)pi (k)ey
+  private readonly apiKeyEnv: "test" | "live";
+  private readonly apiKeyRandomPartLength = 32;
 
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) {
+    this.apiKeyEnv =
+      this.configService.get("NODE_ENV") === "production" ? "live" : "test";
+  }
 
   async verifyAccessToken(accessToken: string): Promise<TokenPayload> {
     try {
       return await this.jwtService.verifyAsync(accessToken);
     } catch {
       this.logger.debug("Invalid access token");
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
   }
 
   async findUserByApiKey(apiKey: string): Promise<User> {
     const apiKeyLookupHash = hash(apiKey);
+
     const cacheKey = `user:apikey:${apiKeyLookupHash}`;
     const cachedUser = await this.cacheManager.get<User>(cacheKey);
     if (cachedUser) {
-      this.logger.debug("User found in cache for API key");
-
       return cachedUser;
     }
 
@@ -70,7 +72,7 @@ export class AuthService {
       !foundUser?.apiKeySecret ||
       (await bcrypt.compare(foundUser.apiKeySecret, apiKey))
     ) {
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     // Cache user for 24 hours with deterministic hash as cache key
@@ -87,12 +89,11 @@ export class AuthService {
   }
 
   async createApiKey(): Promise<string> {
-    const prefix = "ak"; // (a)pi (k)ey
-    const env =
-      this.configService.get("NODE_ENV") === "production" ? "live" : "test";
-    const randomString = randomBytes(32).toString("hex");
+    const randomString = randomBytes(this.apiKeyRandomPartLength).toString(
+      "hex",
+    );
 
-    const apiKey = `${prefix}_${env}_${randomString}`;
+    const apiKey = `${this.apiKeyPrefix}_${this.apiKeyEnv}_${randomString}`;
 
     const apiKeyLookupHash = hash(apiKey);
     const apiKeySecret = await bcrypt.hash(apiKey, this.saltRounds);
@@ -104,6 +105,8 @@ export class AuthService {
       apiKeySecret,
     });
 
+    this.logger.log(`Created API key for user ${userId}`);
+
     return apiKey;
   }
 
@@ -111,7 +114,7 @@ export class AuthService {
     const user = await this.usersService.findByUsername(username);
 
     if (!user?.password || !(await bcrypt.compare(pass, user.password))) {
-      throw new InvalidCredentialsError();
+      throw new AppError(Errors.INVALID_CREDENTIALS);
     }
 
     const tokens = await this.getTokens(user);
@@ -126,7 +129,7 @@ export class AuthService {
     const sid = Ctx.sessionId;
 
     if (!sub || !sid) {
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     await this.cacheManager.del(`refresh_tokens:${sub}:${sid}`);
@@ -171,13 +174,13 @@ export class AuthService {
     );
 
     if (!cachedToken || cachedToken !== refreshToken) {
-      throw new InvalidRefreshTokenError(); // revoked or expired
+      throw new AppError(Errors.INVALID_REFRESH_TOKEN); // revoked or expired
     }
 
     // 3. Ensure the user exists
     const user = await this.usersService.findById(sub);
     if (!user) {
-      throw new InvalidRefreshTokenError();
+      throw new AppError(Errors.INVALID_REFRESH_TOKEN);
     }
 
     const [tokens] = await Promise.all([
@@ -216,5 +219,22 @@ export class AuthService {
       role: user.role,
       authType: "api-key",
     };
+  }
+
+  isApiKeyValid(apiKey: string): boolean {
+    const parts = apiKey.split("_");
+
+    if (
+      parts.length !== 3 ||
+      parts[0] !== this.apiKeyPrefix ||
+      parts[1] !== this.apiKeyEnv ||
+      parts[2].length !== this.apiKeyRandomPartLength * 2
+    ) {
+      this.logger.debug("Invalid API key");
+
+      return false;
+    }
+
+    return true;
   }
 }

@@ -7,8 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import z, { ZodError } from "zod";
-import { BaseError } from "../errors/base-error";
-import { ErrorCode } from "../errors/error-codes.enum";
+import { AppError } from "../errors/app-error";
 import { ErrorDto, ErrorSchema } from "../errors/error.dto";
 
 @Catch()
@@ -21,13 +20,20 @@ export class HttpErrorFilter implements ExceptionFilter {
     const request = ctx.getRequest();
 
     let errorResponse: ErrorDto = {
-      message: "An unexpected error has occurred, please try again",
-      errorCode: ErrorCode.UNKNOWN,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: "An unexpected error has occurred, please try again",
+      errorCode: "UNEXPECTED_ERROR",
     };
 
-    if (exception instanceof BaseError) {
-      errorResponse = exception.error;
+    if (exception instanceof AppError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const appErrorResponse = exception.getResponse() as any;
+      errorResponse = {
+        statusCode: appErrorResponse.statusCode,
+        errorCode: appErrorResponse.errorCode,
+        message: appErrorResponse.message,
+        errors: appErrorResponse.errors,
+      };
     } else if (exception instanceof HttpException) {
       // Wrap Nest built-in HttpExceptions
       const status = exception.getStatus();
@@ -39,8 +45,9 @@ export class HttpErrorFilter implements ExceptionFilter {
             ((res as any).message ?? "Unexpected error");
 
       if (status === HttpStatus.TOO_MANY_REQUESTS) {
-        errorResponse.errorCode = ErrorCode.TOO_MANY_REQUESTS;
-        errorResponse.message = "Too Many Requests";
+        errorResponse.statusCode = HttpStatus.TOO_MANY_REQUESTS;
+        errorResponse.errorCode = "TOO_MANY_REQUESTS";
+        errorResponse.message = "Too many requests, try again later.";
       } else {
         errorResponse.statusCode = status;
         errorResponse.message = message;
@@ -50,7 +57,7 @@ export class HttpErrorFilter implements ExceptionFilter {
           const zodError: ZodError = (exception as any).error;
 
           if (zodError) {
-            errorResponse.errorCode = ErrorCode.VALIDATION_ERROR;
+            errorResponse.errorCode = "VALIDATION_ERROR";
             errorResponse.errors = zodError.issues.map((issue) => ({
               field: issue.path.join("."), // e.g. "password" or "user.email"
               message: issue.message, // clean message

@@ -324,4 +324,29 @@ pnpm migrations:show
 psql -h $POSTGRES_HOST -U $POSTGRES_USERNAME -d $POSTGRES_DATABASE -c "\dt"
 ```
 
+## Development Seeding
+
+### Seed Script
+
+For local development, use the seed script to populate your database with sample data:
+
+```bash
+# Run seed script (development only)
+pnpm seed
+```
+
+The seed script (`scripts/seed.ts`) creates:
+- **1 admin user**: username `admin`, password `admin123`
+- **10 car manufacturers**: Toyota, Honda, Ford, BMW, Mercedes-Benz, Audi, Volkswagen, Nissan, Hyundai, Tesla
+- **50 car models**: 5 models per manufacturer (Camry, Civic, F-150, 3 Series, etc.)
+
+**Safety Features:**
+- Automatically prevents execution in production environments
+- Clears existing seed data before inserting new data
+- Uses the same database connection as your application
+
+**Requirements:**
+- Run migrations first: `pnpm migrations:run`
+- Ensure development environment variables are set
+
 Remember: Migrations provide version control for your database schema and should be treated as carefully as your code!

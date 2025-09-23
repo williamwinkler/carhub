@@ -3,6 +3,8 @@ import { INestApplication, Injectable } from "@nestjs/common";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { AuthTrpc } from "../auth/auth.trpc";
 import { CarsTrpc } from "../cars/cars.trpc";
+import { CarModelsTrpc } from "../car-models/car-models.trpc";
+import { CarManufacturersTrpc } from "../car-manufacturers/car-manufacturers.trpc";
 import { UsersTrpc } from "../users/users.trpc";
 import { TrpcService, createContext } from "./trpc.service";
 
@@ -12,6 +14,8 @@ export class TrpcRouter {
     private readonly trpc: TrpcService,
     private readonly authTrpc: AuthTrpc,
     private readonly carsTrpc: CarsTrpc,
+    private readonly carModelsTrpc: CarModelsTrpc,
+    private readonly carManufacturersTrpc: CarManufacturersTrpc,
     private readonly usersTrpc: UsersTrpc,
   ) {}
 
@@ -19,6 +23,8 @@ export class TrpcRouter {
   appRouter = this.trpc.router({
     auth: this.authTrpc.router,
     cars: this.carsTrpc.router,
+    carModels: this.carModelsTrpc.router,
+    carManufacturers: this.carManufacturersTrpc.router,
     users: this.usersTrpc.router,
   });
 

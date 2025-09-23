@@ -6,6 +6,7 @@ import { resolve } from "path";
 import YAML from "yaml";
 import pkg from "../package.json";
 import { ErrorDto } from "./common/errors/error.dto";
+import { Errors } from "./common/errors/errors";
 import { ConfigService } from "./modules/config/config.service";
 
 export function setupSwagger(app: INestApplication) {
@@ -32,20 +33,40 @@ export function setupSwagger(app: INestApplication) {
   const document = SwaggerModule.createDocument(app, config);
   for (const path of Object.values(document.paths)) {
     for (const method of Object.values(path)) {
-      // Add base error responses
+      // Add base error responses with concrete examples
       method.responses["500"] = {
-        description: "Internal Server Error",
+        description: Errors.UNEXPECTED_ERROR.message,
         content: {
           "application/json": {
             schema: { $ref: getSchemaPath(ErrorDto) },
+            examples: {
+              default: {
+                summary: "UNEXPECTED_ERROR Error",
+                value: {
+                  statusCode: Errors.UNEXPECTED_ERROR.status,
+                  errorCode: "UNEXPECTED_ERROR",
+                  message: Errors.UNEXPECTED_ERROR.message,
+                },
+              },
+            },
           },
         },
       };
       method.responses["429"] = {
-        description: "Too Many Requests",
+        description: Errors.TOO_MANY_REQUESTS.message,
         content: {
           "application/json": {
             schema: { $ref: getSchemaPath(ErrorDto) },
+            examples: {
+              default: {
+                summary: "TOO_MANY_REQUESTS Error",
+                value: {
+                  statusCode: Errors.TOO_MANY_REQUESTS.status,
+                  errorCode: "TOO_MANY_REQUESTS",
+                  message: Errors.TOO_MANY_REQUESTS.message,
+                },
+              },
+            },
           },
         },
       };
@@ -64,13 +85,23 @@ export function setupSwagger(app: INestApplication) {
         // (so only apiKey or only bearer if explicitly decorated)
       }
 
-      // Add 401/403 only to secured endpoints
+      // Add 401/403 only to secured endpoints with concrete examples
       if (method.security) {
         method.responses["401"] = {
-          description: "Unauthorized",
+          description: Errors.UNAUTHORIZED.message,
           content: {
             "application/json": {
               schema: { $ref: getSchemaPath(ErrorDto) },
+              examples: {
+                default: {
+                  summary: "UNAUTHORIZED Error",
+                  value: {
+                    statusCode: Errors.UNAUTHORIZED.status,
+                    errorCode: "UNAUTHORIZED",
+                    message: Errors.UNAUTHORIZED.message,
+                  },
+                },
+              },
             },
           },
         };
@@ -79,18 +110,50 @@ export function setupSwagger(app: INestApplication) {
           content: {
             "application/json": {
               schema: { $ref: getSchemaPath(ErrorDto) },
+              examples: {
+                default: {
+                  summary: "FORBIDDEN Error",
+                  value: {
+                    statusCode: 403,
+                    errorCode: "FORBIDDEN",
+                    message: "Forbidden",
+                  },
+                },
+              },
             },
           },
         };
       }
 
-      // 400 response if params/body present
+      // 400 response if params/body present - use concrete validation error example
       if (method.parameters?.length || method.requestBody) {
         method.responses["400"] = {
-          description: "Bad Request",
+          description: Errors.VALIDATION_ERROR.message,
           content: {
             "application/json": {
               schema: { $ref: getSchemaPath(ErrorDto) },
+              examples: {
+                default: {
+                  summary: "VALIDATION_ERROR Error",
+                  value: {
+                    statusCode: Errors.VALIDATION_ERROR.status,
+                    errorCode: "VALIDATION_ERROR",
+                    message: Errors.VALIDATION_ERROR.message,
+                    errors: [
+                      {
+                        field: "email",
+                        message: "Invalid email format",
+                        code: "invalid_string",
+                      },
+                      {
+                        field: "age",
+                        message: "Must be at least 18",
+                        code: "too_small",
+                      },
+                    ],
+                  },
+                },
+              },
             },
           },
         };

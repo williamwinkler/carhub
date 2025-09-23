@@ -8,7 +8,8 @@ import {
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
 import { Ctx } from "../ctx";
-import { UnauthorizedError } from "../errors/domain/unauthorized.error";
+import { AppError } from "../errors/app-error";
+import { Errors } from "../errors/errors";
 
 const IS_PUBLIC_KEY = "isPublic";
 
@@ -34,7 +35,7 @@ export class AuthGuard implements CanActivate {
     const apiKey = this.extractApiKeyFromHeader(request);
     if (!token && !apiKey) {
       this.logger.debug("No credentials for user");
-      throw new UnauthorizedError();
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
     if (token) {
@@ -45,7 +46,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    if (apiKey) {
+    if (apiKey && this.authService.isApiKeyValid(apiKey)) {
       const user = await this.authService.findUserByApiKey(apiKey);
       Ctx.principal = this.authService.principalFromUser(user);
       request.user = { id: user.id, roles: [user.role] };
@@ -53,7 +54,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    throw new UnauthorizedError();
+    throw new AppError(Errors.UNAUTHORIZED);
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

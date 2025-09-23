@@ -1,9 +1,11 @@
 import { Ctx } from "@api/common/ctx";
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { NotFoundDecorator } from "@api/common/decorators/swagger-responses.decorator";
+import { ApiErrorResponse } from "@api/common/decorators/swagger-responses.decorator";
 import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
-import { CarNotFoundError } from "@api/common/errors/domain/not-found.error";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
+import { SortDirection } from "@api/common/types/common.types";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import {
   Body,
@@ -17,18 +19,26 @@ import {
 } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
 import { UUID } from "crypto";
+import z from "zod";
 import {
   limitSchema,
   skipSchema,
   sortDirectionQuerySchema,
-  sortFieldQuerySchema,
 } from "../../common/schemas/common.schema";
 import { CarsAdapter } from "./cars.adapter";
+import { carFields, carSortFieldQuerySchema } from "./cars.schema";
 import { CarsService } from "./cars.service";
-import { SortDirection, SortField } from "./cars.types";
-import { CarDto, carIdSchema } from "./dto/car.dto";
-import { carColorSchema, CreateCarDto } from "./dto/create-car.dto";
+import { CarSortField } from "./cars.types";
+import { CarDto } from "./dto/car.dto";
+import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
+
+const testQuerySchema = z.object({
+  test: z.string(),
+  enum: z.enum(["test", "test2"]),
+  number: z.number(),
+});
+type TestQuery = z.infer<typeof testQuerySchema>;
 
 @Controller("cars")
 export class CarsController {
@@ -42,7 +52,7 @@ export class CarsController {
   @ApiEndpoint({
     status: HttpStatus.CREATED,
     summary: "Create a car",
-    successText: "ar created successfully",
+    successText: "Car created successfully",
     type: CarDto,
   })
   async create(@Body() dto: CreateCarDto) {
@@ -56,16 +66,18 @@ export class CarsController {
   @Public()
   @ApiOperation({ summary: "List cars" })
   @ApiEndpoint({
-    status: HttpStatus.CREATED,
-    successText: "ist of cars",
+    status: HttpStatus.OK,
+    successText: "List of cars",
     type: [CarDto],
   })
   async findAll(
-    @zQuery("modelId", carIdSchema.optional()) modelId?: UUID,
-    @zQuery("color", carColorSchema.optional()) color?: string,
+    @zQuery("modelId", carFields.id.optional())
+    modelId?: UUID,
+    @zQuery("color", carFields.color.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
-    @zQuery("sortField", sortFieldQuerySchema) sortField?: SortField,
+    @zQuery("sortField", carSortFieldQuerySchema)
+    sortField?: CarSortField,
     @zQuery("sortDirection", sortDirectionQuerySchema)
     sortDirection?: SortDirection,
   ) {
@@ -89,11 +101,11 @@ export class CarsController {
     successText: "Car successfully retrieved",
     type: CarDto,
   })
-  @NotFoundDecorator()
-  async findOne(@zParam("id", carIdSchema) id: UUID) {
+  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
+  async findOne(@zParam("id", carFields.id) id: UUID) {
     const car = await this.carsService.findById(id);
     if (!car) {
-      throw new CarNotFoundError();
+      throw new AppError(Errors.CAR_NOT_FOUND);
     }
 
     const data = this.carsAdapter.getDto(car);
@@ -105,11 +117,14 @@ export class CarsController {
   @Roles("user")
   @ApiEndpoint({
     summary: "Update a car",
-    successText: "car was successfully updated",
+    successText: "Car was successfully updated",
     type: CarDto,
   })
-  @NotFoundDecorator()
-  async update(@zParam("id", carIdSchema) id: UUID, @Body() dto: UpdateCarDto) {
+  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
+  async update(
+    @zParam("id", carFields.id) id: UUID,
+    @Body() dto: UpdateCarDto,
+  ) {
     const car = await this.carsService.update(id, dto);
 
     return this.carsAdapter.getDto(car);
@@ -123,8 +138,8 @@ export class CarsController {
     successText: "Car deleted successfully",
     type: null,
   })
-  @NotFoundDecorator()
-  async remove(@zParam("id", carIdSchema) id: UUID) {
+  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
+  async remove(@zParam("id", carFields.id) id: UUID) {
     await this.carsService.softDelete(id);
   }
 
@@ -136,9 +151,31 @@ export class CarsController {
     successText: "Car favorite status toggled successfully",
     type: null,
   })
-  @NotFoundDecorator()
-  async toggleFavorite(@zParam("id", carIdSchema) id: UUID) {
+  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
+  async toggleFavorite(@zParam("id", carFields.id) id: UUID) {
     const userId = Ctx.userIdRequired();
     await this.carsService.toggleFavoriteForUser(id, userId);
+  }
+
+  @Get("favorites")
+  @Roles("user")
+  @ApiEndpoint({
+    summary: "Get user's favorite cars",
+    successText: "User's favorite cars retrieved successfully",
+    type: [CarDto],
+  })
+  async getFavorites(
+    @zQuery("skip", skipSchema.optional()) skip = 0,
+    @zQuery("limit", limitSchema.optional()) limit = 20,
+  ) {
+    const userId = Ctx.userIdRequired();
+    const favorites = await this.carsService.getFavoritesByUser({
+      userId,
+      skip,
+      limit,
+    });
+    const data = this.carsAdapter.getListDto(favorites);
+
+    return data;
   }
 }

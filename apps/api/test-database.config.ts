@@ -1,6 +1,5 @@
 import type { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { config } from "dotenv";
-import type { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { CarManufacturer } from "./src/modules/car-manufacturers/entities/car-manufacturer.entity";
 import { CarModel } from "./src/modules/car-models/entities/car-model.entity";
 import { Car } from "./src/modules/cars/entities/car.entity";
@@ -55,28 +54,20 @@ config({ quiet: true });
 export const TEST_ENTITIES = [User, Car, CarModel, CarManufacturer];
 
 /**
- * Get database configuration from environment variables.
- * Falls back to main database config if test-specific variables are not set.
- */
-function getTestDatabaseConfig(): PostgresConnectionOptions {
-  return {
-    type: "postgres",
-    host: process.env.POSTGRES_HOST ?? "localhost",
-    port: parseInt(process.env.POSTGRES_PORT ?? "5432"),
-    database: process.env.POSTGRES_DATABASE ?? "demo_db",
-    username: process.env.POSTGRES_USERNAME ?? "admin",
-    password: process.env.POSTGRES_PASSWORD ?? "admin",
-    entities: TEST_ENTITIES,
-    synchronize: true, // Always sync in tests for clean state
-  };
-}
-
-/**
  * Complete TypeORM configuration for integration tests.
  * Uses environment variables for database connection with sensible fallbacks.
  */
-export const TEST_DATABASE_CONFIG: TypeOrmModuleOptions =
-  getTestDatabaseConfig();
+export const TEST_DATABASE_CONFIG: TypeOrmModuleOptions = {
+  type: "postgres",
+  host: process.env.POSTGRES_HOST ?? "localhost",
+  port: parseInt(process.env.POSTGRES_PORT ?? "5432"),
+  database: process.env.POSTGRES_DATABASE ?? "demo_test_db",
+  username: process.env.POSTGRES_USERNAME ?? "admin",
+  password: process.env.POSTGRES_PASSWORD ?? "admin",
+  entities: TEST_ENTITIES,
+  synchronize: true, // Always sync in tests for clean state
+  dropSchema: process.env.TEST_DROP_SCHEMA === "true", // Clean slate for each test run
+};
 
 /**
  * Creates a TypeORM module configuration for integration tests.

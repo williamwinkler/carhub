@@ -3,8 +3,9 @@ import type { ExecutionContext } from "@nestjs/common";
 import { createParamDecorator } from "@nestjs/common";
 import { ApiParam, ApiQuery } from "@nestjs/swagger";
 import type { z } from "zod";
-import { ValidationError } from "../errors/domain/bad-request.error";
-import { BadRequestDecorator } from "./swagger-responses.decorator";
+import { AppError } from "../errors/app-error";
+import { Errors } from "../errors/errors";
+import { ApiErrorResponse } from "./swagger-responses.decorator";
 
 export const zParam = createZodParamDecorator(ApiParam, "param");
 export const zQuery = createZodParamDecorator(ApiQuery, "query");
@@ -27,7 +28,9 @@ function createZodParamDecorator(
 
         const parsed = schema.safeParse(rawValue);
         if (!parsed.success) {
-          throw new ValidationError(parsed.error);
+          throw new AppError(Errors.VALIDATION_ERROR, {
+            meta: { errors: parsed.error },
+          });
         }
 
         return parsed.data;
@@ -81,7 +84,7 @@ function createZodParamDecorator(
       );
 
       // Automatically apply the BadRequest decorator too
-      const badReqDec = BadRequestDecorator();
+      const badReqDec = ApiErrorResponse(Errors.VALIDATION_ERROR);
       badReqDec(
         target,
         propertyKey,

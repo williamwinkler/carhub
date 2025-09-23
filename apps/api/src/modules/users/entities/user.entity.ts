@@ -1,5 +1,5 @@
-import { Car } from "../../cars/entities/car.entity";
-import { AbstractEntity } from "../../database/abstract.entity";
+import { Car } from "@api/modules/cars/entities/car.entity";
+import { AbstractEntity } from "@api/modules/database/abstract.entity";
 import {
   Column,
   CreateDateColumn,
@@ -40,11 +40,11 @@ export class User extends AbstractEntity {
   @Column()
   password: string;
 
-  @Column({ nullable: true, unique: true })
-  apiKeyLookupHash?: string;
+  @Column({ type: "text", nullable: true, unique: true })
+  apiKeyLookupHash: string | null;
 
-  @Column({ nullable: true })
-  apiKeySecret?: string;
+  @Column({ type: "text", nullable: true })
+  apiKeySecret: string | null;
 
   @OneToMany(() => Car, (car) => car.createdBy)
   cars!: Car[];

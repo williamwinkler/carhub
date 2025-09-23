@@ -1,7 +1,7 @@
 import type { Principal } from "@api/common/ctx";
 import { Ctx } from "@api/common/ctx";
-import { BaseError } from "@api/common/errors/base-error";
-import { UnauthorizedError } from "@api/common/errors/domain/unauthorized.error";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import { setupContext } from "@api/common/utils/context.utils";
 import type { AuthService } from "@api/modules/auth/auth.service";
 import { HttpStatus } from "@nestjs/common";
@@ -31,19 +31,20 @@ export const clsMiddleware = t.middleware(async ({ ctx, next }) => {
 export const errorMiddleware = t.middleware(async ({ next }) => {
   const result = await next();
 
-  // Map the BaseError to the corresponding tRPC error code
-  if (!result.ok && result.error.cause instanceof BaseError) {
+  // Map the AppError to the corresponding tRPC error code
+  if (!result.ok && result.error.cause instanceof AppError) {
     const httpStatus =
       result.error.cause.getStatus() ?? HttpStatus.INTERNAL_SERVER_ERROR;
     const trpcCode =
       httpStatusToTrpcCode[httpStatus] ?? "INTERNAL_SERVER_ERROR";
 
+    const appErrorResponse = result.error.cause.getResponse() as any;
     throw new TRPCError({
       code: trpcCode,
-      message: result.error.cause.error.message,
+      message: appErrorResponse.message,
       cause: {
-        errorCode: result.error.cause.error.errorCode,
-        errors: result.error.cause.error.errors,
+        errorCode: appErrorResponse.errorCode,
+        errors: appErrorResponse.errors,
       },
     });
   }
@@ -65,7 +66,7 @@ export const createAuthMiddleware = (authService: AuthService) => {
 
     try {
       if (!authorization.startsWith("Bearer ")) {
-        throw new UnauthorizedError();
+        throw new AppError(Errors.UNAUTHORIZED);
       }
 
       const token = authorization.slice(7);

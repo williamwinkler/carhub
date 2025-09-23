@@ -7,7 +7,7 @@ export const sleep = (ms: number): Promise<void> => {
 
 export function hash(
   value: string,
-  algorithm = "sha256",
+  algorithm: "sha1" | "sha256" = "sha256", // extend as needed
   digest: BinaryToTextEncoding = "hex",
 ): string {
   return createHash(algorithm).update(value).digest(digest);

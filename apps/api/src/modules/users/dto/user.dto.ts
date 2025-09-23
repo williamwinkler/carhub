@@ -1,7 +1,9 @@
-import { roleSchema } from "@api/common/schemas/common.schema";
 import { registerSchema } from "@api/modules/auth/dto/register.dto";
 import { createZodDto } from "nestjs-zod";
 import z from "zod";
+import { Role } from "../entities/user.entity";
+
+const roleSchema = z.nativeEnum(Role);
 
 const userSchema = registerSchema
   .omit({ password: true })

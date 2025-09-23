@@ -14,7 +14,7 @@ import { HttpErrorFilter } from "./common/filters/http-error.filter";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
 import { CustomThrottlerGuard } from "./common/guards/throttler.guard";
-import { ResponseValidationInterceptor } from "./common/interceptors/response-validation.interceptor";
+import { ResponseWrapperInterceptor } from "./common/interceptors/response-wrapper.interceptor";
 import { TrafficInterceptor } from "./common/interceptors/traffic.interceptor";
 import { ContextMiddleware } from "./common/middlewares/context.middleware";
 import { AuthModule } from "./modules/auth/auth.module";
@@ -74,7 +74,7 @@ import { UsersModule } from "./modules/users/users.module";
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ResponseValidationInterceptor, // Validates outgoing DTOs and wraps them
+      useClass: ResponseWrapperInterceptor, // Wraps responses with apiVersion
     },
     {
       provide: APP_FILTER,

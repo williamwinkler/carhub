@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a full-stack monorepo demonstrating **end-to-end type safety** between a NestJS backend and Next.js frontend using tRPC, with auto-generated Swagger documentation from Zod schemas. The project serves as both a demo and a starter template for building modern full-stack applications.
+This is a **demonstration project** showcasing modern full-stack patterns with **end-to-end type safety** between a NestJS backend and Next.js frontend using tRPC. The project highlights advanced Swagger documentation generation from Zod schemas and serves as an **inspiration source** for building production-ready applications.
 
 ## Architecture
 
 - **Monorepo Structure**: pnpm workspaces with apps and packages
-- **Backend**: NestJS with tRPC and REST endpoints at `apps/api/`
-- **Frontend**: Next.js App Router with tRPC client at `apps/web/`
+- **Backend**: NestJS API with REST endpoints + tRPC at `apps/api/`
+- **Frontend**: Next.js App Router with tRPC client at `apps/web/` *(in development)*
 - **Shared Packages**: Common types and utilities in `packages/`
 
 ## Key Commands
@@ -20,103 +20,178 @@ This is a full-stack monorepo demonstrating **end-to-end type safety** between a
 - `pnpm dev:api` - Start only the NestJS API server
 - `pnpm dev:web` - Start only the Next.js frontend
 
+### Database
+- `pnpm --filter api seed` - Seed database with sample data
+- `pnpm --filter api migrations:run` - Run database migrations
+- `pnpm --filter api schema:drop` - Drop all database tables
+
 ### Building & Testing
 - `pnpm build` - Build all packages and apps
-- `pnpm build:packages` - Build only the packages
-- `pnpm build:apps` - Build only the apps
 - `pnpm test` - Run API tests (Jest)
-- `pnpm test:watch` - Run API tests in watch mode
+- `pnpm test:cov` - Run API tests with coverage
 
 ### Code Quality
 - `pnpm lint` - Lint all apps
 - `pnpm lint:fix` - Lint and auto-fix issues
 
-## Key Technologies & Patterns
+## Demonstrated Technologies & Patterns
 
-### Schema-Driven Development
-- **Zod schemas** are the single source of truth for validation and types
-- Custom `@zQuery` and `@zParam` decorators validate query/path parameters
-- `nestjs-zod` generates NestJS DTOs from Zod schemas for Swagger
-- All API responses follow consistent wrapper format via `wrapResponse()`
+### Schema-First Development with Zod
+- **Single Source of Truth**: Zod schemas drive validation, types, and documentation
+- **Custom Decorators**: `@zQuery` and `@zParam` for validated parameters
+- **Auto-Generated DTOs**: `nestjs-zod` creates NestJS DTOs from Zod schemas
+- **Swagger Integration**: Automatic OpenAPI documentation from schemas
 
-### tRPC Integration
-- Backend router at `apps/api/src/modules/trpc/trpc.router.ts`
-- Frontend client at `apps/web/src/app/_trpc/client.ts`
-- Type inference flows from backend to frontend automatically
-- tRPC routes are mounted at `/trpc` endpoint
+### Dual API Architecture
+- **REST API**: Full OpenAPI/Swagger documentation for external integrations
+- **tRPC**: Type-safe procedures for frontend with automatic type inference
+- **Consistent Data**: Both APIs serve identical data with shared business logic
 
-### Rate Limiting Architecture
-- **REST API**: Protected by `CustomThrottlerGuard` (global APP_GUARD) with NestJS throttler
-- **tRPC**: Protected by tRPC middleware in `apps/api/src/modules/trpc/trpc.middleware.ts`
-- **User-based tracking**: Authenticated users tracked by `userId`, unauthenticated by IP
-- **Procedure-specific limits**: Different rate limits for different operation types:
-  - `publicProcedure`: IP-based, 1000 req/min (for public endpoints)
-  - `authProcedure`: User/IP-based, 10 req/15min (for auth operations)
-  - `authenticatedRateLimitedProcedure`: User-based, 100 req/min (standard)
-  - `authenticatedStrictProcedure`: User-based, 5 req/min (sensitive operations)
-  - `burstProtectedProcedure`: 10 req/sec (high-frequency endpoints)
+### Advanced NestJS Features
+- **Custom Guards**: JWT authentication, role-based authorization, rate limiting
+- **Error Handling**: Centralized error system with proper HTTP status codes
+- **Interceptors**: Response formatting and request/response logging
+- **Middleware**: Context management and rate limiting
 
-### Swagger Documentation
-- Auto-generated from Zod schemas and NestJS decorators
-- Available at `/docs` in development
-- YAML exported to `apps/api/swagger.yml` for external tools
-- Uses custom `ApiResponseDto()` and `ApiResponseListDto()` utilities for consistent response shapes
+### Database Integration
+- **TypeORM**: PostgreSQL integration with proper entity relationships
+- **Migrations**: Schema versioning and management
+- **Seeding**: Comprehensive sample data including users, manufacturers, models, and cars
+- **Relationships**: Proper foreign keys and cascading operations
 
-### Authentication & Authorization
-- JWT-based authentication with refresh tokens
-- Role-based authorization using `@Roles()` decorator and `RolesGuard`
-- Guards applied globally: `AuthGuard` and `RolesGuard`
+### Security & Performance
+- **JWT Authentication**: Access and refresh token system
+- **Rate Limiting**: Tiered rate limiting (public, authenticated, strict, burst protection)
+- **Input Validation**: All inputs validated through Zod schemas
+- **CORS Configuration**: Proper frontend integration setup
 
-## Code Organization
+## API Features Highlighted
 
-### Backend Structure (`apps/api/src/`)
-- `common/` - Shared utilities, DTOs, decorators, guards, interceptors
-- `modules/` - Feature modules (cars, auth, users, trpc, config)
-- `main.ts` - Application bootstrap with CORS, versioning, middleware setup
+### RESTful Endpoints
+- **Authentication**: Login, logout, refresh tokens
+- **User Management**: CRUD operations with role-based access
+- **Car Management**: Full CRUD for cars, manufacturers, and models
+- **Advanced Querying**: Filtering, sorting, pagination on all list endpoints
+- **Relationship Management**: Favorite cars, owner restrictions
 
-### Frontend Structure (`apps/web/src/`)
-- `app/` - Next.js App Router pages and layouts
-- `app/_components/` - Reusable React components
-- `app/_trpc/` - tRPC client setup and provider
-- **Frontend Vision**: Building towards a state-of-the-art Next.js application using tRPC with TanStack Query for optimal data fetching and caching
-- **Styling**: TailwindCSS for utility-first styling (note: currently transitioning from Ant Design)
+### tRPC Procedures
+- **Type Safety**: Full compile-time type checking between client and server
+- **Rate Limiting**: Different procedure types with appropriate rate limits
+- **Authentication**: Seamless JWT integration
+- **Error Handling**: Consistent error responses across all procedures
 
-### Shared Packages (`packages/`)
-- `shared/` - Common types and enums (e.g., `CarBrand`)
-- `logging/` - Shared logging utilities
+### Auto-Generated Documentation
+- **Swagger UI**: Interactive API docs at `/docs` (development)
+- **OpenAPI Spec**: YAML export for external tooling
+- **Parameter Documentation**: Query and path parameters auto-documented
+- **Response Schemas**: Consistent response format documentation
+
+## Development Experience
+
+### Schema-First Workflow
+```typescript
+// 1. Define Zod schema
+export const createCarSchema = z.object({
+  modelId: z.string().uuid(),
+  color: z.string().min(1).max(50),
+  year: z.number().int().gte(1900),
+  price: z.number().min(0),
+});
+
+// 2. Generate DTO
+export class CreateCarDto extends createZodDto(createCarSchema) {}
+
+// 3. Use in controller with validation
+@Post()
+async create(@Body() dto: CreateCarDto) {
+  // dto is automatically validated and typed
+}
+```
+
+### Custom Validation Decorators
+```typescript
+@Get()
+async findAll(
+  @zQuery("color", z.string().optional()) color?: string,
+  @zQuery("skip", z.number().int().gte(0).default(0)) skip = 0,
+  @zQuery("limit", z.number().int().gte(1).lte(100).default(20)) limit = 20,
+) {
+  // All parameters validated automatically
+  // Swagger docs generated automatically
+}
+```
+
+### Type-Safe tRPC Client
+```typescript
+// Frontend automatically gets full type safety
+const cars = await trpc.cars.findAll.query({
+  color: "red",    // ✅ Typed
+  skip: 0,         // ✅ Typed
+  limit: 20        // ✅ Typed
+});
+// Response is fully typed automatically!
+```
+
+## Sample Data
+
+The seed script creates comprehensive sample data:
+- **2 Users**: Admin user (`admin`/`admin123`) and regular user (`jondoe`/`password123`)
+- **10 Car Manufacturers**: Toyota, Honda, Ford, BMW, Mercedes-Benz, Audi, Volkswagen, Nissan, Hyundai, Tesla
+- **50 Car Models**: 5 models per manufacturer with proper slugs
+- **Relationships**: Proper foreign key relationships between all entities
+
+## Environment Setup
+
+### Database Configuration
+Create `apps/api/.env.local`:
+```env
+NODE_ENV=development
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=demo_db
+POSTGRES_USERNAME=admin
+POSTGRES_PASSWORD=admin
+JWT_ACCESS_SECRET=your-access-secret
+JWT_REFRESH_SECRET=your-refresh-secret
+```
+
+### First-Time Setup
+```bash
+# 1. Install dependencies
+pnpm install
+
+# 2. Setup database (PostgreSQL required)
+# Create database 'demo_db' with user 'admin'
+
+# 3. Run migrations
+pnpm --filter api migrations:run
+
+# 4. Seed database
+pnpm --filter api seed
+
+# 5. Start development
+pnpm dev:api
+```
 
 ## Communication Style
 
-**IMPORTANT**: Keep task completion summaries very short (1-2 sentences max). User has limited time to read lengthy summaries.
+**IMPORTANT**: Keep responses concise. This is a demonstration project for inspiration.
 
 ## App-Specific Guidelines
 
-For detailed development guidelines specific to each application, see:
-- **API Development**: `apps/api/CLAUDE.md` - NestJS patterns, testing requirements, rate limiting
-- **Frontend Development**: `apps/web/CLAUDE.md` - Next.js patterns, tRPC client usage, styling guidelines
+For detailed development guidelines:
+- **API Development**: `apps/api/CLAUDE.md` - Comprehensive NestJS patterns and architecture
+- **Frontend Development**: `apps/web/CLAUDE.md` - Next.js patterns and tRPC integration *(in development)*
 
-## Development Notes
+## Key Inspiration Points
 
-### Adding New Features
-1. Define Zod schemas in the appropriate module's `dto/` folder
-2. Create NestJS DTOs using `createZodDto(schema)`
-3. Add REST controllers with proper Swagger decorations
-4. Add corresponding tRPC procedures in the router (if meant for the web)
-5. Write comprehensive tests for all new functionality
-6. Run tests to verify implementation works correctly
-7. Update frontend to consume new tRPC procedures using TanStack Query patterns
+This project demonstrates:
+1. **Schema-First Development** - How Zod can be the single source of truth
+2. **Dual API Strategy** - REST for external integration + tRPC for type safety
+3. **Advanced Validation** - Custom decorators for parameter validation
+4. **Auto-Documentation** - Swagger docs generated from schemas
+5. **Production Patterns** - Error handling, rate limiting, authentication
+6. **Type Safety** - End-to-end type inference from database to frontend
+7. **Modern Stack** - Latest NestJS, tRPC, TypeORM, and Zod patterns
 
-### Database/State Management
-- No database is configured - uses in-memory storage for demo purposes
-- Services implement CRUD operations with filtering and pagination
-- Adapters convert between internal models and DTOs
-
-### Error Handling
-- Global `HttpErrorFilter` catches and formats exceptions
-- Zod validation errors are automatically handled by `ZodValidationPipe`
-- Custom decorators like `@BadRequest()` provide consistent error documentation
-
-### Environment Configuration
-- Environment-specific behavior in `main.ts` and `setup-swagger.ts`
-- Development mode enables Swagger UI and enhanced logging
-- Production mode serves only YAML spec for external integration
+Use this project as inspiration for building modern, type-safe, well-documented APIs with excellent developer experience.

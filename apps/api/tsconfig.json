@@ -15,6 +15,6 @@
     "resolveJsonModule": true,
     "types": ["node", "jest"]
   },
-  "include": ["src/**/*", "test-database.config.ts", "data-source.ts", "migrations/**/*", "scripts/**/*"],
+  "include": ["src/**/*", "migrations/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist", "test"]
 }

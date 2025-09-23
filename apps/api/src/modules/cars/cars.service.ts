@@ -1,15 +1,11 @@
 import { Ctx } from "@api/common/ctx";
-import { BadRequestError } from "@api/common/errors/domain/bad-request.error";
-import { UsersCanOnlyUpdateOwnCarsError } from "@api/common/errors/domain/forbidden.error";
-import {
-  CarModelNotFoundError,
-  CarNotFoundError,
-} from "@api/common/errors/domain/not-found.error";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
 import { Repository } from "typeorm";
-import { Pagination } from "../../common/types/pagination";
+import { Pagination } from "../../common/types/common.types";
 import { CarModelsService } from "../car-models/car-models.service";
 import { User } from "../users/entities/user.entity";
 import { FindAllCarsOptions, GetAllFavoritesOptions } from "./cars.types";
@@ -33,7 +29,7 @@ export class CarsService {
 
     const model = await this.modelsService.findById(createCarDto.modelId);
     if (!model) {
-      throw new CarModelNotFoundError();
+      throw new AppError(Errors.CAR_MODEL_NOT_FOUND);
     }
 
     const newCar = this.carsRepo.create({
@@ -74,7 +70,10 @@ export class CarsService {
 
     // Apply sorting
     if (sortField && sortDirection) {
-      queryBuilder.orderBy(`car.${sortField}`, sortDirection);
+      queryBuilder.orderBy(
+        `car.${sortField}`,
+        sortDirection.toUpperCase() as "ASC" | "DESC",
+      );
     }
 
     // Apply pagination
@@ -107,13 +106,13 @@ export class CarsService {
   async update(id: UUID, dto: UpdateCarDto): Promise<Car> {
     const car = await this.findById(id);
     if (!car) {
-      throw new CarNotFoundError();
+      throw new AppError(Errors.CAR_NOT_FOUND);
     }
 
     // Authorization check: only car owners or admins can update
     const principal = Ctx.principalRequired();
     if (car.createdBy !== principal.id && principal.role !== "admin") {
-      throw new UsersCanOnlyUpdateOwnCarsError();
+      throw new AppError(Errors.USERS_CAN_ONLY_UPDATE_OWN_CARS);
     }
 
     const updatedCar = this.carsRepo.create({
@@ -124,7 +123,7 @@ export class CarsService {
     if (dto.modelId) {
       const carModel = await this.modelsService.findById(dto.modelId);
       if (!carModel) {
-        throw new CarModelNotFoundError();
+        throw new AppError(Errors.CAR_MODEL_NOT_FOUND);
       }
 
       updatedCar.model = carModel;
@@ -140,13 +139,13 @@ export class CarsService {
   async softDelete(id: UUID): Promise<void> {
     const car = await this.findById(id);
     if (!car) {
-      throw new CarNotFoundError();
+      throw new AppError(Errors.CAR_NOT_FOUND);
     }
 
     // Authorization check: only car owners or admins can delete
     const principal = Ctx.principalRequired();
     if (car.createdBy !== principal.id && principal.role !== "admin") {
-      throw new BadRequestError("You can only delete your own cars");
+      throw new AppError(Errors.USERS_CAN_ONLY_UPDATE_OWN_CARS);
     }
 
     await this.carsRepo.softDelete({ id });
@@ -161,7 +160,7 @@ export class CarsService {
     });
 
     if (!car) {
-      throw new CarNotFoundError();
+      throw new AppError(Errors.CAR_NOT_FOUND);
     }
 
     const isFavorited = car.favoritedBy.some((user) => user.id === userId);

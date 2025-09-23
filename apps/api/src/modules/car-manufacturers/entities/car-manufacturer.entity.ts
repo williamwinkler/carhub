@@ -13,6 +13,9 @@ export class CarManufacturer extends AbstractEntity {
   @Column({ unique: true })
   name!: string;
 
+  @Column({ unique: true })
+  slug!: string;
+
   @OneToMany(() => CarModel, (model) => model.manufacturer)
   models!: CarModel[];
 

@@ -1,38 +1,29 @@
 import { Ctx } from "@api/common/ctx";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { zQuery } from "@api/common/decorators/zod.decorator";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
+import { UsersService } from "@api/modules/users/users.service";
 import { Controller, Get } from "@nestjs/common";
-import { limitSchema, skipSchema } from "../../common/schemas/common.schema";
-import { CarsAdapter } from "../cars/cars.adapter";
-import { CarsService } from "../cars/cars.service";
-import { CarDto } from "../cars/dto/car.dto";
+import { UserDto } from "./dto/user.dto";
+import { UsersAdapter } from "./users.adapter";
 
 @Controller("users")
 export class UsersController {
   constructor(
-    private readonly carsService: CarsService,
-    private readonly carsAdapter: CarsAdapter,
+    private readonly usersService: UsersService,
+    private readonly usersAdapter: UsersAdapter,
   ) {}
 
-  @Get("me/favorite-cars")
+  @Get("me")
   @Roles("user")
   @ApiEndpoint({
-    summary: "Get current user's favorite cars",
-    successText: "User favorites retrieved successfully",
-    type: [CarDto],
+    summary: "Get my user information",
+    successText: "User information retrieved",
+    type: UserDto,
   })
-  async getMyFavoriteCars(
-    @zQuery("skip", skipSchema.optional()) skip = 0,
-    @zQuery("limit", limitSchema.optional()) limit = 20,
-  ) {
+  async getMe() {
     const userId = Ctx.userIdRequired();
-    const data = await this.carsService.getFavoritesByUser({
-      userId,
-      skip,
-      limit,
-    });
+    const user = await this.usersService.findById(userId);
 
-    return this.carsAdapter.getListDto(data);
+    return this.usersAdapter.getUserDto(user!);
   }
 }

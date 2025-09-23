@@ -1,13 +1,25 @@
 import { HttpStatus } from "@nestjs/common";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { ErrorCode } from "./error-codes.enum";
+import type { ErrorKey } from "./errors";
 
 export const ErrorSchema = z.object({
   statusCode: z.enum(HttpStatus).describe("The HTTP status code"),
-  errorCode: z.enum(ErrorCode).describe("The application specific error code"),
+  errorCode: z
+    .string()
+    .describe("The application specific error code")
+    .transform((v) => v as ErrorKey),
   message: z.string().describe("The error message"),
-  errors: z.array(z.any()).optional().describe("Zod validation errors"),
+  errors: z
+    .array(
+      z.object({
+        field: z.string(),
+        message: z.string(),
+        code: z.string(),
+      }),
+    )
+    .optional()
+    .describe("Zod validation errors"),
 });
 
 export class ErrorDto extends createZodDto(ErrorSchema) {}

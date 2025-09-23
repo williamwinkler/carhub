@@ -1,7 +1,7 @@
 import { Ctx } from "@api/common/ctx";
 import { Injectable } from "@nestjs/common";
 import { PaginationDto } from "../../common/dto/pagination.dto";
-import { Pagination } from "../../common/types/pagination";
+import { Pagination } from "../../common/types/common.types";
 import { CarDto } from "./dto/car.dto";
 import { Car } from "./entities/car.entity";
 
@@ -12,7 +12,6 @@ export class CarsAdapter {
 
     return {
       id: car.id,
-      // model: car.model,
       year: car.year,
       color: car.color,
       kmDriven: car.kmDriven,
@@ -23,6 +22,12 @@ export class CarsAdapter {
       isFavorite:
         (userId && car?.favoritedBy?.some((user) => user.id === userId)) ??
         false,
+      model: {
+        id: car.model.id,
+        name: car.model.name,
+        slug: car.model.slug,
+        manufacturerId: car.model.manufacturer.id,
+      },
     };
   }
 
@@ -30,7 +35,7 @@ export class CarsAdapter {
     return {
       items: input.items.map((item) => this.getDto(item)),
       meta: {
-        total: input.meta.totalItems,
+        totalItems: input.meta.totalItems,
         count: input.meta.count,
         limit: input.meta.limit,
         skipped: input.meta.skipped,

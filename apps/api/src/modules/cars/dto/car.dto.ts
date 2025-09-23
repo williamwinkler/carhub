@@ -1,25 +1,21 @@
-import { uuidSchema } from "@api/common/schemas/common.schema";
+import { carModelSchema } from "@api/modules/car-models/dto/car-model.dto";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { createCarSchema } from "./create-car.dto";
+import { carFields } from "../cars.schema";
 
-export const carIdSchema = uuidSchema.describe(
-  "The unique id of the car (UUID)",
-);
-
-export const carSchema = createCarSchema
-  .omit({ modelId: true })
-  .extend({
-    id: carIdSchema,
-    createdBy: z.uuid().describe("The user who created this car"),
-    createdAt: z.iso.datetime().describe("When the car record was created"),
-    updatedAt: z.iso
-      .datetime()
-      .describe("When the car record was last updated"),
-    isFavorite: z
-      .boolean()
-      .describe("Indicates if the user has favorited the car or not"),
+export const carResponseSchema = z
+  .object({
+    id: carFields.id,
+    year: carFields.year,
+    color: carFields.color,
+    kmDriven: carFields.kmDriven,
+    price: carFields.price,
+    createdBy: carFields.createdBy,
+    createdAt: carFields.createdAt,
+    updatedAt: carFields.updatedAt,
+    isFavorite: carFields.isFavorite,
+    model: carModelSchema,
   })
   .strict();
 
-export class CarDto extends createZodDto(carSchema) {}
+export class CarDto extends createZodDto(carResponseSchema) {}
