@@ -1,5 +1,13 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["test/**/*.spec.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@api/*": ["./src/*"],
+      "@api/common/test/test-database.config": ["./test-database.config.ts"]
+    },
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*", "test/**/*.spec.ts", "test/**/*.ts", "test-database.config.ts"],
   "exclude": []
 }

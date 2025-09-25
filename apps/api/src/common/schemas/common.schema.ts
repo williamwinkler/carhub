@@ -5,12 +5,14 @@ import { z } from "zod";
 export const skipSchema = z.coerce
   .number()
   .int()
+  .min(0)
   .default(0)
   .describe("The amount of items to skip.");
 
 export const limitSchema = z.coerce
   .number()
   .int()
+  .min(0)
   .default(0)
   .describe("The limit of items to be returned.");
 
@@ -29,3 +31,10 @@ export const sortDirectionQuerySchema = z
   .describe("Sort direction (ascending or descending)");
 
 export const slugSchema = z.string().min(1).max(255);
+
+export const skipLimitSchema = z
+  .object({
+    skip: skipSchema,
+    limit: limitSchema,
+  })
+  .strict();

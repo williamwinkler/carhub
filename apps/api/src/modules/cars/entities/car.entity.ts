@@ -1,6 +1,6 @@
-import { AbstractEntity } from "../../database/abstract.entity";
-import { User } from "../../users/entities/user.entity";
-import type { UUID } from "crypto";
+import { CarModel } from "@api/modules/car-models/entities/car-model.entity";
+import { AbstractEntity } from "@api/modules/database/abstract.entity";
+import { User } from "@api/modules/users/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -11,7 +11,6 @@ import {
   ManyToOne,
   UpdateDateColumn,
 } from "typeorm";
-import { CarModel } from "../../car-models/entities/car-model.entity";
 
 @Entity({ name: "cars" })
 export class Car extends AbstractEntity {
@@ -37,8 +36,8 @@ export class Car extends AbstractEntity {
     nullable: false,
     onDelete: "RESTRICT",
   })
-  @JoinColumn()
-  createdBy!: UUID;
+  @JoinColumn({ name: "createdById" })
+  createdBy!: User;
 
   @ManyToMany(() => User, (user) => user.favorites, {
     onDelete: "CASCADE",

@@ -2503,10 +2503,44 @@ components:
           maximum: 9007199254740991
           x-nestjs_zod-parent-additional-properties: false
         createdBy:
-          description: The user who created this car
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          type: object
+          properties:
+            firstName:
+              type: string
+              minLength: 1
+            lastName:
+              type: string
+              minLength: 1
+            username:
+              type: string
+              minLength: 3
+            role:
+              type: string
+              enum:
+                - admin
+                - user
+            hasApiKey:
+              description: Indicates whether or not the user has generated an API key
+              type: boolean
+            createdAt:
+              description: The create date of the account
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+            updatedAt:
+              description: The last time the account was updated
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+          required:
+            - firstName
+            - lastName
+            - username
+            - role
+            - hasApiKey
+            - createdAt
+            - updatedAt
+          additionalProperties: false
           x-nestjs_zod-parent-additional-properties: false
         createdAt:
           description: When the car record was created
@@ -2542,16 +2576,33 @@ components:
               type: string
               minLength: 1
               maxLength: 255
-            manufacturerId:
-              description: The manufacturer ID this model belongs to
-              type: string
-              format: uuid
-              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            manufacturer:
+              type: object
+              properties:
+                id:
+                  description: The unique id of the car manufacturer (UUID)
+                  type: string
+                  format: uuid
+                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+                name:
+                  description: The name of the car manufacturer
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                slug:
+                  description: The slug of the car manufacturer
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+              required:
+                - id
+                - name
+                - slug
+              additionalProperties: false
           required:
             - id
             - name
             - slug
-            - manufacturerId
           additionalProperties: false
           x-nestjs_zod-parent-additional-properties: false
       required:
@@ -2560,11 +2611,9 @@ components:
         - color
         - kmDriven
         - price
-        - createdBy
         - createdAt
         - updatedAt
         - isFavorite
-        - model
     CarResponseDto:
       type: object
       properties:
@@ -2773,17 +2822,34 @@ components:
           minLength: 1
           maxLength: 255
           x-nestjs_zod-parent-additional-properties: false
-        manufacturerId:
-          description: The manufacturer ID this model belongs to
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        manufacturer:
+          type: object
+          properties:
+            id:
+              description: The unique id of the car manufacturer (UUID)
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+            name:
+              description: The name of the car manufacturer
+              type: string
+              minLength: 1
+              maxLength: 255
+            slug:
+              description: The slug of the car manufacturer
+              type: string
+              minLength: 1
+              maxLength: 255
+          required:
+            - id
+            - name
+            - slug
+          additionalProperties: false
           x-nestjs_zod-parent-additional-properties: false
       required:
         - id
         - name
         - slug
-        - manufacturerId
     CarModelResponseDto:
       type: object
       properties:

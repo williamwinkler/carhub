@@ -1,15 +1,15 @@
 import { Ctx } from "@api/common/ctx";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import type { Cache } from "cache-manager";
 import { UUID } from "crypto";
 import { QueryFailedError, Repository } from "typeorm";
 import { Car } from "../cars/entities/car.entity";
 import { User } from "./entities/user.entity";
 import { CreateUser, UpdateUser } from "./users.types";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import type { Cache } from "cache-manager";
 
 @Injectable()
 export class UsersService {
@@ -116,7 +116,7 @@ export class UsersService {
 
       // Soft delete all cars owned by the user
       if (user.cars.length > 0) {
-        await carsRepo.softDelete({ createdBy: user.id });
+        await carsRepo.softDelete({ createdBy: { id: user.id } });
       }
 
       // Remove from cache

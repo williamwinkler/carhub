@@ -11,7 +11,7 @@ import {
   carManufacturerFields,
   carManufacturerSortFieldQuerySchema,
 } from "./car-manufacturers.schema";
-import { ManufacturersService } from "./car-manufacturers.service";
+import { CarManufacturersService } from "./car-manufacturers.service";
 import { createCarManufacturerSchema } from "./dto/create-car-manufacturer.dto";
 import { updateCarManufacturerSchema } from "./dto/update-car-manufacturer.dto";
 
@@ -19,7 +19,7 @@ import { updateCarManufacturerSchema } from "./dto/update-car-manufacturer.dto";
 export class CarManufacturersTrpc {
   constructor(
     private readonly trpc: TrpcService,
-    private readonly manufacturersService: ManufacturersService,
+    private readonly manufacturersService: CarManufacturersService,
     private readonly manufacturersAdapter: CarManufacturersAdapter,
   ) {}
 

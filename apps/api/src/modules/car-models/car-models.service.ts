@@ -6,7 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { UUID } from "crypto";
 import { slug } from "github-slugger";
 import { Repository } from "typeorm";
-import { ManufacturersService } from "../car-manufacturers/car-manufacturers.service";
+import { CarManufacturersService } from "../car-manufacturers/car-manufacturers.service";
 import { FindAllCarModelsOptions } from "./car-models.types";
 import { CreateCarModelDto } from "./dto/create-car-model.dto";
 import { UpdateCarModelDto } from "./dto/update-car-model.dto";
@@ -19,7 +19,7 @@ export class CarModelsService {
   constructor(
     @InjectRepository(CarModel)
     private modelsRepo: Repository<CarModel>,
-    private readonly manufacturersService: ManufacturersService,
+    private readonly manufacturersService: CarManufacturersService,
   ) {}
 
   // region CREATE

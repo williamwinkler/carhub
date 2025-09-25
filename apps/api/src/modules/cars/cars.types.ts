@@ -14,7 +14,7 @@ export type FindAllCarsOptions = {
   limit: number;
 };
 
-export type GetAllFavoritesOptions = {
+export type FindAllByUserOptions = {
   userId: UUID;
   skip: number;
   limit: number;

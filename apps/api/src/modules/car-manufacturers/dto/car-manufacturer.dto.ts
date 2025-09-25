@@ -2,7 +2,7 @@ import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 import { carManufacturerFields } from "../car-manufacturers.schema";
 
-export const carManufacturerResponseSchema = z
+export const carManufacturerSchema = z
   .object({
     id: carManufacturerFields.id,
     name: carManufacturerFields.name,
@@ -10,6 +10,4 @@ export const carManufacturerResponseSchema = z
   })
   .strict();
 
-export class CarManufacturerDto extends createZodDto(
-  carManufacturerResponseSchema,
-) {}
+export class CarManufacturerDto extends createZodDto(carManufacturerSchema) {}

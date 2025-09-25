@@ -11,6 +11,6 @@ import { CarManufacturersModule } from "../car-manufacturers/car-manufacturers.m
   imports: [TypeOrmModule.forFeature([CarModel]), CarManufacturersModule],
   controllers: [CarModelsController],
   providers: [CarModelsService, CarModelsAdapter, CarModelsTrpc],
-  exports: [CarModelsService, CarModelsTrpc, TypeOrmModule],
+  exports: [CarModelsService, CarModelsTrpc, CarModelsAdapter, TypeOrmModule],
 })
 export class CarModelsModule {}

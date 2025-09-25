@@ -7,12 +7,14 @@ import { CarsController } from "./cars.controller";
 import { CarsService } from "./cars.service";
 import { CarsTrpc } from "./cars.trpc";
 import { Car } from "./entities/car.entity";
+import { UsersModule } from "../users/users.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Car]),
     CarManufacturersModule,
     CarModelsModule,
+    UsersModule,
   ],
   controllers: [CarsController],
   providers: [CarsService, CarsAdapter, CarsTrpc],

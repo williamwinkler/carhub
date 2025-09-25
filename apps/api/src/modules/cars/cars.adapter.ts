@@ -1,12 +1,20 @@
 import { Ctx } from "@api/common/ctx";
 import { Injectable } from "@nestjs/common";
+import { UUID } from "crypto";
 import { PaginationDto } from "../../common/dto/pagination.dto";
 import { Pagination } from "../../common/types/common.types";
+import { UsersAdapter } from "../users/users.adapter";
+import { CarModelsAdapter } from "./../car-models/car-models.adapter";
 import { CarDto } from "./dto/car.dto";
 import { Car } from "./entities/car.entity";
 
 @Injectable()
 export class CarsAdapter {
+  constructor(
+    private readonly usersAdapter: UsersAdapter,
+    private readonly carModelsAdapter: CarModelsAdapter,
+  ) {}
+
   public getDto(car: Car): CarDto {
     const userId = Ctx.userId;
 
@@ -16,18 +24,11 @@ export class CarsAdapter {
       color: car.color,
       kmDriven: car.kmDriven,
       price: car.price,
-      createdBy: car.createdBy,
+      isFavorite: this.isFavorite(car, userId),
+      model: car.model && this.carModelsAdapter.getDto(car.model),
+      createdBy: car.createdBy && this.usersAdapter.getUserDto(car.createdBy),
       createdAt: car.createdAt.toISOString(),
       updatedAt: car.updatedAt?.toISOString(),
-      isFavorite:
-        (userId && car?.favoritedBy?.some((user) => user.id === userId)) ??
-        false,
-      model: {
-        id: car.model.id,
-        name: car.model.name,
-        slug: car.model.slug,
-        manufacturerId: car.model.manufacturer.id,
-      },
     };
   }
 
@@ -41,5 +42,11 @@ export class CarsAdapter {
         skipped: input.meta.skipped,
       },
     };
+  }
+
+  private isFavorite(car: Car, userId?: UUID): boolean {
+    return (
+      (userId && car?.favoritedBy?.some((user) => user.id === userId)) ?? false
+    );
   }
 }

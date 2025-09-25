@@ -12,8 +12,8 @@ import { UpdateCarManufacturerDto } from "./dto/update-car-manufacturer.dto";
 import { CarManufacturer } from "./entities/car-manufacturer.entity";
 
 @Injectable()
-export class ManufacturersService {
-  private readonly logger = new Logger(ManufacturersService.name);
+export class CarManufacturersService {
+  private readonly logger = new Logger(CarManufacturersService.name);
 
   constructor(
     @InjectRepository(CarManufacturer)

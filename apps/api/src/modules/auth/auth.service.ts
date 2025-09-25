@@ -89,6 +89,9 @@ export class AuthService {
   }
 
   async createApiKey(): Promise<string> {
+    const userId = Ctx.userIdRequired();
+    const user = await this.usersService.findById(userId, ["apiKeyLookupHash"]);
+
     const randomString = randomBytes(this.apiKeyRandomPartLength).toString(
       "hex",
     );
@@ -99,11 +102,15 @@ export class AuthService {
     const apiKeySecret = await bcrypt.hash(apiKey, this.saltRounds);
 
     // Update the user with the new API key
-    const userId = Ctx.userIdRequired();
     await this.usersService.update(userId, {
       apiKeyLookupHash,
       apiKeySecret,
     });
+
+    // Delete user cache based on previous API key
+    if (user?.apiKeyLookupHash) {
+      await this.cacheManager.del(`user:apikey:${user.apiKeyLookupHash}`);
+    }
 
     this.logger.log(`Created API key for user ${userId}`);
 

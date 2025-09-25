@@ -13,6 +13,10 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@api/*": ["./src/*"]
+    },
     "types": ["node", "jest"]
   },
   "include": ["src/**/*", "migrations/**/*", "scripts/**/*"],

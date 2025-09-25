@@ -5,7 +5,7 @@ import { Role } from "../entities/user.entity";
 
 const roleSchema = z.nativeEnum(Role);
 
-const userSchema = registerSchema
+export const userSchema = registerSchema
   .omit({ password: true })
   .extend({
     role: roleSchema,

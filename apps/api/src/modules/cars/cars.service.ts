@@ -8,7 +8,7 @@ import { Repository } from "typeorm";
 import { Pagination } from "../../common/types/common.types";
 import { CarModelsService } from "../car-models/car-models.service";
 import { User } from "../users/entities/user.entity";
-import { FindAllCarsOptions, GetAllFavoritesOptions } from "./cars.types";
+import { FindAllByUserOptions, FindAllCarsOptions } from "./cars.types";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
 import { Car } from "./entities/car.entity";
@@ -38,7 +38,7 @@ export class CarsService {
       kmDriven: createCarDto.kmDriven,
       price: createCarDto.price,
       model: model,
-      createdBy: userId,
+      createdBy: { id: userId } as User,
     });
 
     const savedCar = await this.carsRepo.save(newCar);
@@ -57,7 +57,8 @@ export class CarsService {
     const queryBuilder = this.carsRepo
       .createQueryBuilder("car")
       .leftJoinAndSelect("car.model", "model")
-      .leftJoinAndSelect("model.manufacturer", "manufacturer");
+      .leftJoinAndSelect("model.manufacturer", "manufacturer")
+      .leftJoinAndSelect("car.createdBy", "createdBy");
 
     // Apply filters
     if (modelId) {
@@ -99,7 +100,34 @@ export class CarsService {
   }
 
   async findById(id: UUID): Promise<Car | null> {
-    return await this.carsRepo.findOneBy({ id });
+    return await this.carsRepo.findOne({
+      where: { id },
+      relations: ["model", "model.manufacturer", "createdBy"],
+    });
+  }
+
+  async getCarsByUser(options: FindAllByUserOptions): Promise<Pagination<Car>> {
+    const { userId, skip, limit } = options;
+
+    const [cars, totalItems] = await this.carsRepo.findAndCount({
+      where: { createdBy: { id: userId } },
+      relations: {
+        model: true,
+      },
+      order: { createdAt: "DESC" },
+      skip,
+      take: limit,
+    });
+
+    return {
+      items: cars,
+      meta: {
+        totalItems,
+        limit,
+        skipped: skip,
+        count: cars.length,
+      },
+    };
   }
 
   // region UPDATE
@@ -111,7 +139,7 @@ export class CarsService {
 
     // Authorization check: only car owners or admins can update
     const principal = Ctx.principalRequired();
-    if (car.createdBy !== principal.id && principal.role !== "admin") {
+    if (car.createdBy.id !== principal.id && principal.role !== "admin") {
       throw new AppError(Errors.USERS_CAN_ONLY_UPDATE_OWN_CARS);
     }
 
@@ -144,7 +172,7 @@ export class CarsService {
 
     // Authorization check: only car owners or admins can delete
     const principal = Ctx.principalRequired();
-    if (car.createdBy !== principal.id && principal.role !== "admin") {
+    if (car.createdBy.id !== principal.id && principal.role !== "admin") {
       throw new AppError(Errors.USERS_CAN_ONLY_UPDATE_OWN_CARS);
     }
 
@@ -180,7 +208,7 @@ export class CarsService {
   }
 
   async getFavoritesByUser(
-    options: GetAllFavoritesOptions,
+    options: FindAllByUserOptions,
   ): Promise<Pagination<Car>> {
     const { userId, skip, limit } = options;
 
@@ -188,6 +216,7 @@ export class CarsService {
       .createQueryBuilder("car")
       .leftJoinAndSelect("car.model", "model")
       .leftJoinAndSelect("model.manufacturer", "manufacturer")
+      .leftJoinAndSelect("car.createdBy", "createdBy")
       .innerJoin("car.favoritedBy", "user")
       .where("user.id = :userId", { userId });
 

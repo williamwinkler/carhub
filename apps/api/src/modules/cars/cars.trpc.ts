@@ -1,14 +1,15 @@
 // src/modules/cars/cars.trpc.ts
 import { Ctx } from "@api/common/ctx";
 import {
+  skipLimitSchema,
   sortDirectionQuerySchema,
   uuidSchema,
 } from "@api/common/schemas/common.schema";
 import { Injectable } from "@nestjs/common";
 import { z } from "zod";
 import { TrpcService } from "../trpc/trpc.service";
-import { CarsService } from "./cars.service";
 import { carFields, carSortFieldQuerySchema } from "./cars.schema";
+import { CarsService } from "./cars.service";
 import { createCarSchema } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
 
@@ -98,6 +99,15 @@ export class CarsTrpc {
           limit: 10,
           ...input,
         });
+      }),
+
+    // Authenticated route - get current user's own cars
+    getMyCars: this.trpc.authenticatedProcedure
+      .input(skipLimitSchema)
+      .query(async ({ input: { limit, skip } }) => {
+        const userId = Ctx.userIdRequired();
+
+        return await this.carsService.getCarsByUser({ userId, limit, skip });
       }),
   });
 }

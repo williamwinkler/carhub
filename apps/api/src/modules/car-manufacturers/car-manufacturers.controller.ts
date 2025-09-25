@@ -25,10 +25,10 @@ import {
 import { CarManufacturersAdapter } from "./car-manufacturers.adapter";
 import {
   carManufacturerFields,
+  CarManufacturerSortField,
   carManufacturerSortFieldQuerySchema,
 } from "./car-manufacturers.schema";
-import { ManufacturersService } from "./car-manufacturers.service";
-import { CarManufacturerSortField } from "./car-manufacturers.schema";
+import { CarManufacturersService } from "./car-manufacturers.service";
 import { CarManufacturerDto } from "./dto/car-manufacturer.dto";
 import { CreateCarManufacturerDto } from "./dto/create-car-manufacturer.dto";
 import { UpdateCarManufacturerDto } from "./dto/update-car-manufacturer.dto";
@@ -36,7 +36,7 @@ import { UpdateCarManufacturerDto } from "./dto/update-car-manufacturer.dto";
 @Controller("car-manufacturers")
 export class CarManufacturersController {
   constructor(
-    private readonly manufacturersService: ManufacturersService,
+    private readonly manufacturersService: CarManufacturersService,
     private readonly manufacturersAdapter: CarManufacturersAdapter,
   ) {}
 
