@@ -3,7 +3,10 @@
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import toast from "react-hot-toast";
+import { FaHeart, FaUser, FaCar } from "react-icons/fa";
 import { useAuth } from "../../lib/auth-context";
 import { trpc } from "../_trpc/client";
 
@@ -12,6 +15,7 @@ type User = RouterOutput["auth"]["me"];
 
 export default function Navbar() {
   const { user, login, logout } = useAuth();
+  const pathname = usePathname();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -117,8 +121,8 @@ export default function Navbar() {
       if (error && typeof error === 'object' && 'data' in error) {
         const errorData = (error as { data?: { httpStatus?: number } }).data;
         if (errorData?.httpStatus !== 401) {
-          const errorMessage = error && typeof error === 'object' && 'message' in error 
-            ? (error as { message?: string }).message 
+          const errorMessage = error && typeof error === 'object' && 'message' in error
+            ? (error as { message?: string }).message
             : "Logout failed";
           toast.error(errorMessage || "Logout failed");
         }
@@ -134,52 +138,100 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hover:from-blue-300 hover:to-purple-300 transition-all duration-200"
+            >
               CarHub
-            </h1>
+            </Link>
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/cars"
+              className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium ${
+                pathname === '/cars' ? 'text-blue-400' : ''
+              }`}
+            >
+              Cars
+            </Link>
+
             {user && (
               <>
-                <a
-                  href="#"
-                  className="text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium"
+                <Link
+                  href={`/${user.id}/cars`}
+                  className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
+                    pathname === `/${user.id}/cars` ? 'text-blue-400' : ''
+                  }`}
                 >
+                  <FaCar className="w-4 h-4" />
                   My Cars
-                </a>
-                <a
-                  href="#"
-                  className="text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium"
+                </Link>
+
+                <Link
+                  href={`/${user.id}/favorites`}
+                  className={`text-slate-300 hover:text-pink-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
+                    pathname === `/${user.id}/favorites` ? 'text-pink-400' : ''
+                  }`}
                 >
+                  <FaHeart className="w-4 h-4" />
                   Favorites
-                </a>
+                </Link>
               </>
             )}
           </div>
 
           {/* User Menu / Login */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-slate-300">
-                  <span className="text-blue-400 font-medium">
-                    {user.username}
-                  </span>
-                  {user.role === "admin" && (
-                    <span className="ml-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-full font-medium">
-                      Admin
+              <>
+                <div className="flex items-center space-x-4">
+                  <span className="text-slate-300">
+                    <span className="text-blue-400 font-medium">
+                      {user.username}
                     </span>
-                  )}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 border border-blue-500/30 hover:border-blue-400/50"
-                >
-                  Logout
-                </button>
-              </div>
+                    {user.role === "admin" && (
+                      <span className="ml-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-full font-medium">
+                        Admin
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href={`/${user.id}/favorites`}
+                    className={`p-2 rounded-lg hover:bg-slate-700/50 transition-all duration-200 ${
+                      pathname === `/${user.id}/favorites`
+                        ? 'text-pink-400 bg-slate-700/50'
+                        : 'text-slate-400 hover:text-pink-400'
+                    }`}
+                    title="Favorites"
+                  >
+                    <FaHeart className="w-5 h-5" />
+                  </Link>
+
+                  <Link
+                    href="/account"
+                    className={`p-2 rounded-lg hover:bg-slate-700/50 transition-all duration-200 ${
+                      pathname === '/account'
+                        ? 'text-blue-400 bg-slate-700/50'
+                        : 'text-slate-400 hover:text-blue-400'
+                    }`}
+                    title="Account Settings"
+                  >
+                    <FaUser className="w-5 h-5" />
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="bg-gradient-to-r from-blue-500/80 to-blue-600/80 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 border border-blue-500/30 hover:border-blue-400/50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
             ) : (
               <form
                 ref={formRef}

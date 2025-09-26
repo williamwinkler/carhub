@@ -62,7 +62,7 @@ export class CarsService {
 
     // Apply filters
     if (modelId) {
-      queryBuilder.andWhere("car.modelId = :modelId", { modelId });
+      queryBuilder.andWhere("model.id = :modelId", { modelId });
     }
 
     if (color) {

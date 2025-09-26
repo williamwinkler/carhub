@@ -26,25 +26,25 @@ export class User extends AbstractEntity {
     type: "enum",
     enum: Role,
   })
-  role: RoleType;
+  role!: RoleType;
 
   @Column()
-  firstName: string;
+  firstName!: string;
 
   @Column()
-  lastName: string;
+  lastName!: string;
 
   @Column()
-  username: string;
+  username!: string;
 
   @Column()
-  password: string;
+  password!: string;
 
   @Column({ type: "text", nullable: true, unique: true })
-  apiKeyLookupHash: string | null;
+  apiKeyLookupHash!: string | null;
 
   @Column({ type: "text", nullable: true })
-  apiKeySecret: string | null;
+  apiKeySecret!: string | null;
 
   @OneToMany(() => Car, (car) => car.createdBy)
   cars!: Car[];

@@ -5,6 +5,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -42,11 +43,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const utils = trpc.useUtils();
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     removeAuthTokens();
     setUser(null);
     utils.invalidate(); // Clear all cached queries
-  };
+  }, [utils]);
 
   const handleLogin = (userData: User) => {
     setUser(userData);
@@ -106,7 +107,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     checkAuthState();
-  }, [utils]);
+  }, [utils, handleLogout]);
 
   return (
     <AuthContext.Provider

@@ -3,8 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
-import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "../../lib/auth-context";
 import { getAccessToken } from "../../lib/cookies";
 import { refreshTokens } from "../../lib/token-refresh";
 import { trpc } from "./client";
@@ -67,41 +65,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          {children}
-          <Toaster
-            position="bottom-center"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "#1e293b",
-                color: "#f1f5f9",
-                border: "1px solid #475569",
-                borderRadius: "8px",
-                fontSize: "14px",
-              },
-              success: {
-                iconTheme: {
-                  primary: "#22c55e",
-                  secondary: "#1e293b",
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: "#ef4444",
-                  secondary: "#1e293b",
-                },
-                style: {
-                  background: "#1e293b",
-                  color: "#f1f5f9",
-                  border: "1px solid #ef4444",
-                },
-              },
-            }}
-          />
-        </AuthProvider>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </trpc.Provider>
   );
 }

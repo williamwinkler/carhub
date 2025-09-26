@@ -8,6 +8,7 @@ const roleSchema = z.nativeEnum(Role);
 export const userSchema = registerSchema
   .omit({ password: true })
   .extend({
+    id: z.string().uuid().describe("The unique identifier for the user"),
     role: roleSchema,
     hasApiKey: z
       .boolean()

@@ -6,6 +6,7 @@ import { User } from "./entities/user.entity";
 export class UsersAdapter {
   getUserDto(user: User): UserDto {
     return {
+      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       username: user.username,

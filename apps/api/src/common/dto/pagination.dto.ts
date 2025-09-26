@@ -4,22 +4,22 @@ class MetaPaginationDto {
   @ApiProperty({
     description: "The total number of items available across all pages",
   })
-  totalItems: number;
+  totalItems!: number;
 
   @ApiProperty({
     description: "The limit of items",
   })
-  limit: number;
+  limit!: number;
 
   @ApiProperty({
     description: "Items skipped",
   })
-  skipped: number;
+  skipped!: number;
 
   @ApiProperty({
     description: "The count of items",
   })
-  count: number;
+  count!: number;
 }
 
 export class PaginationDto<T> {
@@ -27,11 +27,11 @@ export class PaginationDto<T> {
     description: "Metadata for pagination",
     type: MetaPaginationDto,
   })
-  meta: MetaPaginationDto;
+  meta!: MetaPaginationDto;
 
   @ApiProperty({
     description: "List of items",
     isArray: true,
   })
-  items: T[];
+  items!: T[];
 }

@@ -2314,6 +2314,12 @@ components:
           type: string
           minLength: 3
           x-nestjs_zod-parent-additional-properties: false
+        id:
+          description: The unique identifier for the user
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+          x-nestjs_zod-parent-additional-properties: false
         role:
           type: string
           enum:
@@ -2340,6 +2346,7 @@ components:
         - firstName
         - lastName
         - username
+        - id
         - role
         - hasApiKey
         - createdAt
@@ -2514,6 +2521,11 @@ components:
             username:
               type: string
               minLength: 3
+            id:
+              description: The unique identifier for the user
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
             role:
               type: string
               enum:
@@ -2536,6 +2548,7 @@ components:
             - firstName
             - lastName
             - username
+            - id
             - role
             - hasApiKey
             - createdAt

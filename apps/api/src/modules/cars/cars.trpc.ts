@@ -6,6 +6,7 @@ import {
   uuidSchema,
 } from "@api/common/schemas/common.schema";
 import { Injectable } from "@nestjs/common";
+import { UUID } from "crypto";
 import { z } from "zod";
 import { TrpcService } from "../trpc/trpc.service";
 import { carFields, carSortFieldQuerySchema } from "./cars.schema";
@@ -26,6 +27,7 @@ export class CarsTrpc {
       .input(
         z
           .object({
+            modelId: z.string().uuid().optional(),
             color: carFields.color.optional(),
             skip: z.number().int().min(0).default(0),
             limit: z.number().int().min(0).max(100).optional().default(10),
@@ -35,7 +37,12 @@ export class CarsTrpc {
           .optional(),
       )
       .query(async ({ input }) => {
-        return await this.carsService.findAll({ skip: 0, limit: 10, ...input });
+        return await this.carsService.findAll({
+          skip: 0,
+          limit: 10,
+          ...input,
+          modelId: input?.modelId as UUID
+        });
       }),
 
     // Public route - anyone can view car details (uses default LONG rate limit)

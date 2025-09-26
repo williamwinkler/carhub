@@ -43,9 +43,8 @@ import { trpc } from "../_trpc/client";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
 export type Car = RouterOutput["cars"]["getById"];
-export type CarBrandType = RouterOutput["cars"]["getById"]["brand"];
 
-const CAR_BRANDS: { [K in CarBrandType]: K } = {
+const CAR_BRANDS = {
   BMW: "BMW",
   Mercedes: "Mercedes",
   Porsche: "Porsche",
@@ -55,7 +54,9 @@ const CAR_BRANDS: { [K in CarBrandType]: K } = {
   Ford: "Ford",
   Tesla: "Tesla",
   Volkswagen: "Volkswagen",
-};
+} as const;
+
+type CarBrandType = keyof typeof CAR_BRANDS;
 
 const TableSkeleton = ({
   showActionsColumn = false,
@@ -115,7 +116,7 @@ const TableSkeleton = ({
   </TableContainer>
 );
 
-type SortField = "brand" | "model" | "year" | "color" | "kmDriven" | "price";
+type SortField = "model" | "year" | "color" | "kmDriven" | "price";
 type SortDirection = "asc" | "desc";
 
 const BrandLogo = ({ brand }: { brand: CarBrandType }) => {
@@ -259,7 +260,7 @@ export default function CarList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Partial<Car>>({});
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>("brand");
+  const [sortField, setSortField] = useState<SortField>("year");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const limit = 8;
@@ -282,7 +283,7 @@ export default function CarList() {
       // Find the car that was deleted from current data
       const deletedCar = data?.items.find((car) => car.id === variables.id);
       if (deletedCar) {
-        toast.success(`${deletedCar.brand} ${deletedCar.model} deleted`);
+        toast.success(`${deletedCar.model.manufacturer.name} ${deletedCar.model.name} deleted`);
       } else {
         toast.success("Car deleted");
       }
@@ -293,7 +294,7 @@ export default function CarList() {
 
   const updateCar = trpc.cars.update.useMutation({
     onSuccess: (car) => {
-      toast.success(`${car.brand} ${car.model} updated`);
+      toast.success(`${car.model.manufacturer.name} ${car.model.name} updated`);
       utils.cars.list.invalidate();
       setEditingId(null);
       setEditingData({});
@@ -312,11 +313,10 @@ export default function CarList() {
     setPage(newPage);
   };
 
-  const handleEditClick = (car: Car) => {
+  const handleEditClick = (car: Car | null) => {
+    if (!car) return;
     setEditingId(car.id);
     setEditingData({
-      brand: car.brand,
-      model: car.model,
       year: car.year,
       color: car.color,
       kmDriven: car.kmDriven,
