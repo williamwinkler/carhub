@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "carhub-api": {
+      "transport": {
+        "type": "sse",
+        "url": "http://localhost:3001/mcp"
+      }
+    }
+  }
+}

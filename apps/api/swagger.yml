@@ -549,7 +549,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -1027,7 +1027,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -1248,7 +1248,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -1730,7 +1730,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -2169,6 +2169,133 @@ paths:
                     message: An unexpected error occurred
       summary: Get a car model by it's slug
       tags: *a4
+  /sse:
+    get:
+      operationId: SseController_sse
+      parameters: []
+      responses:
+        "200":
+          description: ""
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      tags: &a5
+        - Sse
+      security:
+        - bearer: []
+        - apiKey: []
+  /messages:
+    post:
+      operationId: SseController_messages
+      parameters: []
+      responses:
+        "201":
+          description: ""
+        "401":
+          description: You need to be authorized to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNAUTHORIZED Error
+                  value:
+                    statusCode: 401
+                    errorCode: UNAUTHORIZED
+                    message: You need to be authorized to perform this action
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: FORBIDDEN Error
+                  value:
+                    statusCode: 403
+                    errorCode: FORBIDDEN
+                    message: Forbidden
+        "429":
+          description: Too many requests, try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: TOO_MANY_REQUESTS Error
+                  value:
+                    statusCode: 429
+                    errorCode: TOO_MANY_REQUESTS
+                    message: Too many requests, try again later
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: UNEXPECTED_ERROR Error
+                  value:
+                    statusCode: 500
+                    errorCode: UNEXPECTED_ERROR
+                    message: An unexpected error occurred
+      tags: *a5
+      security:
+        - bearer: []
+        - apiKey: []
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.

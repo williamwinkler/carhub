@@ -79,6 +79,7 @@ async function bootstrap() {
     console.log(`✨ Application started (v${pkg.version}) ✨`);
     console.log(`🚀 Server ready on: http://localhost:${port}`);
     console.log(`📡 tRPC ready on:   http://localhost:${port}/trpc`);
+    console.log(`🤖 MCP ready on:    http://localhost:${port}/v1/mcp`);
     console.log(`📚 Swagger UI:      http://localhost:${port}/docs`);
     console.log(`🐘 PG Admin:        http://localhost:${5050}`);
   }

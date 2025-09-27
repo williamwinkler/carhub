@@ -23,6 +23,7 @@ import { CarModelsModule } from "./modules/car-models/car-models.module";
 import { CarsModule } from "./modules/cars/cars.module";
 import { ConfigModule } from "./modules/config/config.module";
 import { DatabaseModule } from "./modules/database/database.module";
+import { McpModule } from "./modules/mcp/mcp.module";
 import { TrpcModule } from "./modules/trpc/trpc.modules";
 import { UsersModule } from "./modules/users/users.module";
 
@@ -58,6 +59,7 @@ import { UsersModule } from "./modules/users/users.module";
     AuthModule,
     UsersModule,
     TrpcModule,
+    McpModule,
     CarManufacturersModule,
     CarModelsModule,
     CarsModule,

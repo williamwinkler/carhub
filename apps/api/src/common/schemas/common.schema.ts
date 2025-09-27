@@ -13,7 +13,7 @@ export const limitSchema = z.coerce
   .number()
   .int()
   .min(0)
-  .default(0)
+  .default(20)
   .describe("The limit of items to be returned.");
 
 export const uuidSchema = z

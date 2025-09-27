@@ -31,6 +31,11 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+
+    // Allow MCP endpoints without authentication
+    if (request.url?.startsWith('/mcp') || request.url?.startsWith('/v1/mcp')) {
+      return true;
+    }
     const token = this.extractTokenFromHeader(request);
     const apiKey = this.extractApiKeyFromHeader(request);
     if (!token && !apiKey) {
