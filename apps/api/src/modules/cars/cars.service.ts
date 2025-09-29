@@ -53,8 +53,8 @@ export class CarsService {
   // region FIND
   async findAll(options: FindAllCarsOptions): Promise<Pagination<Car>> {
     const {
-      modelId,
-      manufacturerId,
+      modelSlug,
+      manufacturerSlug,
       color,
       skip,
       limit,
@@ -74,13 +74,13 @@ export class CarsService {
     }
 
     // Apply filters
-    if (modelId) {
-      queryBuilder.andWhere("model.id = :modelId", { modelId });
+    if (modelSlug) {
+      queryBuilder.andWhere("model.slug = :modelSlug", { modelSlug });
     }
 
-    if (manufacturerId) {
-      queryBuilder.andWhere("manufacturer.id = :manufacturerId", {
-        manufacturerId,
+    if (manufacturerSlug) {
+      queryBuilder.andWhere("manufacturer.slug = :manufacturerSlug", {
+        manufacturerSlug,
       });
     }
 

@@ -88,6 +88,13 @@ export class CarManufacturersService {
     });
   }
 
+  async findBySlug(slug: string): Promise<CarManufacturer | null> {
+    return this.manufacturersRepo.findOne({
+      where: { slug },
+      relations: ["models"],
+    });
+  }
+
   // region UPDATE
   async update(
     id: UUID,

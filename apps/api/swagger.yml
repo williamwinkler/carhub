@@ -499,10 +499,12 @@ paths:
         - name: manufacturerId
           required: false
           in: query
-          description: The unique id of the car manufacturer (UUID)
+          description: The slug of the car manufacturer
           schema:
             type: string
-        - name: modelId
+            minLength: 1
+            maxLength: 255
+        - name: modelSlug
           required: false
           in: query
           description: The unique id of the car model (UUID)
@@ -1675,12 +1677,14 @@ paths:
           schema:
             type: number
             default: 0
-        - name: manufacturerId
+        - name: manufacturerSlug
           required: false
           in: query
-          description: id (UUID)
+          description: The slug of the car model
           schema:
             type: string
+            minLength: 1
+            maxLength: 255
       responses:
         "200":
           description: List of car models

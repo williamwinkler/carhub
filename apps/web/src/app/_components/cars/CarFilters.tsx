@@ -1,6 +1,5 @@
 "use client";
 
-import { FaSearch } from "react-icons/fa";
 import { trpc } from "../../_trpc/client";
 
 interface CarFiltersProps {
@@ -14,7 +13,6 @@ interface CarFiltersProps {
   setSortBy: (value: string) => void;
   sortDirection: string;
   setSortDirection: (value: string) => void;
-  onSearch: () => void;
   onClearFilters: () => void;
 }
 
@@ -29,12 +27,11 @@ export default function CarFilters({
   setSortBy,
   sortDirection,
   setSortDirection,
-  onSearch,
   onClearFilters,
 }: CarFiltersProps) {
   const manufacturersQuery = trpc.carManufacturers.list.useQuery();
   const modelsQuery = trpc.carModels.list.useQuery(
-    selectedManufacturer ? { manufacturerId: selectedManufacturer } : undefined,
+    { manufacturerSlug: selectedManufacturer },
     { enabled: !!selectedManufacturer },
   );
 
@@ -46,15 +43,12 @@ export default function CarFilters({
           <label className="text-sm font-medium text-slate-300">Make</label>
           <select
             value={selectedManufacturer}
-            onChange={(e) => {
-              setSelectedManufacturer(e.target.value);
-              setSelectedModel(""); // Reset model when manufacturer changes
-            }}
+            onChange={(e) => setSelectedManufacturer(e.target.value)}
             className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="">All Makes</option>
             {manufacturersQuery.data?.items?.map((manufacturer) => (
-              <option key={manufacturer.id} value={manufacturer.id}>
+              <option key={manufacturer.id} value={manufacturer.slug}>
                 {manufacturer.name}
               </option>
             ))}
@@ -72,7 +66,7 @@ export default function CarFilters({
           >
             <option value="">All Models</option>
             {modelsQuery.data?.items?.map((model) => (
-              <option key={model.id} value={model.id}>
+              <option key={model.id} value={model.slug}>
                 {model.name}
               </option>
             ))}
@@ -127,21 +121,12 @@ export default function CarFilters({
           <label className="text-sm font-medium text-slate-300 opacity-0">
             Actions
           </label>
-          <div className="flex gap-2">
-            <button
-              onClick={onSearch}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <FaSearch className="w-3 h-3" />
-              Search
-            </button>
-            <button
-              onClick={onClearFilters}
-              className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 text-sm font-medium rounded-lg transition-all duration-200"
-            >
-              Clear
-            </button>
-          </div>
+          <button
+            onClick={onClearFilters}
+            className="w-full px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 text-sm font-medium rounded-lg transition-all duration-200"
+          >
+            Clear
+          </button>
         </div>
       </div>
     </div>

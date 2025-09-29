@@ -14,7 +14,7 @@ export default function AccountPage() {
   const { user, isLoading } = useAuth();
 
   const { data: userProfile, isLoading: profileLoading } =
-    trpc.users.getMe.useQuery(undefined, { enabled: !!user });
+    trpc.accounts.getMe.useQuery(undefined, { enabled: !!user });
 
   if (isLoading || profileLoading) {
     return (

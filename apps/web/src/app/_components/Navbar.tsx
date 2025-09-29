@@ -2,16 +2,14 @@
 
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
 import type { inferRouterOutputs } from "@trpc/server";
-import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { FaHeart, FaUser, FaCar } from "react-icons/fa";
+import { FaCar, FaHeart, FaUser } from "react-icons/fa";
 import { useAuth } from "../../lib/auth-context";
 import { trpc } from "../_trpc/client";
-
-type RouterOutput = inferRouterOutputs<AppRouter>;
-type User = RouterOutput["auth"]["me"];
+import { User } from "../_trpc/types";
 
 export default function Navbar() {
   const { user, login, logout } = useAuth();
@@ -50,7 +48,7 @@ export default function Navbar() {
       setRefreshToken(result.refreshToken);
 
       // Get user info using utils to fetch fresh data
-      const userInfo = await utils.auth.me.fetch();
+      const userInfo = await utils.accounts.getMe.fetch();
 
       handleLoginSuccess(userInfo);
 
@@ -118,12 +116,13 @@ export default function Navbar() {
       logout();
 
       // Don't show error toast for 401 - that means we're already logged out
-      if (error && typeof error === 'object' && 'data' in error) {
+      if (error && typeof error === "object" && "data" in error) {
         const errorData = (error as { data?: { httpStatus?: number } }).data;
         if (errorData?.httpStatus !== 401) {
-          const errorMessage = error && typeof error === 'object' && 'message' in error
-            ? (error as { message?: string }).message
-            : "Logout failed";
+          const errorMessage =
+            error && typeof error === "object" && "message" in error
+              ? (error as { message?: string }).message
+              : "Logout failed";
           toast.error(errorMessage || "Logout failed");
         }
       } else {
@@ -151,7 +150,7 @@ export default function Navbar() {
             <Link
               href="/cars"
               className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium ${
-                pathname === '/cars' ? 'text-blue-400' : ''
+                pathname === "/cars" ? "text-blue-400" : ""
               }`}
             >
               Cars
@@ -162,7 +161,7 @@ export default function Navbar() {
                 <Link
                   href={`/${user.id}/cars`}
                   className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                    pathname === `/${user.id}/cars` ? 'text-blue-400' : ''
+                    pathname === `/${user.id}/cars` ? "text-blue-400" : ""
                   }`}
                 >
                   <FaCar className="w-4 h-4" />
@@ -172,7 +171,7 @@ export default function Navbar() {
                 <Link
                   href={`/${user.id}/favorites`}
                   className={`text-slate-300 hover:text-pink-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                    pathname === `/${user.id}/favorites` ? 'text-pink-400' : ''
+                    pathname === `/${user.id}/favorites` ? "text-pink-400" : ""
                   }`}
                 >
                   <FaHeart className="w-4 h-4" />
@@ -204,8 +203,8 @@ export default function Navbar() {
                     href={`/${user.id}/favorites`}
                     className={`p-2 rounded-lg hover:bg-slate-700/50 transition-all duration-200 ${
                       pathname === `/${user.id}/favorites`
-                        ? 'text-pink-400 bg-slate-700/50'
-                        : 'text-slate-400 hover:text-pink-400'
+                        ? "text-pink-400 bg-slate-700/50"
+                        : "text-slate-400 hover:text-pink-400"
                     }`}
                     title="Favorites"
                   >
@@ -215,9 +214,9 @@ export default function Navbar() {
                   <Link
                     href="/account"
                     className={`p-2 rounded-lg hover:bg-slate-700/50 transition-all duration-200 ${
-                      pathname === '/account'
-                        ? 'text-blue-400 bg-slate-700/50'
-                        : 'text-slate-400 hover:text-blue-400'
+                      pathname === "/account"
+                        ? "text-blue-400 bg-slate-700/50"
+                        : "text-slate-400 hover:text-blue-400"
                     }`}
                     title="Account Settings"
                   >

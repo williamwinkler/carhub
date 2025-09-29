@@ -27,46 +27,67 @@ function CarsPageContent() {
   const manufacturersQuery = trpc.carManufacturers.list.useQuery();
 
   useEffect(() => {
-    if (!manufacturersQuery.data) return;
-
     const manufacturer = searchParams.get("manufacturer");
-    const modelId = searchParams.get("modelId");
+    const model = searchParams.get("model");
     const color = searchParams.get("color");
+    const sortByParam = searchParams.get("sortBy");
+    const pageParam = searchParams.get("page");
 
-    if (manufacturer) {
-      // Find manufacturer by name
-      const foundManufacturer = manufacturersQuery.data.items?.find(
-        (m) => m.name.toLowerCase() === manufacturer.toLowerCase(),
-      );
-      if (foundManufacturer) {
-        setSelectedManufacturer(foundManufacturer.id);
-      }
-    }
-    if (modelId) setSelectedModel(modelId);
-    if (color) setColorFilter(color);
-  }, [searchParams, manufacturersQuery.data]);
+    if (manufacturer !== null) setSelectedManufacturer(manufacturer);
+    if (model !== null) setSelectedModel(model);
+    if (color !== null) setColorFilter(color);
+    if (sortByParam !== null) setSortBy(sortByParam);
+    if (pageParam !== null) setPage(parseInt(pageParam, 10));
+  }, [searchParams]);
 
   // Build search params for cars
   const carsQueryParams = {
     skip: page * limit,
     limit,
-    ...(selectedModel && { modelId: selectedModel }),
+    ...(selectedManufacturer && { manufacturerSlug: selectedManufacturer }),
+    ...(selectedModel && { modelSlug: selectedModel }),
     ...(colorFilter && { color: colorFilter }),
+    sortBy: sortBy ?? "createdAt"
   };
 
   const carsQuery = trpc.cars.list.useQuery(carsQueryParams);
   const utils = trpc.useUtils();
 
-  const handleSearch = () => {
-    setPage(0);
-    utils.cars.list.invalidate();
+  const updateURL = (params: {
+    manufacturer?: string;
+    model?: string;
+    color?: string;
+    sortBy?: string;
+    page?: number;
+  }) => {
+    const urlParams = new URLSearchParams();
+
+    if (params.manufacturer) urlParams.set("manufacturer", params.manufacturer);
+    if (params.model) urlParams.set("model", params.model);
+    if (params.color) urlParams.set("color", params.color);
+    if (params.sortBy && params.sortBy !== "createdAt") urlParams.set("sortBy", params.sortBy);
+    if (params.page && params.page > 0) urlParams.set("page", params.page.toString());
+
+    const queryString = urlParams.toString();
+    router.push(`/cars${queryString ? `?${queryString}` : ""}`);
   };
+
+  // Update URL whenever filters change
+  useEffect(() => {
+    updateURL({
+      manufacturer: selectedManufacturer,
+      model: selectedModel,
+      color: colorFilter,
+      sortBy,
+      page,
+    });
+  }, [selectedManufacturer, selectedModel, colorFilter, sortBy, page]);
 
   const handleClearFilters = () => {
     setSelectedManufacturer("");
     setSelectedModel("");
     setColorFilter("");
-    setSortBy("");
+    setSortBy("createdAt");
     setSortDirection("asc");
     setPage(0);
     router.push("/cars");
@@ -94,16 +115,28 @@ function CarsPageContent() {
         {/* Filters */}
         <CarFilters
           selectedManufacturer={selectedManufacturer}
-          setSelectedManufacturer={setSelectedManufacturer}
+          setSelectedManufacturer={(value) => {
+            setSelectedManufacturer(value);
+            setSelectedModel(""); // Reset model when manufacturer changes
+            setPage(0); // Reset page
+          }}
           selectedModel={selectedModel}
-          setSelectedModel={setSelectedModel}
+          setSelectedModel={(value) => {
+            setSelectedModel(value);
+            setPage(0); // Reset page
+          }}
           colorFilter={colorFilter}
-          setColorFilter={setColorFilter}
+          setColorFilter={(value) => {
+            setColorFilter(value);
+            setPage(0); // Reset page
+          }}
           sortBy={sortBy}
-          setSortBy={setSortBy}
+          setSortBy={(value) => {
+            setSortBy(value);
+            setPage(0); // Reset page
+          }}
           sortDirection={sortDirection}
           setSortDirection={setSortDirection}
-          onSearch={handleSearch}
           onClearFilters={handleClearFilters}
         />
 

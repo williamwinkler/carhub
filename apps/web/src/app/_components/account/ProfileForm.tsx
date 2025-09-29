@@ -25,9 +25,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   const { login } = useAuth();
   const utils = trpc.useContext();
 
-  const updateProfileMutation = trpc.users.updateProfile.useMutation({
+  const updateProfileMutation = trpc.accounts.updateProfile.useMutation({
     onSuccess: (updatedUser) => {
-      utils.users.getMe.invalidate();
+      utils.accounts.getMe.invalidate();
       login(updatedUser);
       toast.success("Profile updated successfully!");
       setIsChanged(false);

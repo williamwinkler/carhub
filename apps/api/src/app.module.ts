@@ -1,6 +1,5 @@
 import { CacheModule } from "@nestjs/cache-manager";
 import {
-  forwardRef,
   MiddlewareConsumer,
   Module,
   NestModule,

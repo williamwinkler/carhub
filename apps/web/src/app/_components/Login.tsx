@@ -1,20 +1,19 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { trpc } from "../_trpc/client";
 import { setAccessToken, setRefreshToken } from "../../lib/cookies";
-import type { AppRouter } from "@api/modules/trpc/trpc.router";
-import type { inferRouterOutputs } from "@trpc/server";
-
-type RouterOutput = inferRouterOutputs<AppRouter>;
-type User = RouterOutput["auth"]["me"];
-
+import { trpc } from "../_trpc/client";
+import { User } from "../_trpc/types";
 interface LoginFormProps {
   onLoginSuccess?: (user: User) => void;
   onClose?: () => void;
   standalone?: boolean; // For full-page login vs dropdown
 }
 
-export function LoginForm({ onLoginSuccess, onClose, standalone = false }: LoginFormProps) {
+export function LoginForm({
+  onLoginSuccess,
+  onClose,
+  standalone = false,
+}: LoginFormProps) {
   const login = trpc.auth.login.useMutation();
   const utils = trpc.useUtils();
 
@@ -32,8 +31,8 @@ export function LoginForm({ onLoginSuccess, onClose, standalone = false }: Login
       setRefreshToken(result.refreshToken);
 
       // Get user info using utils to fetch fresh data
-      const userInfo = await utils.auth.me.fetch();
-      
+      const userInfo = await utils.accounts.getMe.fetch();
+
       // Call success callback if provided
       if (onLoginSuccess) {
         onLoginSuccess(userInfo);
@@ -42,9 +41,9 @@ export function LoginForm({ onLoginSuccess, onClose, standalone = false }: Login
       // Reset form
       setUsername("");
       setPassword("");
-      
+
       toast.success(`Welcome back, ${userInfo.firstName}!`);
-      
+
       // Close modal/form if close callback provided
       if (onClose) {
         onClose();
@@ -55,10 +54,20 @@ export function LoginForm({ onLoginSuccess, onClose, standalone = false }: Login
   }
 
   return (
-    <div className={standalone ? "flex rounded-3xl items-center justify-center bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen" : "w-full"}>
+    <div
+      className={
+        standalone
+          ? "flex rounded-3xl items-center justify-center bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen"
+          : "w-full"
+      }
+    >
       <form
         onSubmit={handleSubmit}
-        className={standalone ? "w-full max-w-sm rounded-xl bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 p-8 shadow-2xl space-y-6" : "w-full space-y-4"}
+        className={
+          standalone
+            ? "w-full max-w-sm rounded-xl bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 p-8 shadow-2xl space-y-6"
+            : "w-full space-y-4"
+        }
       >
         {standalone && (
           <h2 className="mb-8 text-center text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">

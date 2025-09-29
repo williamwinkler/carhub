@@ -65,10 +65,10 @@ export class CarsController {
     type: [CarDto],
   })
   async findAll(
-    @zQuery("modelId", carModelFields.id.optional())
-    modelId?: UUID,
-    @zQuery("manufacturerId", carManufacturerFields.id.optional())
-    manufacturerId?: UUID,
+    @zQuery("modelSlug", carModelFields.id.optional())
+    modelSlug?: string,
+    @zQuery("manufacturerId", carManufacturerFields.slug.optional())
+    manufacturerSlug?: string,
     @zQuery("color", carFields.color.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
@@ -78,8 +78,8 @@ export class CarsController {
     sortDirection?: SortDirection,
   ) {
     const cars = await this.carsService.findAll({
-      modelId,
-      manufacturerId,
+      modelSlug,
+      manufacturerSlug,
       color,
       skip,
       limit,

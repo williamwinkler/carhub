@@ -1,21 +1,7 @@
 "use client";
 
+import { Car } from "../../_trpc/types";
 import CarCard from "./CarCard";
-
-interface Car {
-  id: string;
-  price?: number;
-  year: number;
-  color: string;
-  mileage?: number;
-  isFavorite?: boolean;
-  carModel?: {
-    name: string;
-    manufacturer?: {
-      name: string;
-    };
-  };
-}
 
 interface CarGridProps {
   cars: Car[];

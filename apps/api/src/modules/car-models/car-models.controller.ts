@@ -66,8 +66,8 @@ export class CarModelsController {
     type: [CarModelDto],
   })
   async findAll(
-    @zQuery("manufacturerId", uuidSchema.optional())
-    manufacturerId?: UUID,
+    @zQuery("manufacturerSlug", carModelFields.slug.optional())
+    manufacturerSlug?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
     @zQuery("sortField", carModelSortFieldQuerySchema)
@@ -76,7 +76,7 @@ export class CarModelsController {
     sortDirection?: SortDirection,
   ) {
     const carModels = await this.carModelsService.findAll({
-      manufacturerId,
+      manufacturerSlug,
       skip,
       limit,
       sortField,

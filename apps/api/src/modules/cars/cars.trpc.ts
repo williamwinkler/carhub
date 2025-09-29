@@ -31,8 +31,8 @@ export class CarsTrpc {
     list: this.trpc.procedure
       .input(
         z.object({
-          modelId: carModelFields.id.optional(),
-          manufacturerId: carManufacturerFields.id.optional(),
+          modelSlug: carModelFields.slug.optional(),
+          manufacturerSlug: carManufacturerFields.slug.optional(),
           color: carFields.color.optional(),
           skip: z.number().int().min(0).default(0),
           limit: z.number().int().min(0).max(100).optional().default(10),
@@ -42,8 +42,8 @@ export class CarsTrpc {
       )
       .query(async ({ input }) => {
         const cars = await this.carsService.findAll({
-          modelId: input.modelId,
-          manufacturerId: input.manufacturerId,
+          modelSlug: input.modelSlug,
+          manufacturerSlug: input.manufacturerSlug,
           color: input.color,
           sortField: input.sortField,
           sortDirection: input.sortDirection,

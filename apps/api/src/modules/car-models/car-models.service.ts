@@ -54,16 +54,22 @@ export class CarModelsService {
   async findAll(
     options: FindAllCarModelsOptions,
   ): Promise<Pagination<CarModel>> {
-    const { manufacturerId, skip, limit, sortField, sortDirection } = options;
+    const {
+      manufacturerSlug: manufacturerSlug,
+      skip,
+      limit,
+      sortField,
+      sortDirection,
+    } = options;
 
     const queryBuilder = this.modelsRepo
       .createQueryBuilder("carModel")
       .leftJoinAndSelect("carModel.manufacturer", "manufacturer");
 
     // Apply filters
-    if (manufacturerId) {
-      queryBuilder.andWhere("carModel.manufacturerId = :manufacturerId", {
-        manufacturerId,
+    if (manufacturerSlug) {
+      queryBuilder.andWhere("manufacturer.slug = :manufacturerSlug", {
+        manufacturerSlug,
       });
     }
 

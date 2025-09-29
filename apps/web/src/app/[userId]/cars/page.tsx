@@ -20,7 +20,7 @@ export default function UserCarsPage() {
   const isOwnProfile = user?.id === userId;
 
   // Get user info to display their name
-  const { data: userProfile } = trpc.users.getMe.useQuery(undefined, {
+  const { data: userProfile } = trpc.accounts.getMe.useQuery(undefined, {
     enabled: isOwnProfile,
   });
 

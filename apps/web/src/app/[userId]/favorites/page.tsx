@@ -20,7 +20,7 @@ export default function UserFavoritesPage() {
   const isOwnProfile = user?.id === userId;
 
   // Get user info to display their name
-  const { data: userProfile } = trpc.users.getMe.useQuery(undefined, {
+  const { data: userProfile } = trpc.accounts.getMe.useQuery(undefined, {
     enabled: isOwnProfile,
   });
 
@@ -78,7 +78,7 @@ export default function UserFavoritesPage() {
 
   const handleFavoriteUpdate = () => {
     // Refresh the favorites list when favorites are updated
-    const utils = trpc.useContext();
+    const utils = trpc.useUtils();
     utils.cars.getFavorites.invalidate();
   };
 

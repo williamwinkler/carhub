@@ -2,40 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { FaHeart, FaRegHeart, FaUser, FaCalendar, FaPalette, FaTachometerAlt, FaCar, FaIndustry, FaClock } from "react-icons/fa";
+import {
+  FaCalendar,
+  FaCar,
+  FaClock,
+  FaHeart,
+  FaIndustry,
+  FaPalette,
+  FaRegHeart,
+  FaTachometerAlt,
+  FaUser,
+} from "react-icons/fa";
 import { useAuth } from "../../../lib/auth-context";
 import { trpc } from "../../_trpc/client";
-
-interface Car {
-  id: string;
-  price?: number;
-  year: number;
-  color: string;
-  kmDriven?: number;
-  isFavorite?: boolean;
-  model?: {
-    id: string;
-    name: string;
-    slug: string;
-    manufacturer?: {
-      id: string;
-      name: string;
-      slug: string;
-    };
-  };
-  createdBy?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-    role: string;
-    hasApiKey: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+import { Car } from "../../_trpc/types";
 
 interface CarCardProps {
   car: Car;
@@ -49,7 +29,7 @@ const formatDate = (dateString: string) => {
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 1) return '1 day ago';
+  if (diffDays === 1) return "1 day ago";
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
   if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
@@ -62,11 +42,20 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
   const utils = trpc.useUtils();
 
   const toggleFavoriteMutation = trpc.cars.toggleFavorite.useMutation({
-    onSuccess: () => {
+    onSuccess: (isFavorite) => {
       utils.cars.list.invalidate();
       utils.cars.getFavorites.invalidate();
       onFavoriteUpdate?.();
-      toast.success("Favorite updated!");
+
+      if (!isFavorite) {
+        toast.success(
+          `Favorited ${car!.model!.manufacturer!.name} ${car?.model?.name}`,
+        );
+      } else {
+        toast.success(
+          `Unfavorited ${car!.model!.manufacturer!.name} ${car?.model?.name}`,
+        );
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update favorite");
@@ -126,7 +115,7 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
 
           {/* Price */}
           <div className="text-3xl font-bold text-green-400 mt-3 mb-4">
-            ${car.price?.toLocaleString() || 'Contact for price'}
+            ${car.price?.toLocaleString() || "Contact for price"}
           </div>
         </div>
 
@@ -142,7 +131,9 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
             </div>
 
             <div className="flex items-center gap-2 p-2 bg-slate-700/20 rounded">
-              <FaPalette className="w-3 h-3 text-purple-400" />
+              <FaPalette
+                className={`w-3 h-3 text-${car.color.toLowerCase()}-400`}
+              />
               <div>
                 <p className="text-slate-400 text-xs">Color</p>
                 <p className="text-slate-200 font-medium">{car.color}</p>
@@ -179,16 +170,9 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              {car.createdBy?.role === 'admin' && (
-                <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-400 rounded-full">
-                  Verified Dealer
-                </span>
-              )}
-              {car.createdBy?.role !== 'admin' && (
-                <span className="px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-full">
-                  Private Seller
-                </span>
-              )}
+              <span className="px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-full">
+                Private Seller
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <FaClock className="w-3 h-3" />

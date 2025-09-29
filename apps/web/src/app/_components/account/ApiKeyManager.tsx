@@ -16,12 +16,12 @@ export default function ApiKeyManager() {
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
 
-  const { data: apiKeyStatus } = trpc.users.hasApiKey.useQuery();
+  const { data: apiKeyStatus } = trpc.accounts.hasApiKey.useQuery();
   const utils = trpc.useContext();
 
-  const generateApiKeyMutation = trpc.users.generateApiKey.useMutation({
+  const generateApiKeyMutation = trpc.accounts.generateApiKey.useMutation({
     onSuccess: (data) => {
-      utils.users.hasApiKey.invalidate();
+      utils.accounts.hasApiKey.invalidate();
       setNewApiKey(data.apiKey);
       setShowConfirmModal(false);
       setShowApiKey(true);

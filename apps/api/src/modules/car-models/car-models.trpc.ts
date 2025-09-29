@@ -5,11 +5,11 @@ import {
   skipSchema,
   sortDirectionQuerySchema,
 } from "../../common/schemas/common.schema";
+import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
 import { TrpcService } from "../trpc/trpc.service";
 import { CarModelsAdapter } from "./car-models.adapter";
 import { carModelSortFieldQuerySchema } from "./car-models.schema";
 import { CarModelsService } from "./car-models.service";
-import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
 
 @Injectable()
 export class CarModelsTrpc {
@@ -25,7 +25,7 @@ export class CarModelsTrpc {
       .input(
         z
           .object({
-            manufacturerId: carManufacturerFields.id,
+            manufacturerSlug: carManufacturerFields.slug.optional(),
             skip: skipSchema.optional(),
             limit: limitSchema.optional(),
             sortField: carModelSortFieldQuerySchema.optional(),
@@ -36,7 +36,7 @@ export class CarModelsTrpc {
       )
       .query(async ({ input }) => {
         const carModels = await this.carModelsService.findAll({
-          manufacturerId: input?.manufacturerId,
+          manufacturerSlug: input?.manufacturerSlug,
           skip: input?.skip ?? 0,
           limit: input?.limit ?? 20,
           sortField: input?.sortField,
