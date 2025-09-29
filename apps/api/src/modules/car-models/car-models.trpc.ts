@@ -38,7 +38,7 @@ export class CarModelsTrpc {
         const carModels = await this.carModelsService.findAll({
           manufacturerSlug: input?.manufacturerSlug,
           skip: input?.skip ?? 0,
-          limit: input?.limit ?? 20,
+          limit: input?.limit ?? 100,
           sortField: input?.sortField,
           sortDirection: input?.sortDirection,
         });

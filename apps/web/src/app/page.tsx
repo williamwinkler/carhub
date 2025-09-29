@@ -12,14 +12,15 @@ export default function Home() {
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
 
-  // Fetch manufacturers and models
+  // Fetch manufacturers
   const { data: manufacturers, isLoading: manufacturersLoading } =
-    trpc.carManufacturers.list.useQuery({ limit: 100 });
+    trpc.carManufacturers.list.useQuery(undefined, { staleTime: "static" });
 
+  // Fetch car models
   const { data: models, isLoading: modelsLoading } =
     trpc.carModels.list.useQuery(
-      { manufacturerSlug: selectedManufacturer, limit: 100 },
-      { enabled: !!selectedManufacturer },
+      { manufacturerSlug: selectedManufacturer },
+      { enabled: !!selectedManufacturer, staleTime: "static" }, // fetch only if a manufacturer is selected
     );
 
   // Fetch some random cars to showcase

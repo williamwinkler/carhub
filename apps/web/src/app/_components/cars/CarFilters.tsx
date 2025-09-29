@@ -29,10 +29,12 @@ export default function CarFilters({
   setSortDirection,
   onClearFilters,
 }: CarFiltersProps) {
-  const manufacturersQuery = trpc.carManufacturers.list.useQuery();
+  const manufacturersQuery = trpc.carManufacturers.list.useQuery(undefined, {
+    staleTime: "static",
+  });
   const modelsQuery = trpc.carModels.list.useQuery(
     { manufacturerSlug: selectedManufacturer },
-    { enabled: !!selectedManufacturer },
+    { enabled: !!selectedManufacturer, staleTime: "static" },
   );
 
   return (

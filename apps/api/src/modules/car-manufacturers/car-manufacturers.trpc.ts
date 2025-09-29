@@ -29,12 +29,13 @@ export class CarManufacturersTrpc {
             sortField: carManufacturerSortFieldQuerySchema.optional(),
             sortDirection: sortDirectionQuerySchema.optional(),
           })
+          .strict()
           .optional(),
       )
       .query(async ({ input }) => {
         const carManufacturers = await this.manufacturersService.findAll({
           skip: input?.skip ?? 0,
-          limit: input?.limit ?? 20,
+          limit: input?.limit ?? 100,
           sortField: input?.sortField,
           sortDirection: input?.sortDirection,
         });

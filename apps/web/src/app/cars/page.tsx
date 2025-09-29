@@ -23,9 +23,6 @@ function CarsPageContent() {
   const [page, setPage] = useState(0);
   const limit = 12;
 
-  // Initialize from URL params
-  const manufacturersQuery = trpc.carManufacturers.list.useQuery();
-
   useEffect(() => {
     const manufacturer = searchParams.get("manufacturer");
     const model = searchParams.get("model");
@@ -47,7 +44,7 @@ function CarsPageContent() {
     ...(selectedManufacturer && { manufacturerSlug: selectedManufacturer }),
     ...(selectedModel && { modelSlug: selectedModel }),
     ...(colorFilter && { color: colorFilter }),
-    sortBy: sortBy ?? "createdAt"
+    sortBy: sortBy ?? "createdAt",
   };
 
   const carsQuery = trpc.cars.list.useQuery(carsQueryParams);
@@ -65,11 +62,13 @@ function CarsPageContent() {
     if (params.manufacturer) urlParams.set("manufacturer", params.manufacturer);
     if (params.model) urlParams.set("model", params.model);
     if (params.color) urlParams.set("color", params.color);
-    if (params.sortBy && params.sortBy !== "createdAt") urlParams.set("sortBy", params.sortBy);
-    if (params.page && params.page > 0) urlParams.set("page", params.page.toString());
+    if (params.sortBy && params.sortBy !== "createdAt")
+      urlParams.set("sortBy", params.sortBy);
+    if (params.page && params.page > 0)
+      urlParams.set("page", params.page.toString());
 
     const queryString = urlParams.toString();
-    router.push(`/cars${queryString ? `?${queryString}` : ""}`);
+    router.push(`/cars${queryString ? `?${queryString}` : ""}`); // FIXME: better way?
   };
 
   // Update URL whenever filters change
