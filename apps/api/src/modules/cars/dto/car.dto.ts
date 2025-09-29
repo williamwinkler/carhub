@@ -14,7 +14,7 @@ export const carResponseSchema = z
     createdBy: userSchema.optional(),
     createdAt: carFields.createdAt,
     updatedAt: carFields.updatedAt,
-    isFavorite: carFields.isFavorite,
+    isFavorite: carFields.isFavorite.optional(), // Only when logged in
     model: carModelSchema.optional(),
   })
   .strict();

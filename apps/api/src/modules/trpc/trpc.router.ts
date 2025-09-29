@@ -5,8 +5,8 @@ import { AuthTrpc } from "../auth/auth.trpc";
 import { CarsTrpc } from "../cars/cars.trpc";
 import { CarModelsTrpc } from "../car-models/car-models.trpc";
 import { CarManufacturersTrpc } from "../car-manufacturers/car-manufacturers.trpc";
-import { UsersTrpc } from "../users/users.trpc";
 import { TrpcService, createContext } from "./trpc.service";
+import { AccountsTrpc } from "../accounts/accounts.trpc";
 
 @Injectable()
 export class TrpcRouter {
@@ -16,7 +16,7 @@ export class TrpcRouter {
     private readonly carsTrpc: CarsTrpc,
     private readonly carModelsTrpc: CarModelsTrpc,
     private readonly carManufacturersTrpc: CarManufacturersTrpc,
-    private readonly usersTrpc: UsersTrpc,
+    private readonly accountsTrpc: AccountsTrpc,
   ) {}
 
   // Main app router
@@ -25,7 +25,7 @@ export class TrpcRouter {
     cars: this.carsTrpc.router,
     carModels: this.carModelsTrpc.router,
     carManufacturers: this.carManufacturersTrpc.router,
-    users: this.usersTrpc.router,
+    accounts: this.accountsTrpc.router,
   });
 
   // Apply tRPC middleware to Nest app

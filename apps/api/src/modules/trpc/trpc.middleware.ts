@@ -1,5 +1,6 @@
 import type { Principal } from "@api/common/ctx";
 import { Ctx } from "@api/common/ctx";
+import type { AppErrorBody } from "@api/common/errors/app-error";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
 import { setupContext } from "@api/common/utils/context.utils";
@@ -14,18 +15,28 @@ import type { TrpcContext } from "./trpc.service";
 const t = initTRPC.context<TrpcContext>().create();
 
 // CLS middleware for all tRPC calls
-export const clsMiddleware = t.middleware(async ({ ctx, next }) => {
-  const cls = ClsServiceManager.getClsService();
+export const clsMiddleware = (authService: AuthService) => {
+  return t.middleware(async ({ ctx, next }) => {
+    const cls = ClsServiceManager.getClsService();
 
-  return cls.runWith({}, async () => {
-    setupContext(ctx.req);
+    return cls.runWith({}, async () => {
+      setupContext(ctx.req);
 
-    ctx.res.setHeader("x-request-id", Ctx.requestId);
-    ctx.res.setHeader("x-correlation-id", Ctx.correlationId);
+      // If authorized add user to context
+      const authorization = ctx.req.headers.authorization;
+      if (authorization?.startsWith("Bearer ")) {
+        const token = authorization.slice(7); // Remove the "Bearer "
+        const payload = await authService.verifyAccessToken(token);
+        Ctx.principal = authService.principalFromJwt(payload);
+      }
 
-    return next();
+      ctx.res.setHeader("x-request-id", Ctx.requestId);
+      ctx.res.setHeader("x-correlation-id", Ctx.correlationId);
+
+      return next();
+    });
   });
-});
+};
 
 // Error handling middleware
 export const errorMiddleware = t.middleware(async ({ next }) => {
@@ -38,7 +49,7 @@ export const errorMiddleware = t.middleware(async ({ next }) => {
     const trpcCode =
       httpStatusToTrpcCode[httpStatus] ?? "INTERNAL_SERVER_ERROR";
 
-    const appErrorResponse = result.error.cause.getResponse() as any;
+    const appErrorResponse = result.error.cause.getResponse() as AppErrorBody;
     throw new TRPCError({
       code: trpcCode,
       message: appErrorResponse.message,

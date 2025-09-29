@@ -3,10 +3,10 @@ import { Injectable } from "@nestjs/common";
 import { UUID } from "crypto";
 import { PaginationDto } from "../../common/dto/pagination.dto";
 import { Pagination } from "../../common/types/common.types";
-import { UsersAdapter } from "../users/users.adapter";
 import { CarModelsAdapter } from "./../car-models/car-models.adapter";
 import { CarDto } from "./dto/car.dto";
 import { Car } from "./entities/car.entity";
+import { UsersAdapter } from "../users/users.adapter";
 
 @Injectable()
 export class CarsAdapter {
@@ -24,9 +24,9 @@ export class CarsAdapter {
       color: car.color,
       kmDriven: car.kmDriven,
       price: car.price,
-      isFavorite: this.isFavorite(car, userId),
+      isFavorite: userId && this.isFavorite(car, userId),
       model: car.model && this.carModelsAdapter.getDto(car.model),
-      createdBy: car.createdBy && this.usersAdapter.getUserDto(car.createdBy),
+      createdBy: car.createdBy && this.usersAdapter.getCreatedBy(car.createdBy),
       createdAt: car.createdAt.toISOString(),
       updatedAt: car.updatedAt?.toISOString(),
     };

@@ -18,5 +18,3 @@ export const carModelSortFieldQuerySchema = z
   .describe("Field to sort car models by");
 
 export type CarModelSortField = z.infer<typeof carModelSortFieldQuerySchema>;
-
-export type CarModelId = z.infer<typeof carModelFields.id>;

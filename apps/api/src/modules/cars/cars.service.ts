@@ -52,7 +52,15 @@ export class CarsService {
 
   // region FIND
   async findAll(options: FindAllCarsOptions): Promise<Pagination<Car>> {
-    const { modelId, color, skip, limit, sortField, sortDirection } = options;
+    const {
+      modelId,
+      manufacturerId,
+      color,
+      skip,
+      limit,
+      sortField,
+      sortDirection,
+    } = options;
 
     const queryBuilder = this.carsRepo
       .createQueryBuilder("car")
@@ -60,9 +68,20 @@ export class CarsService {
       .leftJoinAndSelect("model.manufacturer", "manufacturer")
       .leftJoinAndSelect("car.createdBy", "createdBy");
 
+    // Only pull out favoritedBy if the we know the user requesting it
+    if (Ctx.userId) {
+      queryBuilder.leftJoinAndSelect("car.favoritedBy", "favoritedBy");
+    }
+
     // Apply filters
     if (modelId) {
       queryBuilder.andWhere("model.id = :modelId", { modelId });
+    }
+
+    if (manufacturerId) {
+      queryBuilder.andWhere("manufacturer.id = :manufacturerId", {
+        manufacturerId,
+      });
     }
 
     if (color) {
@@ -102,7 +121,7 @@ export class CarsService {
   async findById(id: UUID): Promise<Car | null> {
     return await this.carsRepo.findOne({
       where: { id },
-      relations: ["model", "model.manufacturer", "createdBy"],
+      relations: ["model", "model.manufacturer", "createdBy", "favoritedBy"],
     });
   }
 
@@ -181,7 +200,7 @@ export class CarsService {
     this.logger.log("Car deleted: " + id);
   }
 
-  async toggleFavoriteForUser(id: UUID, userId: UUID): Promise<void> {
+  async toggleFavoriteForUser(id: UUID, userId: UUID): Promise<boolean> {
     const car = await this.carsRepo.findOne({
       where: { id },
       relations: ["favoritedBy"],
@@ -205,6 +224,8 @@ export class CarsService {
     this.logger.log(
       `User ${userId} toggled favorite for car ${id} to ${!isFavorited}`,
     );
+
+    return isFavorited;
   }
 
   async getFavoritesByUser(

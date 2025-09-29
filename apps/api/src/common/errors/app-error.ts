@@ -2,7 +2,7 @@ import type { HttpStatus } from "@nestjs/common";
 import { HttpException } from "@nestjs/common";
 import { EntryToKey, type ErrorEntry, type ErrorKey } from "./errors";
 
-type AppErrorBody = {
+export type AppErrorBody = {
   statusCode: HttpStatus;
   errorCode: ErrorKey;
   message: string;
@@ -11,7 +11,7 @@ type AppErrorBody = {
 };
 
 export class AppError<E extends ErrorEntry = ErrorEntry> extends HttpException {
-  readonly code: ErrorKey; // registry key
+  readonly code: ErrorKey; // Unique API error code
   readonly id: string;
   readonly meta?: unknown;
 
@@ -38,7 +38,7 @@ export class AppError<E extends ErrorEntry = ErrorEntry> extends HttpException {
     this.code = code;
     this.id = id;
     this.meta = opts?.meta;
-    this.name = this.name; // see explanation below
+    this.name = this.name;
 
     // keeps stack clean
     Error.captureStackTrace?.(this, AppError);

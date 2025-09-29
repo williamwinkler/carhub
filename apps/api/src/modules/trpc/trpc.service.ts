@@ -37,7 +37,7 @@ export class TrpcService {
 
   // Base procedure with CLS + error handling + default rate limiting
   procedure = this.trpc.procedure
-    .use(clsMiddleware)
+    .use(clsMiddleware(this.authService))
     .use(errorMiddleware)
     .use(
       createRateLimitMiddleware({
@@ -64,15 +64,13 @@ export class TrpcService {
     });
 
   // Optional procedures for overriding default rate limits
-  shortRateLimitProcedure = this.trpc.procedure
-    .use(clsMiddleware)
-    .use(errorMiddleware)
-    .use(this.createCustomRateLimit("SHORT", "Too many requests per second"));
+  shortRateLimitProcedure = this.trpc.procedure.use(
+    this.createCustomRateLimit("SHORT", "Too many requests per second"),
+  );
 
-  mediumRateLimitProcedure = this.trpc.procedure
-    .use(clsMiddleware)
-    .use(errorMiddleware)
-    .use(this.createCustomRateLimit("MEDIUM", "Rate limit exceeded"));
+  mediumRateLimitProcedure = this.trpc.procedure.use(
+    this.createCustomRateLimit("MEDIUM", "Rate limit exceeded"),
+  );
 
   // Authenticated versions with custom rate limits
   authenticatedShortProcedure = this.shortRateLimitProcedure.use(

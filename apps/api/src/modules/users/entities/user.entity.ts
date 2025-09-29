@@ -7,7 +7,6 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   OneToMany,
   Unique,
   UpdateDateColumn,

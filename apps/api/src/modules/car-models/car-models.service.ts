@@ -90,8 +90,8 @@ export class CarModelsService {
       items,
       meta: {
         totalItems,
-        limit: limit || totalItems,
-        skipped: skip || 0,
+        limit: limit ?? totalItems,
+        skipped: skip ?? 0,
         count: items.length,
       },
     };

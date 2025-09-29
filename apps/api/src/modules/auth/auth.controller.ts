@@ -4,20 +4,20 @@ import { Errors } from "@api/common/errors/errors";
 import { ApiEndpoint } from "@api/common/utils/swagger.utils";
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiNoContentResponse } from "@nestjs/swagger";
-import { UserDto } from "../users/dto/user.dto";
-import { UsersAdapter } from "../users/users.adapter";
 import { AuthService } from "./auth.service";
 import { ApiKeyDto } from "./dto/apiKey.dto";
 import { JwtDto } from "./dto/jwt.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { RegisterDto } from "./dto/register.dto";
+import { AccountsAdapter } from "../accounts/acounts.adapter";
+import { AccountDto } from "../accounts/dto/account.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersAdapter: UsersAdapter,
+    private readonly accountsAdapter: AccountsAdapter,
   ) {}
 
   @Post("register")
@@ -26,13 +26,13 @@ export class AuthController {
     status: HttpStatus.CREATED,
     summary: "Register an account",
     successText: "Account created successfully",
-    type: UserDto,
+    type: AccountDto,
   })
   @ApiErrorResponse(Errors.USERNAME_ALREADY_EXISTS)
   async createAccount(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
 
-    return this.usersAdapter.getUserDto(user);
+    return this.accountsAdapter.getDto(user);
   }
 
   @Post("login")

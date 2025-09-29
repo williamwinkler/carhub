@@ -4,16 +4,11 @@ import { User } from "./entities/user.entity";
 
 @Injectable()
 export class UsersAdapter {
-  getUserDto(user: User): UserDto {
+  getCreatedBy(user: User): UserDto {
     return {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
-      username: user.username,
-      role: user.role,
-      hasApiKey: !!user.apiKeySecret,
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
     };
   }
 }

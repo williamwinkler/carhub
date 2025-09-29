@@ -74,8 +74,8 @@ export class CarManufacturersService {
       items,
       meta: {
         totalItems,
-        limit: limit || totalItems,
-        skipped: skip || 0,
+        limit: limit ?? totalItems,
+        skipped: skip ?? 0,
         count: items.length,
       },
     };
@@ -84,13 +84,6 @@ export class CarManufacturersService {
   async findById(id: UUID): Promise<CarManufacturer | null> {
     return this.manufacturersRepo.findOne({
       where: { id },
-      relations: ["models"],
-    });
-  }
-
-  async findByName(name: string): Promise<CarManufacturer | null> {
-    return this.manufacturersRepo.findOne({
-      where: { name },
       relations: ["models"],
     });
   }

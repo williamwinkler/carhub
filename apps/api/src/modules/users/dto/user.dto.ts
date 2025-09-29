@@ -1,23 +1,11 @@
-import { registerSchema } from "@api/modules/auth/dto/register.dto";
-import { createZodDto } from "nestjs-zod";
 import z from "zod";
-import { Role } from "../entities/user.entity";
+import { usersFields } from "../users.schema";
+import { createZodDto } from "nestjs-zod";
 
-const roleSchema = z.nativeEnum(Role);
-
-export const userSchema = registerSchema
-  .omit({ password: true })
-  .extend({
-    id: z.string().uuid().describe("The unique identifier for the user"),
-    role: roleSchema,
-    hasApiKey: z
-      .boolean()
-      .describe("Indicates whether or not the user has generated an API key"),
-    createdAt: z.iso.datetime().describe("The create date of the account"),
-    updatedAt: z.iso
-      .datetime()
-      .describe("The last time the account was updated"),
-  })
-  .strict();
+export const userSchema = z.object({
+  id: usersFields.id,
+  firstName: usersFields.firstName,
+  lastName: usersFields.lastName,
+});
 
 export class UserDto extends createZodDto(userSchema) {}

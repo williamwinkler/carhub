@@ -6,50 +6,64 @@ import {
   uuidSchema,
 } from "@api/common/schemas/common.schema";
 import { Injectable } from "@nestjs/common";
-import { UUID } from "crypto";
 import { z } from "zod";
 import { TrpcService } from "../trpc/trpc.service";
 import { carFields, carSortFieldQuerySchema } from "./cars.schema";
 import { CarsService } from "./cars.service";
 import { createCarSchema } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
+import { carModelFields } from "../car-models/car-models.schema";
+import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
+import { CarsAdapter } from "./cars.adapter";
 
 @Injectable()
 export class CarsTrpc {
   constructor(
     private readonly trpc: TrpcService,
     private readonly carsService: CarsService,
+    private readonly carsAdapter: CarsAdapter,
   ) {}
 
   router = this.trpc.router({
     // Public route - anyone can list cars (uses default LONG rate limit)
     list: this.trpc.procedure
       .input(
-        z
-          .object({
-            modelId: z.string().uuid().optional(),
-            color: carFields.color.optional(),
-            skip: z.number().int().min(0).default(0),
-            limit: z.number().int().min(0).max(100).optional().default(10),
-            sortField: carSortFieldQuerySchema.optional(),
-            sortDirection: sortDirectionQuerySchema.optional(),
-          })
-          .optional(),
+        z.object({
+          modelId: carModelFields.id.optional(),
+          manufacturerId: carManufacturerFields.id.optional(),
+          color: carFields.color.optional(),
+          skip: z.number().int().min(0).default(0),
+          limit: z.number().int().min(0).max(100).optional().default(10),
+          sortField: carSortFieldQuerySchema.optional(),
+          sortDirection: sortDirectionQuerySchema.optional(),
+        }),
       )
       .query(async ({ input }) => {
-        return await this.carsService.findAll({
-          skip: 0,
-          limit: 10,
-          ...input,
-          modelId: input?.modelId as UUID
+        const cars = await this.carsService.findAll({
+          modelId: input.modelId,
+          manufacturerId: input.manufacturerId,
+          color: input.color,
+          sortField: input.sortField,
+          sortDirection: input.sortDirection,
+          skip: input.skip || 0,
+          limit: input.limit || 10,
         });
+
+        return this.carsAdapter.getListDto(cars);
       }),
 
     // Public route - anyone can view car details (uses default LONG rate limit)
     getById: this.trpc.procedure
       .input(z.object({ id: uuidSchema }))
       .query(async ({ input }) => {
-        return await this.carsService.findById(input.id);
+        const car = await this.carsService.findById(input.id);
+        if (!car) {
+          throw new AppError(Errors.CAR_NOT_FOUND);
+        }
+
+        return this.carsAdapter.getDto(car);
       }),
 
     // Authenticated route - creating cars with medium rate limiting for protection

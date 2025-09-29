@@ -19,7 +19,6 @@ import {
 } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
 import { UUID } from "crypto";
-import z from "zod";
 import {
   limitSchema,
   skipSchema,
@@ -32,13 +31,8 @@ import { CarSortField } from "./cars.types";
 import { CarDto } from "./dto/car.dto";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
-
-const testQuerySchema = z.object({
-  test: z.string(),
-  enum: z.enum(["test", "test2"]),
-  number: z.number(),
-});
-type TestQuery = z.infer<typeof testQuerySchema>;
+import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
+import { carModelFields } from "../car-models/car-models.schema";
 
 @Controller("cars")
 export class CarsController {
@@ -71,8 +65,10 @@ export class CarsController {
     type: [CarDto],
   })
   async findAll(
-    @zQuery("modelId", carFields.id.optional())
+    @zQuery("modelId", carModelFields.id.optional())
     modelId?: UUID,
+    @zQuery("manufacturerId", carManufacturerFields.id.optional())
+    manufacturerId?: UUID,
     @zQuery("color", carFields.color.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
@@ -83,6 +79,7 @@ export class CarsController {
   ) {
     const cars = await this.carsService.findAll({
       modelId,
+      manufacturerId,
       color,
       skip,
       limit,

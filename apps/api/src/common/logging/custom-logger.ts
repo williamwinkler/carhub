@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConsoleLogger } from "@nestjs/common";
 import { NestLoggerAdapter } from "@repo/logging";
 import { Ctx } from "../ctx";
@@ -7,6 +8,7 @@ export class CustomLogger extends ConsoleLogger {
     requestId: Ctx.requestId,
     correlationId: Ctx.correlationId,
     userId: Ctx.userId,
+    sessionId: Ctx.sessionId,
   }));
 
   private isProd = process.env.NODE_ENV === "production";

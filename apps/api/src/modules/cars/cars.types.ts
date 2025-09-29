@@ -7,6 +7,7 @@ export type CarSortField = z.infer<typeof carSortFieldQuerySchema>;
 
 export type FindAllCarsOptions = {
   modelId?: UUID;
+  manufacturerId?: UUID;
   color?: string;
   sortField?: CarSortField;
   sortDirection?: SortDirection;
