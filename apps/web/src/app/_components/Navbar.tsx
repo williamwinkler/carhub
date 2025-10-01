@@ -169,9 +169,9 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href={`/${user.id}/favorites`}
+                  href="/favorites"
                   className={`text-slate-300 hover:text-pink-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                    pathname === `/${user.id}/favorites` ? "text-pink-400" : ""
+                    pathname === "/favorites" ? "text-pink-400" : ""
                   }`}
                 >
                   <FaHeart className="w-4 h-4" />
@@ -200,9 +200,9 @@ export default function Navbar() {
 
                 <div className="flex items-center space-x-2">
                   <Link
-                    href={`/${user.id}/favorites`}
+                    href="/favorites"
                     className={`p-2 rounded-lg hover:bg-slate-700/50 transition-all duration-200 ${
-                      pathname === `/${user.id}/favorites`
+                      pathname === "/favorites"
                         ? "text-pink-400 bg-slate-700/50"
                         : "text-slate-400 hover:text-pink-400"
                     }`}

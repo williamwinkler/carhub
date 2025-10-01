@@ -116,7 +116,7 @@ export default function AccountPage() {
               </Link>
 
               <Link
-                href={`/${user.id}/favorites`}
+                href="/favorites"
                 className="p-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/30 rounded-lg transition-all duration-200 group"
               >
                 <div className="flex items-center gap-3">

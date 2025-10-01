@@ -1,14 +1,14 @@
 "use client";
 
+import { useAuth } from "@web/src/lib/auth-context";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { FaHeart } from "react-icons/fa";
-import { useAuth } from "../../../lib/auth-context";
-import Navbar from "../../_components/Navbar";
-import CarGrid from "../../_components/cars/CarGrid";
-import Pagination from "../../_components/ui/Pagination";
-import { trpc } from "../../_trpc/client";
+import CarGrid from "../_components/cars/CarGrid";
+import Navbar from "../_components/Navbar";
+import Pagination from "../_components/ui/Pagination";
+import { trpc } from "../_trpc/client";
 
 export default function UserFavoritesPage() {
   const params = useParams();
@@ -65,7 +65,7 @@ export default function UserFavoritesPage() {
             You can only view your own favorites for privacy reasons.
           </p>
           <Link
-            href={`/${user.id}/favorites`}
+            href="/favorites"
             className="px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 inline-flex items-center gap-2"
           >
             <FaHeart className="w-4 h-4" />

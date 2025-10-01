@@ -8,14 +8,15 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { trpc } from "../app/_trpc/client";
-import { getAccessToken, removeAuthTokens } from "./cookies";
+import { getRefreshToken, removeAuthTokens } from "./cookies";
 import { setLogoutCallback } from "./token-refresh";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
-type User = RouterOutput["auth"]["me"];
+type User = RouterOutput["accounts"]["getMe"];
 
 interface AuthContextType {
   user: User | null;
@@ -38,10 +39,22 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// One-time localStorage cleanup (outside component to run only once)
+if (typeof window !== "undefined") {
+  if (
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("refreshToken")
+  ) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+  }
+}
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const utils = trpc.useUtils();
+  const isCheckingAuth = useRef(false);
 
   const handleLogout = useCallback(() => {
     removeAuthTokens();
@@ -49,65 +62,59 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     utils.invalidate(); // Clear all cached queries
   }, [utils]);
 
-  const handleLogin = (userData: User) => {
+  const handleLogin = useCallback((userData: User) => {
     setUser(userData);
-  };
+  }, []);
 
-  // Check for auth state changes - this will catch manual cookie deletion
+  // Initialize auth state and set up logout callback
   useEffect(() => {
-    const checkAuthChanges = () => {
-      const token = getAccessToken();
-      if (!token && user) {
-        // Token was cleared but user state still exists - logout immediately
-        handleLogout();
-      }
-    };
-
-    // Listen for storage events (cookie changes from other tabs)
-    window.addEventListener("storage", checkAuthChanges);
-
-    // Also check periodically but less frequently
-    const interval = setInterval(checkAuthChanges, 3000);
-
-    return () => {
-      window.removeEventListener("storage", checkAuthChanges);
-      clearInterval(interval);
-    };
-  }, [user, handleLogout]);
-
-  useEffect(() => {
-    // Set the global logout callback
+    // Set the global logout callback for refresh-token-link
     setLogoutCallback(handleLogout);
 
-    // Check if user is already logged in on page load
+    // Check if user is already logged in on mount
     const checkAuthState = async () => {
-      // Clear any existing localStorage tokens (migration from old implementation)
-      if (typeof window !== "undefined") {
-        if (
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("refreshToken")
-        ) {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+      if (isCheckingAuth.current) return;
+      isCheckingAuth.current = true;
+
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        try {
+          // Fetch user info - if access token is expired, refresh link will handle it
+          const userInfo = await utils.accounts.getMe.fetch();
+          setUser(userInfo);
+        } catch (error) {
+          // If this fails, the refresh-token-link already handled logout via callback
+          console.error("Failed to fetch user info on mount:", error);
         }
       }
 
-      const token = getAccessToken();
-      if (token) {
-        try {
-          const userInfo = await utils.auth.me.fetch();
-          setUser(userInfo);
-        } catch (error) {
-          // Token might be expired, clear cookies
-          removeAuthTokens();
-          setUser(null);
-        }
-      }
       setIsLoading(false);
+      isCheckingAuth.current = false;
     };
 
     checkAuthState();
   }, [utils, handleLogout]);
+
+  // Periodic check to detect manual cookie deletion
+  // This is the ONLY case where we need polling - when user manually deletes cookies
+  useEffect(() => {
+    if (!user) return; // No need to check if not logged in
+
+    const checkCookieDeletion = () => {
+      const refreshToken = getRefreshToken();
+
+      // If user is logged in but refresh token is gone, they manually deleted cookies
+      if (!refreshToken) {
+        console.log("Refresh token manually deleted, logging out");
+        handleLogout();
+      }
+    };
+
+    // Check every 30 seconds (only for manual cookie deletion detection)
+    const interval = setInterval(checkCookieDeletion, 30000);
+
+    return () => clearInterval(interval);
+  }, [user, handleLogout]);
 
   return (
     <AuthContext.Provider

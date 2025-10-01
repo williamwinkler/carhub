@@ -27,7 +27,7 @@ export class AuthTrpc {
     }),
 
     // Refresh token - use medium rate limit to prevent token abuse
-    refreshToken: this.trpc.authenticatedMediumProcedure
+    refreshToken: this.trpc.mediumRateLimitProcedure
       .input(refreshTokenSchema)
       .mutation(async ({ input }) => {
         return await this.authService.refreshTokens(input.refreshToken);

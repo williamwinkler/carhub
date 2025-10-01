@@ -6,6 +6,8 @@ import { AccountDto } from "./dto/account.dto";
 export class AccountsAdapter {
   getDto(user: User): AccountDto {
     return {
+      id: user.id,
+      role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
       username: user.username,
