@@ -12,6 +12,9 @@ paths:
               $ref: "#/components/schemas/RegisterDto"
       responses:
         "201":
+          errors:
+            - status: 409
+              message: Username already exists
           description: Account created successfully
           content:
             application/json:
@@ -91,6 +94,9 @@ paths:
               $ref: "#/components/schemas/LoginDto"
       responses:
         "201":
+          errors:
+            - status: 401
+              message: Invalid credentials
           description: User successfully logged in
           content:
             application/json:
@@ -168,6 +174,9 @@ paths:
               $ref: "#/components/schemas/RefreshTokenDto"
       responses:
         "201":
+          errors:
+            - status: 401
+              message: Invalid refresh token
           description: Session succesfully refreshed
           content:
             application/json:
@@ -240,7 +249,7 @@ paths:
       parameters: []
       responses:
         "204":
-          description: User logged out successfully
+          description: ""
         "401":
           description: You need to be authorized to perform this action
           content:
@@ -293,6 +302,7 @@ paths:
                     statusCode: 500
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
+      summary: Log out as an authenticated user
       tags: *a1
       security:
         - bearer: []
@@ -377,6 +387,9 @@ paths:
               $ref: "#/components/schemas/CreateCarDto"
       responses:
         "201":
+          errors:
+            - status: 409
+              message: Car model already exists. Ensure the model name is new and unqiue
           description: Car created successfully
           content:
             application/json:
@@ -428,6 +441,19 @@ paths:
                     statusCode: 403
                     errorCode: FORBIDDEN
                     message: Forbidden
+        "409":
+          description: Car model already exists. Ensure the model name is new and unqiue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+              examples:
+                default:
+                  summary: CAR_MODEL_ALREADY_EXISTS Error
+                  value:
+                    statusCode: 409
+                    errorCode: CAR_MODEL_ALREADY_EXISTS
+                    message: Car model already exists. Ensure the model name is new and unqiue
         "429":
           description: Too many requests, try again later
           content:
@@ -577,6 +603,9 @@ paths:
             type: string
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car not found
           description: Car successfully retrieved
           content:
             application/json:
@@ -660,6 +689,9 @@ paths:
               $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car not found
           description: Car was successfully updated
           content:
             application/json:
@@ -1070,6 +1102,9 @@ paths:
               $ref: "#/components/schemas/CreateCarManufacturerDto"
       responses:
         "201":
+          errors:
+            - status: 409
+              message: Car manufacturer already exists
           description: Car manufacturer created successfully
           content:
             application/json:
@@ -1262,6 +1297,9 @@ paths:
             type: string
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car manufacturer not found
           description: Car manufacturer successfully retrieved
           content:
             application/json:
@@ -1345,6 +1383,9 @@ paths:
               $ref: "#/components/schemas/UpdateCarManufacturerDto"
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car manufacturer not found
           description: Car manufacturer was successfully updated
           content:
             application/json:
@@ -1552,6 +1593,9 @@ paths:
               $ref: "#/components/schemas/CreateCarModelDto"
       responses:
         "201":
+          errors:
+            - status: 404
+              message: Car manufacturer not found
           description: Car model created successfully
           content:
             application/json:
@@ -1603,19 +1647,19 @@ paths:
                     statusCode: 403
                     errorCode: FORBIDDEN
                     message: Forbidden
-        "409":
-          description: Car model already exists. Ensure the model name is new and unqiue
+        "404":
+          description: Car manufacturer not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
               examples:
                 default:
-                  summary: CAR_MODEL_ALREADY_EXISTS Error
+                  summary: CAR_MANUFACTURER_NOT_FOUND Error
                   value:
-                    statusCode: 409
-                    errorCode: CAR_MODEL_ALREADY_EXISTS
-                    message: Car model already exists. Ensure the model name is new and unqiue
+                    statusCode: 404
+                    errorCode: CAR_MANUFACTURER_NOT_FOUND
+                    message: Car manufacturer not found
         "429":
           description: Too many requests, try again later
           content:
@@ -1752,6 +1796,9 @@ paths:
             type: string
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car model not found
           description: Car model successfully retrieved
           content:
             application/json:
@@ -1835,6 +1882,9 @@ paths:
               $ref: "#/components/schemas/UpdateCarModelDto"
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car model not found
           description: Car model was successfully updated
           content:
             application/json:
@@ -2044,6 +2094,9 @@ paths:
             maxLength: 255
       responses:
         "200":
+          errors:
+            - status: 404
+              message: Car model not found
           description: Car model succesfully retrieved
           content:
             application/json:
@@ -2578,18 +2631,18 @@ components:
     PaginatedItemsDto:
       type: object
       properties:
-        meta:
-          description: Metadata for pagination
-          allOf:
-            - $ref: "#/components/schemas/MetaPaginationDto"
         items:
           description: List of CarDto items
           type: array
           items:
             $ref: "#/components/schemas/CarDto"
+        meta:
+          description: Metadata for pagination
+          allOf:
+            - $ref: "#/components/schemas/MetaPaginationDto"
       required:
-        - meta
         - items
+        - meta
     CarResponseListDto:
       type: object
       properties:

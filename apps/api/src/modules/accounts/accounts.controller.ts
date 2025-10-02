@@ -1,10 +1,10 @@
 import { Ctx } from "@api/common/ctx";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { ApiEndpoint } from "@api/common/utils/swagger.utils";
+import { SwaggerInfo } from "@api/common/utils/swagger.utils";
 import { UsersService } from "@api/modules/users/users.service";
 import { Controller, Get } from "@nestjs/common";
-import { AccountDto } from "./dto/account.dto";
 import { AccountsAdapter } from "./acounts.adapter";
+import { AccountDto } from "./dto/account.dto";
 
 @Controller("accounts")
 export class UsersController {
@@ -15,7 +15,7 @@ export class UsersController {
 
   @Get("me")
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Get my account information",
     successText: "Account information retrieved",
     type: AccountDto,

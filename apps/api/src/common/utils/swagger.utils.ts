@@ -13,8 +13,10 @@ import {
   ApiResponseOptions,
 } from "@nestjs/swagger";
 import z from "zod";
+import { SwaggerError } from "../decorators/swagger-responses.decorator";
 import { GeneralResponseDto } from "../dto/general-response.dto";
 import { PaginationDto } from "../dto/pagination.dto";
+import { ErrorEntry } from "../errors/errors";
 
 export const RESPONSE_DTO_KEY = "responseDto";
 
@@ -77,12 +79,13 @@ function createResponseListDto<T>(classRef: new () => T) {
 }
 
 // Strongly-typed overloads
-export function ApiEndpoint<T>(
+export function SwaggerInfo<T>(
   options: Omit<ApiResponseOptions, "description"> & {
     type: Type<T>;
     status?: HttpStatus;
     summary?: string;
     successText?: string;
+    errors?: ErrorEntry[];
   },
 ): <F extends MethodReturning<SingleResponse<T>>>(
   target: object,
@@ -90,12 +93,13 @@ export function ApiEndpoint<T>(
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
-export function ApiEndpoint<T>(
+export function SwaggerInfo<T>(
   options: Omit<ApiResponseOptions, "description"> & {
     type: [Type<T>];
     status?: HttpStatus;
     summary?: string;
     successText?: string;
+    errors?: ErrorEntry[];
   },
 ): <F extends MethodReturning<ListResponse<T>>>(
   target: object,
@@ -103,12 +107,13 @@ export function ApiEndpoint<T>(
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
-export function ApiEndpoint(
+export function SwaggerInfo(
   options: Omit<ApiResponseOptions, "description"> & {
     type: null;
     status?: HttpStatus;
     summary?: string;
     successText?: string;
+    errors?: ErrorEntry[];
   },
 ): <F extends MethodReturning<Promise<void>>>(
   target: object,
@@ -116,12 +121,24 @@ export function ApiEndpoint(
   descriptor: TypedPropertyDescriptor<F>,
 ) => void;
 
-export function ApiEndpoint<T>(
+/**
+ * Decorator for defining type safe swagger specifications.
+ * @param returnType - The DTO returned by the endpoint. Examples:
+ * - `MyDto` to return a single DTO.
+ * - `[MyDto]` to return a paginated list of DTOs.
+ * - `null` when returning no content.
+ * @param status - The HTTP status code to be returned on succes
+ * @param summary - Swagger endpoint summary
+ * @param successText - The text to show on succesful requests.
+ * @param errors - potential errors thrown by the endpoint.
+ */
+export function SwaggerInfo<T>(
   options: Omit<ApiResponseOptions, "description"> & {
     type: Type<T> | [Type<T>] | null;
     status?: HttpStatus;
     summary?: string;
     successText?: string;
+    errors?: ErrorEntry[];
   },
 ) {
   const summary = options.summary;
@@ -162,6 +179,7 @@ export function ApiEndpoint<T>(
           } as ResponseDtoMeta<T>),
         ]
       : []),
+    ...(options?.errors?.map((e) => SwaggerError(e)) ?? []),
   );
 
   if (isList) {

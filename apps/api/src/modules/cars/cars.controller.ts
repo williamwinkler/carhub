@@ -1,12 +1,11 @@
 import { Ctx } from "@api/common/ctx";
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { ApiErrorResponse } from "@api/common/decorators/swagger-responses.decorator";
 import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
 import { SortDirection } from "@api/common/types/common.types";
-import { ApiEndpoint } from "@api/common/utils/swagger.utils";
+import { SwaggerInfo } from "@api/common/utils/swagger.utils";
 import {
   Body,
   Controller,
@@ -17,13 +16,14 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import { ApiOperation } from "@nestjs/swagger";
 import { UUID } from "crypto";
 import {
   limitSchema,
   skipSchema,
   sortDirectionQuerySchema,
 } from "../../common/schemas/common.schema";
+import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
+import { carModelFields } from "../car-models/car-models.schema";
 import { CarsAdapter } from "./cars.adapter";
 import { carFields, carSortFieldQuerySchema } from "./cars.schema";
 import { CarsService } from "./cars.service";
@@ -31,8 +31,6 @@ import { CarSortField } from "./cars.types";
 import { CarDto } from "./dto/car.dto";
 import { CreateCarDto } from "./dto/create-car.dto";
 import { UpdateCarDto } from "./dto/update-car.dto";
-import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
-import { carModelFields } from "../car-models/car-models.schema";
 
 @Controller("cars")
 export class CarsController {
@@ -43,11 +41,12 @@ export class CarsController {
 
   @Post()
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     summary: "Create a car",
     successText: "Car created successfully",
     type: CarDto,
+    errors: [Errors.CAR_MODEL_ALREADY_EXISTS],
   })
   async create(@Body() dto: CreateCarDto) {
     const car = await this.carsService.create(dto);
@@ -58,9 +57,9 @@ export class CarsController {
 
   @Get()
   @Public()
-  @ApiOperation({ summary: "List cars" })
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.OK,
+    summary: "List cars",
     successText: "List of cars",
     type: [CarDto],
   })
@@ -93,12 +92,12 @@ export class CarsController {
 
   @Get(":id")
   @Public()
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Get a car",
     successText: "Car successfully retrieved",
     type: CarDto,
+    errors: [Errors.CAR_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
   async findOne(@zParam("id", carFields.id) id: UUID) {
     const car = await this.carsService.findById(id);
     if (!car) {
@@ -112,12 +111,12 @@ export class CarsController {
 
   @Put(":id")
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Update a car",
     successText: "Car was successfully updated",
     type: CarDto,
+    errors: [Errors.CAR_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
   async update(
     @zParam("id", carFields.id) id: UUID,
     @Body() dto: UpdateCarDto,
@@ -129,26 +128,26 @@ export class CarsController {
 
   @Delete(":id")
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.NO_CONTENT,
     summary: "Delete a car",
     successText: "Car deleted successfully",
     type: null,
+    errors: [Errors.CAR_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
   async remove(@zParam("id", carFields.id) id: UUID) {
     await this.carsService.softDelete(id);
   }
 
   @Patch(":id/favorite")
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.NO_CONTENT,
     summary: "Toggle favorite status for a car",
     successText: "Car favorite status toggled successfully",
     type: null,
+    errors: [Errors.CAR_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_NOT_FOUND)
   async toggleFavorite(@zParam("id", carFields.id) id: UUID) {
     const userId = Ctx.userIdRequired();
     await this.carsService.toggleFavoriteForUser(id, userId);
@@ -156,7 +155,7 @@ export class CarsController {
 
   @Get("favorites")
   @Roles("user")
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Get user's favorite cars",
     successText: "User's favorite cars retrieved successfully",
     type: [CarDto],

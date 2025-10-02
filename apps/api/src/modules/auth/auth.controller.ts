@@ -1,17 +1,15 @@
 import { Public } from "@api/common/decorators/public.decorator";
-import { ApiErrorResponse } from "@api/common/decorators/swagger-responses.decorator";
 import { Errors } from "@api/common/errors/errors";
-import { ApiEndpoint } from "@api/common/utils/swagger.utils";
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
-import { ApiNoContentResponse } from "@nestjs/swagger";
+import { SwaggerInfo } from "@api/common/utils/swagger.utils";
+import { Body, Controller, HttpStatus, Post } from "@nestjs/common";
+import { AccountsAdapter } from "../accounts/acounts.adapter";
+import { AccountDto } from "../accounts/dto/account.dto";
 import { AuthService } from "./auth.service";
 import { ApiKeyDto } from "./dto/apiKey.dto";
 import { JwtDto } from "./dto/jwt.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { RegisterDto } from "./dto/register.dto";
-import { AccountsAdapter } from "../accounts/acounts.adapter";
-import { AccountDto } from "../accounts/dto/account.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -22,13 +20,13 @@ export class AuthController {
 
   @Post("register")
   @Public()
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     summary: "Register an account",
     successText: "Account created successfully",
     type: AccountDto,
+    errors: [Errors.USERNAME_ALREADY_EXISTS],
   })
-  @ApiErrorResponse(Errors.USERNAME_ALREADY_EXISTS)
   async createAccount(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
 
@@ -37,38 +35,42 @@ export class AuthController {
 
   @Post("login")
   @Public()
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     successText: "User successfully logged in",
     type: JwtDto,
+    errors: [Errors.INVALID_CREDENTIALS],
   })
-  @ApiErrorResponse(Errors.INVALID_CREDENTIALS)
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.username, dto.password);
   }
 
   @Post("refresh")
   @Public()
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     summary: "Get a new access token with your refresh token",
     successText: "Session succesfully refreshed",
     type: JwtDto,
+    errors: [Errors.INVALID_REFRESH_TOKEN],
   })
-  @ApiErrorResponse(Errors.INVALID_REFRESH_TOKEN)
   async refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refreshTokens(dto.refreshToken);
   }
 
   @Post("logout")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ description: "User logged out successfully" })
+  @SwaggerInfo({
+    status: HttpStatus.NO_CONTENT,
+    summary: "Log out as an authenticated user",
+    successText: "User logged out successfully",
+    type: null,
+  })
   async logout() {
     await this.authService.logout();
   }
 
   @Post("apiKey")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     summary: "Generate an API key",
     successText: "The API key was successfully generated",

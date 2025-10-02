@@ -1,11 +1,10 @@
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { ApiErrorResponse } from "@api/common/decorators/swagger-responses.decorator";
 import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
 import { SortDirection } from "@api/common/types/common.types";
-import { ApiEndpoint } from "@api/common/utils/swagger.utils";
+import { SwaggerInfo } from "@api/common/utils/swagger.utils";
 import {
   Body,
   Controller,
@@ -42,13 +41,13 @@ export class CarManufacturersController {
 
   @Post()
   @Roles("admin")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.CREATED,
     summary: "Create a car manufacturer",
     successText: "Car manufacturer created successfully",
     type: CarManufacturerDto,
+    errors: [Errors.CAR_MANUFACTURER_ALREADY_EXISTS],
   })
-  @ApiErrorResponse(Errors.CAR_MANUFACTURER_ALREADY_EXISTS)
   async create(@Body() dto: CreateCarManufacturerDto) {
     const carManufacturer = await this.manufacturersService.create(dto);
     const data = this.manufacturersAdapter.getDto(carManufacturer);
@@ -59,7 +58,7 @@ export class CarManufacturersController {
   @Get()
   @Public()
   @ApiOperation({ summary: "List car manufacturers" })
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.OK,
     successText: "List of car manufacturers",
     type: [CarManufacturerDto],
@@ -85,12 +84,12 @@ export class CarManufacturersController {
 
   @Get(":id")
   @Public()
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Get a car manufacturer",
     successText: "Car manufacturer successfully retrieved",
     type: CarManufacturerDto,
+    errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_MANUFACTURER_NOT_FOUND)
   async findOne(@zParam("id", carManufacturerFields.id) id: UUID) {
     const carManufacturer = await this.manufacturersService.findById(id);
     if (!carManufacturer) {
@@ -104,12 +103,12 @@ export class CarManufacturersController {
 
   @Put(":id")
   @Roles("admin")
-  @ApiEndpoint({
+  @SwaggerInfo({
     summary: "Update a car manufacturer",
     successText: "Car manufacturer was successfully updated",
     type: CarManufacturerDto,
+    errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_MANUFACTURER_NOT_FOUND)
   async update(
     @zParam("id", carManufacturerFields.id) id: UUID,
     @Body() dto: UpdateCarManufacturerDto,
@@ -121,13 +120,13 @@ export class CarManufacturersController {
 
   @Delete(":id")
   @Roles("admin")
-  @ApiEndpoint({
+  @SwaggerInfo({
     status: HttpStatus.NO_CONTENT,
     summary: "Delete a car manufacturer",
     successText: "Car manufacturer deleted successfully",
     type: null,
+    errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
-  @ApiErrorResponse(Errors.CAR_MANUFACTURER_NOT_FOUND)
   async remove(@zParam("id", carManufacturerFields.id) id: UUID) {
     await this.manufacturersService.delete(id);
   }

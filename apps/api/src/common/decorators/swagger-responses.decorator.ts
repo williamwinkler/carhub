@@ -6,7 +6,7 @@ import { ErrorDto } from "../errors/error.dto";
 import type { ErrorEntry } from "../errors/errors";
 import { EntryToKey } from "../errors/errors";
 
-export function ApiErrorResponse(error: ErrorEntry) {
+export function SwaggerError(error: ErrorEntry) {
   const errorCode = EntryToKey.get(error);
   if (!errorCode) {
     throw new Error(`Unknown error entry: ${JSON.stringify(error)}`);

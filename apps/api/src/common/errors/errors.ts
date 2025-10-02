@@ -41,9 +41,22 @@ export const Errors = {
     status: HttpStatus.NOT_FOUND,
     message: "Car not found",
   },
+
+  // Car Model errors
+  CAR_MODEL_ALREADY_EXISTS: {
+    status: HttpStatus.CONFLICT,
+    message:
+      "Car model already exists. Ensure the model name is new and unqiue",
+  },
   CAR_MODEL_NOT_FOUND: {
     status: HttpStatus.NOT_FOUND,
     message: "Car model not found",
+  },
+
+  // Car manufacturer errors
+  CAR_MANUFACTURER_ALREADY_EXISTS: {
+    status: HttpStatus.CONFLICT,
+    message: "Car manufacturer already exists",
   },
   CAR_MANUFACTURER_NOT_FOUND: {
     status: HttpStatus.NOT_FOUND,
@@ -66,19 +79,6 @@ export const Errors = {
   USERNAME_ALREADY_EXISTS: {
     status: HttpStatus.CONFLICT,
     message: "Username already exists",
-  },
-
-  // Car Model errors
-  CAR_MODEL_ALREADY_EXISTS: {
-    status: HttpStatus.CONFLICT,
-    message:
-      "Car model already exists. Ensure the model name is new and unqiue",
-  },
-
-  // Car manufacturer errors
-  CAR_MANUFACTURER_ALREADY_EXISTS: {
-    status: HttpStatus.CONFLICT,
-    message: "Car manufacturer already exists",
   },
 
   /* eslint-enable prettier/prettier */

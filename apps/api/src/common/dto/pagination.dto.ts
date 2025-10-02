@@ -24,14 +24,14 @@ class MetaPaginationDto {
 
 export class PaginationDto<T> {
   @ApiProperty({
-    description: "Metadata for pagination",
-    type: MetaPaginationDto,
-  })
-  meta!: MetaPaginationDto;
-
-  @ApiProperty({
     description: "List of items",
     isArray: true,
   })
   items!: T[];
+
+  @ApiProperty({
+    description: "Metadata for pagination",
+    type: MetaPaginationDto,
+  })
+  meta!: MetaPaginationDto;
 }

@@ -1,9 +1,7 @@
 "use client";
 
-import type { AppRouter } from "@api/modules/trpc/trpc.router";
-import type { inferRouterOutputs } from "@trpc/server";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { FaCar, FaHeart, FaUser } from "react-icons/fa";
@@ -12,6 +10,7 @@ import { trpc } from "../_trpc/client";
 import { User } from "../_trpc/types";
 
 export default function Navbar() {
+  const router = useRouter();
   const { user, login, logout } = useAuth();
   const pathname = usePathname();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -110,7 +109,7 @@ export default function Navbar() {
     try {
       await logoutMutation.mutateAsync();
       logout();
-      toast.success("Logged out successfully!");
+      router.push("/");
     } catch (error: unknown) {
       // Even if logout fails on server, clear local state
       logout();
