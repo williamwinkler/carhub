@@ -10,5 +10,5 @@ export type Pagination = RouterOutputs["cars"]["list"]["meta"];
 // Specific entity types
 export type Car = RouterOutputs["cars"]["getById"];
 export type User = RouterOutputs["accounts"]["getMe"];
-export type CarModel = RouterOutputs["carModels"]["list"]["items"];
-export type CarManufacturer = RouterOutputs["carManufacturers"]["list"]["items"];
+export type CarModel = RouterOutputs["carModels"]["list"]["items"][number];
+export type CarManufacturer = RouterOutputs["carManufacturers"]["list"]["items"][number];
