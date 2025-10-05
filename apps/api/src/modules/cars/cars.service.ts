@@ -85,7 +85,7 @@ export class CarsService {
     }
 
     if (color) {
-      queryBuilder.andWhere("car.color = :color", { color });
+      queryBuilder.andWhere("LOWER(car.color) = :color", { color });
     }
 
     // Apply sorting

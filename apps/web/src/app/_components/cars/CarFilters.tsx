@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { trpc } from "../../_trpc/client";
 
@@ -34,15 +34,20 @@ export default function CarFilters({
   // Local state for color input to debounce
   const [localColorFilter, setLocalColorFilter] = useState(colorFilter);
   const debouncedColorFilter = useDebounce(localColorFilter, 200);
+  const prevDebouncedRef = useRef(colorFilter);
 
-  // Update parent when debounced value changes
+  // Update parent when debounced value changes (only if different from previous)
   useEffect(() => {
-    setColorFilter(debouncedColorFilter);
+    if (debouncedColorFilter !== prevDebouncedRef.current) {
+      prevDebouncedRef.current = debouncedColorFilter;
+      setColorFilter(debouncedColorFilter);
+    }
   }, [debouncedColorFilter, setColorFilter]);
 
   // Sync local state when parent state changes (e.g., clear filters)
   useEffect(() => {
     setLocalColorFilter(colorFilter);
+    prevDebouncedRef.current = colorFilter;
   }, [colorFilter]);
 
   const manufacturersQuery = trpc.carManufacturers.list.useQuery(undefined, {
@@ -111,10 +116,10 @@ export default function CarFilters({
             onChange={(e) => setSortBy(e.target.value)}
             className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
-            <option value="">Default</option>
+            <option value="createdAt">Default (Newest)</option>
             <option value="price">Price</option>
             <option value="year">Year</option>
-            <option value="mileage">Mileage</option>
+            <option value="kmDriven">Mileage</option>
           </select>
         </div>
 
@@ -126,8 +131,7 @@ export default function CarFilters({
           <select
             value={sortDirection}
             onChange={(e) => setSortDirection(e.target.value)}
-            disabled={!sortBy}
-            className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
+            className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>

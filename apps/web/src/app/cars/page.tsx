@@ -11,13 +11,14 @@ import { trpc } from "../_trpc/client";
 const LIMIT = 12;
 
 function CarsPageContent() {
-  const [{ manufacturer, model, color, sortBy, page }, setQuery] =
+  const [{ manufacturer, model, color, sortBy, sortDirection, page }, setQuery] =
     useQueryStates(
       {
         manufacturer: parseAsString.withDefault(""),
         model: parseAsString.withDefault(""),
         color: parseAsString.withDefault(""),
         sortBy: parseAsString.withDefault("createdAt"),
+        sortDirection: parseAsString.withDefault("desc"),
         page: parseAsInteger.withDefault(0),
       },
       {
@@ -35,6 +36,7 @@ function CarsPageContent() {
         model: string;
         color: string;
         sortBy: string;
+        sortDirection: string;
         page: number;
       }>,
     ) => {
@@ -43,6 +45,7 @@ function CarsPageContent() {
         model,
         color,
         sortBy,
+        sortDirection,
         page,
         ...patch,
       };
@@ -51,13 +54,14 @@ function CarsPageContent() {
         next.model === model &&
         next.color === color &&
         next.sortBy === sortBy &&
+        next.sortDirection === sortDirection &&
         next.page === page
       ) {
         return;
       }
       setQuery(patch);
     },
-    [manufacturer, model, color, sortBy, page, setQuery],
+    [manufacturer, model, color, sortBy, sortDirection, page, setQuery],
   );
 
   // Stable handlers
@@ -77,6 +81,10 @@ function CarsPageContent() {
     (v: string) => apply({ sortBy: v || "createdAt", page: 0 }),
     [apply],
   );
+  const handleSetSortDirection = useCallback(
+    (v: string) => apply({ sortDirection: v }),
+    [apply],
+  );
   const handleSetPage = useCallback(
     (p: number) => apply({ page: Math.max(0, p) }),
     [apply],
@@ -88,6 +96,7 @@ function CarsPageContent() {
         model: "",
         color: "",
         sortBy: "createdAt",
+        sortDirection: "desc",
         page: 0,
       }),
     [setQuery],
@@ -100,6 +109,7 @@ function CarsPageContent() {
     ...(model && { modelSlug: model }),
     ...(color && { color }),
     sortBy: (sortBy as any) || "createdAt",
+    sortDirection: (sortDirection as any) || "desc",
   });
 
   const utils = trpc.useUtils();
@@ -132,8 +142,8 @@ function CarsPageContent() {
           setColorFilter={handleSetColor}
           sortBy={sortBy}
           setSortBy={handleSetSortBy}
-          sortDirection={"asc"} // add to nuqs schema if you wire it backend-side
-          setSortDirection={() => {}}
+          sortDirection={sortDirection}
+          setSortDirection={handleSetSortDirection}
           onClearFilters={handleClear}
         />
 
