@@ -15,6 +15,7 @@ export default function UserCarsPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(0);
   const limit = 12;
+  const utils = trpc.useUtils();
 
   const userId = params.userId as string;
   const isOwnProfile = user?.id === userId;
@@ -78,7 +79,6 @@ export default function UserCarsPage() {
 
   const handleFavoriteUpdate = () => {
     // Refresh the car list when favorites are updated
-    const utils = trpc.useContext();
     utils.cars.getMyCars.invalidate();
   };
 

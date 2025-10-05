@@ -153,27 +153,15 @@ export default function Navbar() {
             </Link>
 
             {user && (
-              <>
-                <Link
-                  href={`/${user.id}/cars`}
-                  className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                    pathname === `/${user.id}/cars` ? "text-blue-400" : ""
-                  }`}
-                >
-                  <FaCar className="w-4 h-4" />
-                  My Cars
-                </Link>
-
-                <Link
-                  href="/favorites"
-                  className={`text-slate-300 hover:text-pink-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                    pathname === "/favorites" ? "text-pink-400" : ""
-                  }`}
-                >
-                  <FaHeart className="w-4 h-4" />
-                  Favorites
-                </Link>
-              </>
+              <Link
+                href={`/${user.id}/cars`}
+                className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
+                  pathname === `/${user.id}/cars` ? "text-blue-400" : ""
+                }`}
+              >
+                <FaCar className="w-4 h-4" />
+                My Cars
+              </Link>
             )}
           </div>
 
@@ -182,16 +170,11 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="flex items-center space-x-4">
-                  <span className="text-slate-300">
-                    <span className="text-blue-400 font-medium">
-                      {user.username}
+                  {user.role === "admin" && (
+                    <span className="ml-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-full font-medium">
+                      Admin
                     </span>
-                    {user.role === "admin" && (
-                      <span className="ml-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-full font-medium">
-                        Admin
-                      </span>
-                    )}
-                  </span>
+                  )}
                 </div>
 
                 <div className="flex items-center space-x-2">

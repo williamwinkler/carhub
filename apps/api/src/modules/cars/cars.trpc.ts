@@ -1,5 +1,7 @@
 // src/modules/cars/cars.trpc.ts
 import { Ctx } from "@api/common/ctx";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import {
   skipLimitSchema,
   sortDirectionQuerySchema,
@@ -7,16 +9,14 @@ import {
 } from "@api/common/schemas/common.schema";
 import { Injectable } from "@nestjs/common";
 import { z } from "zod";
+import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
+import { carModelFields } from "../car-models/car-models.schema";
 import { TrpcService } from "../trpc/trpc.service";
+import { CarsAdapter } from "./cars.adapter";
 import { carFields, carSortFieldQuerySchema } from "./cars.schema";
 import { CarsService } from "./cars.service";
 import { createCarSchema } from "./dto/create-car.dto";
 import { updateCarSchema } from "./dto/update-car.dto";
-import { carModelFields } from "../car-models/car-models.schema";
-import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
-import { AppError } from "@api/common/errors/app-error";
-import { Errors } from "@api/common/errors/errors";
-import { CarsAdapter } from "./cars.adapter";
 
 @Injectable()
 export class CarsTrpc {
@@ -121,7 +121,7 @@ export class CarsTrpc {
           ...input,
         });
 
-        const favoritedCarsDto = this.carsAdapter.getListDto(favoritedCars);
+        return this.carsAdapter.getListDto(favoritedCars);
       }),
 
     // Authenticated route - get current user's own cars

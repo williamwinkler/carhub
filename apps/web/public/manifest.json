@@ -1,0 +1,9 @@
+{
+  "name": "CarHub - Find Your Perfect Car",
+  "short_name": "CarHub",
+  "description": "Discover, search, and manage your car listings with CarHub. Find the perfect vehicle from thousands of listings.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b"
+}

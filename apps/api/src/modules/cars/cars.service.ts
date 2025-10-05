@@ -130,9 +130,7 @@ export class CarsService {
 
     const [cars, totalItems] = await this.carsRepo.findAndCount({
       where: { createdBy: { id: userId } },
-      relations: {
-        model: true,
-      },
+      relations: ["model", "model.manufacturer"],
       order: { createdAt: "DESC" },
       skip,
       take: limit,
@@ -240,6 +238,10 @@ export class CarsService {
       .leftJoinAndSelect("car.createdBy", "createdBy")
       .innerJoin("car.favoritedBy", "user")
       .where("user.id = :userId", { userId });
+
+    if (Ctx.userId) {
+      queryBuilder.leftJoinAndSelect("car.favoritedBy", "favoritedBy");
+    }
 
     // Apply pagination
     if (skip) {

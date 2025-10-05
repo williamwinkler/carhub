@@ -46,10 +46,12 @@ export const errorMiddleware = t.middleware(async ({ next }) => {
   if (!result.ok && result.error.cause instanceof AppError) {
     const httpStatus =
       result.error.cause.getStatus() ?? HttpStatus.INTERNAL_SERVER_ERROR;
+
     const trpcCode =
       httpStatusToTrpcCode[httpStatus] ?? "INTERNAL_SERVER_ERROR";
 
     const appErrorResponse = result.error.cause.getResponse() as AppErrorBody;
+
     throw new TRPCError({
       code: trpcCode,
       message: appErrorResponse.message,

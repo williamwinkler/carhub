@@ -15,6 +15,7 @@ export default function UserFavoritesPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(0);
   const limit = 12;
+  const utils = trpc.useUtils();
 
   // Get user info to display their name
   const { data: userProfile } = trpc.accounts.getMe.useQuery(undefined, {
@@ -52,7 +53,6 @@ export default function UserFavoritesPage() {
 
   const handleFavoriteUpdate = () => {
     // Refresh the favorites list when favorites are updated
-    const utils = trpc.useUtils();
     utils.cars.getFavorites.invalidate();
   };
 

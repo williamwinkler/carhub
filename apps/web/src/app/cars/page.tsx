@@ -44,7 +44,7 @@ function CarsPageContent() {
     ...(selectedManufacturer && { manufacturerSlug: selectedManufacturer }),
     ...(selectedModel && { modelSlug: selectedModel }),
     ...(colorFilter && { color: colorFilter }),
-    sortBy: sortBy ?? "createdAt",
+    sortBy: sortBy || "createdAt",
   };
 
   const carsQuery = trpc.cars.list.useQuery(carsQueryParams);
