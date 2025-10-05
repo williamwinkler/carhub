@@ -42,12 +42,13 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
   const utils = trpc.useUtils();
 
   const toggleFavoriteMutation = trpc.cars.toggleFavorite.useMutation({
-    onSuccess: (isFavorite) => {
+    onSuccess: ({ favorited }) => {
       utils.cars.list.invalidate();
       utils.cars.getFavorites.invalidate();
+      utils.cars.getMyCars.invalidate();
       onFavoriteUpdate?.();
 
-      if (!isFavorite) {
+      if (!favorited) {
         toast.success(
           `Favorited ${car!.model!.manufacturer!.name} ${car?.model?.name}`,
         );

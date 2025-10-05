@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Provider from "./_trpc/Provider";
-import { AuthProvider } from "../lib/auth-context";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "../lib/auth-context";
+import Provider from "./_trpc/Provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,8 +23,16 @@ export const metadata: Metadata = {
     default: "CarHub - Find Your Perfect Car",
     template: "%s | CarHub",
   },
-  description: "Discover, search, and manage your car listings with CarHub. Find the perfect vehicle from thousands of listings.",
-  keywords: ["cars", "vehicles", "auto", "marketplace", "buy cars", "sell cars"],
+  description:
+    "Discover, search, and manage your car listings with CarHub. Find the perfect vehicle from thousands of listings.",
+  keywords: [
+    "cars",
+    "vehicles",
+    "auto",
+    "marketplace",
+    "buy cars",
+    "sell cars",
+  ],
   authors: [{ name: "CarHub Team" }],
   creator: "CarHub",
   metadataBase: new URL("http://localhost:3000"),
@@ -32,7 +41,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "http://localhost:3000",
     title: "CarHub - Find Your Perfect Car",
-    description: "Discover, search, and manage your car listings with CarHub. Find the perfect vehicle from thousands of listings.",
+    description:
+      "Discover, search, and manage your car listings with CarHub. Find the perfect vehicle from thousands of listings.",
     siteName: "CarHub",
     images: [
       {
@@ -85,7 +95,7 @@ export default function RootLayout({
       >
         <Provider>
           <AuthProvider>
-            {children}
+            <NuqsAdapter>{children}</NuqsAdapter>
             <Toaster
               position="bottom-center"
               toastOptions={{

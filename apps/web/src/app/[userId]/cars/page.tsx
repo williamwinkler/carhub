@@ -78,8 +78,9 @@ export default function UserCarsPage() {
   }
 
   const handleFavoriteUpdate = () => {
-    // Refresh the car list when favorites are updated
+    // Refresh both my cars and the general list
     utils.cars.getMyCars.invalidate();
+    utils.cars.list.invalidate();
   };
 
   return (

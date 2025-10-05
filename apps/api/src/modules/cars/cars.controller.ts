@@ -25,7 +25,7 @@ import {
 import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
 import { carModelFields } from "../car-models/car-models.schema";
 import { CarsAdapter } from "./cars.adapter";
-import { carFields, carSortFieldQuerySchema } from "./cars.schema";
+import { carFields, carSortByFieldQuerySchema } from "./cars.schema";
 import { CarsService } from "./cars.service";
 import { CarSortField } from "./cars.types";
 import { CarDto } from "./dto/car.dto";
@@ -71,7 +71,7 @@ export class CarsController {
     @zQuery("color", carFields.color.optional()) color?: string,
     @zQuery("skip", skipSchema.optional()) skip = 0,
     @zQuery("limit", limitSchema.optional()) limit = 20,
-    @zQuery("sortField", carSortFieldQuerySchema)
+    @zQuery("sortField", carSortByFieldQuerySchema)
     sortField?: CarSortField,
     @zQuery("sortDirection", sortDirectionQuerySchema)
     sortDirection?: SortDirection,

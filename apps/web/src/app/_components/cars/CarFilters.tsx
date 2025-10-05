@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { trpc } from "../../_trpc/client";
 
 interface CarFiltersProps {
@@ -29,6 +31,20 @@ export default function CarFilters({
   setSortDirection,
   onClearFilters,
 }: CarFiltersProps) {
+  // Local state for color input to debounce
+  const [localColorFilter, setLocalColorFilter] = useState(colorFilter);
+  const debouncedColorFilter = useDebounce(localColorFilter, 200);
+
+  // Update parent when debounced value changes
+  useEffect(() => {
+    setColorFilter(debouncedColorFilter);
+  }, [debouncedColorFilter, setColorFilter]);
+
+  // Sync local state when parent state changes (e.g., clear filters)
+  useEffect(() => {
+    setLocalColorFilter(colorFilter);
+  }, [colorFilter]);
+
   const manufacturersQuery = trpc.carManufacturers.list.useQuery(undefined, {
     staleTime: "static",
   });
@@ -80,8 +96,8 @@ export default function CarFilters({
           <label className="text-sm font-medium text-slate-300">Color</label>
           <input
             type="text"
-            value={colorFilter}
-            onChange={(e) => setColorFilter(e.target.value)}
+            value={localColorFilter}
+            onChange={(e) => setLocalColorFilter(e.target.value)}
             placeholder="Any color"
             className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-400"
           />

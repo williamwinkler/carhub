@@ -1,9 +1,9 @@
 import type { SortDirection } from "@api/common/types/common.types";
 import type { UUID } from "crypto";
 import type { z } from "zod";
-import type { carSortFieldQuerySchema } from "./cars.schema";
+import type { carSortByFieldQuerySchema } from "./cars.schema";
 
-export type CarSortField = z.infer<typeof carSortFieldQuerySchema>;
+export type CarSortField = z.infer<typeof carSortByFieldQuerySchema>;
 
 export type FindAllCarsOptions = {
   modelSlug?: string;

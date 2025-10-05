@@ -130,7 +130,7 @@ export class CarsService {
 
     const [cars, totalItems] = await this.carsRepo.findAndCount({
       where: { createdBy: { id: userId } },
-      relations: ["model", "model.manufacturer"],
+      relations: ["model", "model.manufacturer", "favoritedBy"],
       order: { createdAt: "DESC" },
       skip,
       take: limit,

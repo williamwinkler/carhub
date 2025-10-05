@@ -1,100 +1,111 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import { Suspense, useCallback } from "react";
 import Navbar from "../_components/Navbar";
 import CarFilters from "../_components/cars/CarFilters";
 import CarGrid from "../_components/cars/CarGrid";
 import Pagination from "../_components/ui/Pagination";
 import { trpc } from "../_trpc/client";
 
+const LIMIT = 12;
+
 function CarsPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [{ manufacturer, model, color, sortBy, page }, setQuery] =
+    useQueryStates(
+      {
+        manufacturer: parseAsString.withDefault(""),
+        model: parseAsString.withDefault(""),
+        color: parseAsString.withDefault(""),
+        sortBy: parseAsString.withDefault("createdAt"),
+        page: parseAsInteger.withDefault(0),
+      },
+      {
+        clearOnDefault: true,
+        shallow: true,
+        history: "push",
+      },
+    );
 
-  // Search state
-  const [selectedManufacturer, setSelectedManufacturer] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
-  const [colorFilter, setColorFilter] = useState("");
-  const [sortBy, setSortBy] = useState("");
-  const [sortDirection, setSortDirection] = useState("asc");
+  // Prevent no-op writes that can cause loops in certain child patterns
+  const apply = useCallback(
+    (
+      patch: Partial<{
+        manufacturer: string;
+        model: string;
+        color: string;
+        sortBy: string;
+        page: number;
+      }>,
+    ) => {
+      const next = {
+        manufacturer,
+        model,
+        color,
+        sortBy,
+        page,
+        ...patch,
+      };
+      if (
+        next.manufacturer === manufacturer &&
+        next.model === model &&
+        next.color === color &&
+        next.sortBy === sortBy &&
+        next.page === page
+      ) {
+        return;
+      }
+      setQuery(patch);
+    },
+    [manufacturer, model, color, sortBy, page, setQuery],
+  );
 
-  // Pagination
-  const [page, setPage] = useState(0);
-  const limit = 12;
+  // Stable handlers
+  const handleSetManufacturer = useCallback(
+    (v: string) => apply({ manufacturer: v, model: "", page: 0 }),
+    [apply],
+  );
+  const handleSetModel = useCallback(
+    (v: string) => apply({ model: v, page: 0 }),
+    [apply],
+  );
+  const handleSetColor = useCallback(
+    (v: string) => apply({ color: v, page: 0 }),
+    [apply],
+  );
+  const handleSetSortBy = useCallback(
+    (v: string) => apply({ sortBy: v || "createdAt", page: 0 }),
+    [apply],
+  );
+  const handleSetPage = useCallback(
+    (p: number) => apply({ page: Math.max(0, p) }),
+    [apply],
+  );
+  const handleClear = useCallback(
+    () =>
+      setQuery({
+        manufacturer: "",
+        model: "",
+        color: "",
+        sortBy: "createdAt",
+        page: 0,
+      }),
+    [setQuery],
+  );
 
-  useEffect(() => {
-    const manufacturer = searchParams.get("manufacturer");
-    const model = searchParams.get("model");
-    const color = searchParams.get("color");
-    const sortByParam = searchParams.get("sortBy");
-    const pageParam = searchParams.get("page");
+  const carsQuery = trpc.cars.list.useQuery({
+    skip: page * LIMIT,
+    limit: LIMIT,
+    ...(manufacturer && { manufacturerSlug: manufacturer }),
+    ...(model && { modelSlug: model }),
+    ...(color && { color }),
+    sortBy: (sortBy as any) || "createdAt",
+  });
 
-    if (manufacturer !== null) setSelectedManufacturer(manufacturer);
-    if (model !== null) setSelectedModel(model);
-    if (color !== null) setColorFilter(color);
-    if (sortByParam !== null) setSortBy(sortByParam);
-    if (pageParam !== null) setPage(parseInt(pageParam, 10));
-  }, [searchParams]);
-
-  // Build search params for cars
-  const carsQueryParams = {
-    skip: page * limit,
-    limit,
-    ...(selectedManufacturer && { manufacturerSlug: selectedManufacturer }),
-    ...(selectedModel && { modelSlug: selectedModel }),
-    ...(colorFilter && { color: colorFilter }),
-    sortBy: sortBy || "createdAt",
-  };
-
-  const carsQuery = trpc.cars.list.useQuery(carsQueryParams);
   const utils = trpc.useUtils();
-
-  const updateURL = (params: {
-    manufacturer?: string;
-    model?: string;
-    color?: string;
-    sortBy?: string;
-    page?: number;
-  }) => {
-    const urlParams = new URLSearchParams();
-
-    if (params.manufacturer) urlParams.set("manufacturer", params.manufacturer);
-    if (params.model) urlParams.set("model", params.model);
-    if (params.color) urlParams.set("color", params.color);
-    if (params.sortBy && params.sortBy !== "createdAt")
-      urlParams.set("sortBy", params.sortBy);
-    if (params.page && params.page > 0)
-      urlParams.set("page", params.page.toString());
-
-    const queryString = urlParams.toString();
-    router.push(`/cars${queryString ? `?${queryString}` : ""}`); // FIXME: better way?
-  };
-
-  // Update URL whenever filters change
-  useEffect(() => {
-    updateURL({
-      manufacturer: selectedManufacturer,
-      model: selectedModel,
-      color: colorFilter,
-      sortBy,
-      page,
-    });
-  }, [selectedManufacturer, selectedModel, colorFilter, sortBy, page]);
-
-  const handleClearFilters = () => {
-    setSelectedManufacturer("");
-    setSelectedModel("");
-    setColorFilter("");
-    setSortBy("createdAt");
-    setSortDirection("asc");
-    setPage(0);
-    router.push("/cars");
-  };
-
-  const handleFavoriteUpdate = () => {
+  const handleFavoriteUpdate = useCallback(() => {
     utils.cars.list.invalidate();
-  };
+  }, [utils.cars.list]);
 
   return (
     <div className="min-h-screen">
@@ -113,41 +124,28 @@ function CarsPageContent() {
 
         {/* Filters */}
         <CarFilters
-          selectedManufacturer={selectedManufacturer}
-          setSelectedManufacturer={(value) => {
-            setSelectedManufacturer(value);
-            setSelectedModel(""); // Reset model when manufacturer changes
-            setPage(0); // Reset page
-          }}
-          selectedModel={selectedModel}
-          setSelectedModel={(value) => {
-            setSelectedModel(value);
-            setPage(0); // Reset page
-          }}
-          colorFilter={colorFilter}
-          setColorFilter={(value) => {
-            setColorFilter(value);
-            setPage(0); // Reset page
-          }}
+          selectedManufacturer={manufacturer}
+          setSelectedManufacturer={handleSetManufacturer}
+          selectedModel={model}
+          setSelectedModel={handleSetModel}
+          colorFilter={color}
+          setColorFilter={handleSetColor}
           sortBy={sortBy}
-          setSortBy={(value) => {
-            setSortBy(value);
-            setPage(0); // Reset page
-          }}
-          sortDirection={sortDirection}
-          setSortDirection={setSortDirection}
-          onClearFilters={handleClearFilters}
+          setSortBy={handleSetSortBy}
+          sortDirection={"asc"} // add to nuqs schema if you wire it backend-side
+          setSortDirection={() => {}}
+          onClearFilters={handleClear}
         />
 
         {/* Results Count */}
-        {carsQuery.data?.items && carsQuery.data.items.length > 0 && (
+        {carsQuery.data?.items?.length ? (
           <div className="mb-6">
             <p className="text-slate-400">
               Showing {carsQuery.data.items.length} of{" "}
               {carsQuery.data.meta.totalItems} cars
             </p>
           </div>
-        )}
+        ) : null}
 
         {/* Cars Grid */}
         <CarGrid
@@ -156,26 +154,25 @@ function CarsPageContent() {
           onFavoriteUpdate={handleFavoriteUpdate}
         />
 
-        {/* No Results State with Clear Button */}
-        {!carsQuery.isLoading &&
-          (!carsQuery.data?.items || carsQuery.data.items.length === 0) && (
-            <div className="text-center py-16">
-              <button
-                onClick={handleClearFilters}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          )}
+        {/* No Results */}
+        {!carsQuery.isLoading && !carsQuery.data?.items?.length && (
+          <div className="text-center py-16">
+            <button
+              onClick={handleClear}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        )}
 
         {/* Pagination */}
         {carsQuery.data && (
           <Pagination
             currentPage={page}
             totalItems={carsQuery.data.meta.totalItems}
-            itemsPerPage={limit}
-            onPageChange={setPage}
+            itemsPerPage={LIMIT}
+            onPageChange={handleSetPage}
           />
         )}
       </div>

@@ -1,7 +1,7 @@
 import { uuidSchema } from "@api/common/schemas/common.schema";
 import { z } from "zod";
-import type { Car } from "./entities/car.entity";
 import { carModelFields } from "../car-models/car-models.schema";
+import type { Car } from "./entities/car.entity";
 
 export const carFields = {
   id: uuidSchema.describe("The unique id of the car (UUID)"),
@@ -28,7 +28,7 @@ export const carFields = {
     .describe("Indicates if the user has favorited the car or not"),
 } as const;
 
-const carSortFields: (keyof Car)[] = [
+const carSortByFields: (keyof Car)[] = [
   "model",
   "year",
   "color",
@@ -37,4 +37,4 @@ const carSortFields: (keyof Car)[] = [
   "createdAt",
 ] as const;
 
-export const carSortFieldQuerySchema = z.enum(carSortFields).optional();
+export const carSortByFieldQuerySchema = z.enum(carSortByFields).optional();
