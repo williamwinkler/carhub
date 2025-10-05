@@ -21,7 +21,7 @@ export const Errors = {
   },
   INVALID_REFRESH_TOKEN: {
     status: HttpStatus.UNAUTHORIZED,
-    message: "Invalid refresh token",
+    message: "Missing or invalid refresh token",
   },
   TOO_MANY_REQUESTS: {
     status: HttpStatus.TOO_MANY_REQUESTS,

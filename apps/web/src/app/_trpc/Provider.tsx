@@ -5,24 +5,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTRPCProxyClient } from "@trpc/client";
 import { httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  setRefreshToken,
-} from "../../lib/cookies";
+import { getAccessToken, setAccessToken } from "../../lib/cookies";
 import { refreshTokenLink } from "../../lib/refresh-token-link";
 import { triggerLogout } from "../../lib/token-refresh";
 import { trpc } from "./client";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-// Create a separate client for token refresh without auth or interceptors
+// Separate client for token refresh (no auth header)
 const refreshClient = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${apiUrl}/trpc`,
-      // No authorization header - we're using the refresh token in the request body
+      fetch(url, options) {
+        return fetch(url, { ...options, credentials: "include" });
+      },
     }),
   ],
 });
@@ -44,38 +41,24 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        // Custom token refresh link - handles automatic token refresh on 401
+        // Auto-refresh access token on 401 errors
         refreshTokenLink<AppRouter>({
-          // Get the current refresh token from cookies
-          getRefreshToken: () => {
-            return getRefreshToken() ?? null;
+          refreshAccessToken: async () => {
+            // Server reads httpOnly refresh token cookie automatically
+            const { accessToken } = await refreshClient.auth.refreshToken.mutate();
+            return { accessToken };
           },
-
-          // Fetch new JWT pair using the refresh token
-          fetchJwtPairByRefreshToken: async (refreshToken) => {
-            const tokens = await refreshClient.auth.refreshToken.mutate({
-              refreshToken,
-            });
-            return tokens;
-          },
-
-          // Update storage with new JWT pair
-          onJwtPairFetched: (tokens) => {
-            setAccessToken(tokens.accessToken);
-            setRefreshToken(tokens.refreshToken);
-          },
-
-          // Handle refresh failure - clear tokens and trigger logout
-          onRefreshFailed: () => {
-            triggerLogout();
-          },
+          onAccessTokenRefreshed: setAccessToken,
+          onRefreshFailed: triggerLogout,
         }),
 
-        // HTTP batch link for regular requests
+        // Regular requests with credentials
         httpBatchLink({
           url: `${apiUrl}/trpc`,
+          fetch(url, options) {
+            return fetch(url, { ...options, credentials: "include" });
+          },
           headers() {
-            // Always get the current token from cookies (reactive to changes)
             const token = getAccessToken();
             return token ? { authorization: `Bearer ${token}` } : {};
           },

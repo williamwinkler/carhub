@@ -12,7 +12,7 @@ import ms from "ms";
 import { ConfigService } from "../config/config.service";
 import { RoleType, User } from "../users/entities/user.entity";
 import { UsersService } from "./../users/users.service";
-import { JwtDto } from "./dto/jwt.dto";
+import { JwtTokens } from "./auth.types";
 import { RegisterDto } from "./dto/register.dto";
 
 export type TokenPayload = {
@@ -31,9 +31,11 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly saltRounds = 12;
   private readonly refreshTTL = ms("7d");
-  private readonly apiKeyPrefix = "ak"; // (a)pi (k)ey
+  private readonly apiKeyPrefix = "sk"; // Service Key
   private readonly apiKeyEnv: "test" | "live";
   private readonly apiKeyRandomPartLength = 32;
+  private readonly refreshTokenSecret: string;
+  private readonly isProduction: boolean;
 
   constructor(
     private usersService: UsersService,
@@ -41,8 +43,9 @@ export class AuthService {
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    this.apiKeyEnv =
-      this.configService.get("NODE_ENV") === "production" ? "live" : "test";
+    this.isProduction = this.configService.get("NODE_ENV") === "production";
+    this.apiKeyEnv = this.isProduction ? "live" : "test";
+    this.refreshTokenSecret = this.configService.get("JWT_REFRESH_SECRET");
   }
 
   async verifyAccessToken(accessToken: string): Promise<TokenPayload> {
@@ -117,7 +120,7 @@ export class AuthService {
     return apiKey;
   }
 
-  async login(username: string, pass: string): Promise<JwtDto> {
+  async login(username: string, pass: string): Promise<JwtTokens> {
     const user = await this.usersService.findByUsername(username);
 
     if (!user?.password || !(await bcrypt.compare(pass, user.password))) {
@@ -143,7 +146,7 @@ export class AuthService {
     this.logger.log(`User ${sub} logged out of session ${sid}`);
   }
 
-  private async getTokens(user: User): Promise<JwtDto> {
+  private async getTokens(user: User): Promise<JwtTokens> {
     const sessionId = crypto.randomUUID() as UUID;
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -151,7 +154,7 @@ export class AuthService {
       this.jwtService.signAsync(
         { sub: user.id, sid: sessionId },
         {
-          secret: this.configService.get("JWT_REFRESH_SECRET"),
+          secret: this.refreshTokenSecret,
           expiresIn: this.refreshTTL,
         },
       ),
@@ -163,19 +166,29 @@ export class AuthService {
       this.refreshTTL,
     );
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      refreshTokenCookieOptions: {
+        httpOnly: true,
+        secure: this.isProduction,
+        sameSite: "strict",
+        path: "/",
+        maxAge: this.refreshTTL,
+      },
+    };
   }
 
-  async refreshTokens(refreshToken: string): Promise<JwtDto> {
-    // 1. Verify refresh token validity & signature
+  async refreshToken(refreshToken: string): Promise<JwtTokens> {
+    // Verify refresh token validity & signature
     const { sub, sid } = await this.jwtService.verifyAsync<RefreshPayload>(
       refreshToken,
       {
-        secret: this.configService.get("JWT_REFRESH_SECRET"),
+        secret: this.refreshTokenSecret,
       },
     );
 
-    // 2. Check cache that the refresh token is still active
+    // Check cache that the refresh token is still active
     const cachedToken = await this.cacheManager.get<string>(
       `refresh_tokens:${sub}:${sid}`,
     );
@@ -184,12 +197,13 @@ export class AuthService {
       throw new AppError(Errors.INVALID_REFRESH_TOKEN); // revoked or expired
     }
 
-    // 3. Ensure the user exists
+    // Ensure the user exists
     const user = await this.usersService.findById(sub);
     if (!user) {
       throw new AppError(Errors.INVALID_REFRESH_TOKEN);
     }
 
+    // Delete
     const [tokens] = await Promise.all([
       this.getTokens(user),
       this.cacheManager.del(`refresh_tokens:${user.id}:${sid}`), // Delete old refresh token
@@ -202,7 +216,7 @@ export class AuthService {
 
   private getTokenPayload(user: User, sessionId: UUID): TokenPayload {
     return {
-      iss: "Demo Nestjs API",
+      iss: "CarHub API",
       sub: user.id,
       sid: sessionId,
       firstName: user.firstName,
@@ -229,6 +243,10 @@ export class AuthService {
   }
 
   isApiKeyValid(apiKey: string): boolean {
+    if (!apiKey || typeof apiKey !== "string") {
+      return false;
+    }
+
     const parts = apiKey.split("_");
 
     if (

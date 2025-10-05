@@ -1,380 +1,5 @@
 openapi: 3.0.0
 paths:
-  /v1/auth/register:
-    post:
-      operationId: AuthController_createAccount_v1
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegisterDto"
-      responses:
-        "201":
-          errors:
-            - status: 409
-              message: Username already exists
-          description: Account created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AccountResponseDto"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: VALIDATION_ERROR Error
-                  value:
-                    statusCode: 400
-                    errorCode: VALIDATION_ERROR
-                    message: Validation failed
-                    errors:
-                      - field: email
-                        message: Invalid email format
-                        code: invalid_string
-                      - field: age
-                        message: Must be at least 18
-                        code: too_small
-        "409":
-          description: Username already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: USERNAME_ALREADY_EXISTS Error
-                  value:
-                    statusCode: 409
-                    errorCode: USERNAME_ALREADY_EXISTS
-                    message: Username already exists
-        "429":
-          description: Too many requests, try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: TOO_MANY_REQUESTS Error
-                  value:
-                    statusCode: 429
-                    errorCode: TOO_MANY_REQUESTS
-                    message: Too many requests, try again later
-        "500":
-          description: An unexpected error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNEXPECTED_ERROR Error
-                  value:
-                    statusCode: 500
-                    errorCode: UNEXPECTED_ERROR
-                    message: An unexpected error occurred
-      summary: Register an account
-      tags: &a1
-        - Auth
-  /v1/auth/login:
-    post:
-      operationId: AuthController_login_v1
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginDto"
-      responses:
-        "201":
-          errors:
-            - status: 401
-              message: Invalid credentials
-          description: User successfully logged in
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/JwtResponseDto"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: VALIDATION_ERROR Error
-                  value:
-                    statusCode: 400
-                    errorCode: VALIDATION_ERROR
-                    message: Validation failed
-                    errors:
-                      - field: email
-                        message: Invalid email format
-                        code: invalid_string
-                      - field: age
-                        message: Must be at least 18
-                        code: too_small
-        "401":
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: INVALID_CREDENTIALS Error
-                  value:
-                    statusCode: 401
-                    errorCode: INVALID_CREDENTIALS
-                    message: Invalid credentials
-        "429":
-          description: Too many requests, try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: TOO_MANY_REQUESTS Error
-                  value:
-                    statusCode: 429
-                    errorCode: TOO_MANY_REQUESTS
-                    message: Too many requests, try again later
-        "500":
-          description: An unexpected error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNEXPECTED_ERROR Error
-                  value:
-                    statusCode: 500
-                    errorCode: UNEXPECTED_ERROR
-                    message: An unexpected error occurred
-      tags: *a1
-  /v1/auth/refresh:
-    post:
-      operationId: AuthController_refresh_v1
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RefreshTokenDto"
-      responses:
-        "201":
-          errors:
-            - status: 401
-              message: Invalid refresh token
-          description: Session succesfully refreshed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/JwtResponseDto"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: VALIDATION_ERROR Error
-                  value:
-                    statusCode: 400
-                    errorCode: VALIDATION_ERROR
-                    message: Validation failed
-                    errors:
-                      - field: email
-                        message: Invalid email format
-                        code: invalid_string
-                      - field: age
-                        message: Must be at least 18
-                        code: too_small
-        "401":
-          description: Invalid refresh token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: INVALID_REFRESH_TOKEN Error
-                  value:
-                    statusCode: 401
-                    errorCode: INVALID_REFRESH_TOKEN
-                    message: Invalid refresh token
-        "429":
-          description: Too many requests, try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: TOO_MANY_REQUESTS Error
-                  value:
-                    statusCode: 429
-                    errorCode: TOO_MANY_REQUESTS
-                    message: Too many requests, try again later
-        "500":
-          description: An unexpected error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNEXPECTED_ERROR Error
-                  value:
-                    statusCode: 500
-                    errorCode: UNEXPECTED_ERROR
-                    message: An unexpected error occurred
-      summary: Get a new access token with your refresh token
-      tags: *a1
-  /v1/auth/logout:
-    post:
-      operationId: AuthController_logout_v1
-      parameters: []
-      responses:
-        "204":
-          description: ""
-        "401":
-          description: You need to be authorized to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNAUTHORIZED Error
-                  value:
-                    statusCode: 401
-                    errorCode: UNAUTHORIZED
-                    message: You need to be authorized to perform this action
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: FORBIDDEN Error
-                  value:
-                    statusCode: 403
-                    errorCode: FORBIDDEN
-                    message: Forbidden
-        "429":
-          description: Too many requests, try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: TOO_MANY_REQUESTS Error
-                  value:
-                    statusCode: 429
-                    errorCode: TOO_MANY_REQUESTS
-                    message: Too many requests, try again later
-        "500":
-          description: An unexpected error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNEXPECTED_ERROR Error
-                  value:
-                    statusCode: 500
-                    errorCode: UNEXPECTED_ERROR
-                    message: An unexpected error occurred
-      summary: Log out as an authenticated user
-      tags: *a1
-      security:
-        - bearer: []
-        - apiKey: []
-  /v1/auth/apiKey:
-    post:
-      operationId: AuthController_createApiKey_v1
-      parameters: []
-      responses:
-        "201":
-          description: The API key was successfully generated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiKeyResponseDto"
-        "401":
-          description: You need to be authorized to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNAUTHORIZED Error
-                  value:
-                    statusCode: 401
-                    errorCode: UNAUTHORIZED
-                    message: You need to be authorized to perform this action
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: FORBIDDEN Error
-                  value:
-                    statusCode: 403
-                    errorCode: FORBIDDEN
-                    message: Forbidden
-        "429":
-          description: Too many requests, try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: TOO_MANY_REQUESTS Error
-                  value:
-                    statusCode: 429
-                    errorCode: TOO_MANY_REQUESTS
-                    message: Too many requests, try again later
-        "500":
-          description: An unexpected error occurred
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-              examples:
-                default:
-                  summary: UNEXPECTED_ERROR Error
-                  value:
-                    statusCode: 500
-                    errorCode: UNEXPECTED_ERROR
-                    message: An unexpected error occurred
-      summary: Generate an API key
-      tags: *a1
-      security:
-        - bearer: []
-        - apiKey: []
   /v1/cars:
     post:
       operationId: CarsController_create_v1
@@ -481,7 +106,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car
-      tags: &a2
+      tags: &a1
         - Cars
       security:
         - bearer: []
@@ -590,7 +215,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List cars
-      tags: *a2
+      tags: *a1
   /v1/cars/{id}:
     get:
       operationId: CarsController_findOne_v1
@@ -671,7 +296,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car
-      tags: *a2
+      tags: *a1
     put:
       operationId: CarsController_update_v1
       parameters:
@@ -783,7 +408,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car
-      tags: *a2
+      tags: *a1
       security:
         - bearer: []
         - apiKey: []
@@ -883,7 +508,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car
-      tags: *a2
+      tags: *a1
       security:
         - bearer: []
         - apiKey: []
@@ -984,7 +609,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Toggle favorite status for a car
-      tags: *a2
+      tags: *a1
       security:
         - bearer: []
         - apiKey: []
@@ -1086,7 +711,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get user's favorite cars
-      tags: *a2
+      tags: *a1
       security:
         - bearer: []
         - apiKey: []
@@ -1196,7 +821,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car manufacturer
-      tags: &a3
+      tags: &a2
         - CarManufacturers
       security:
         - bearer: []
@@ -1284,7 +909,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List car manufacturers
-      tags: *a3
+      tags: *a2
   /v1/car-manufacturers/{id}:
     get:
       operationId: CarManufacturersController_findOne_v1
@@ -1365,7 +990,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car manufacturer
-      tags: *a3
+      tags: *a2
     put:
       operationId: CarManufacturersController_update_v1
       parameters:
@@ -1477,7 +1102,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car manufacturer
-      tags: *a3
+      tags: *a2
       security:
         - bearer: []
         - apiKey: []
@@ -1577,7 +1202,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car manufacturer
-      tags: *a3
+      tags: *a2
       security:
         - bearer: []
         - apiKey: []
@@ -1687,7 +1312,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car model
-      tags: &a4
+      tags: &a3
         - CarModels
       security:
         - bearer: []
@@ -1783,7 +1408,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List car models
-      tags: *a4
+      tags: *a3
   /v1/car-models/{id}:
     get:
       operationId: CarModelsController_findOne_v1
@@ -1864,7 +1489,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car model
-      tags: *a4
+      tags: *a3
     put:
       operationId: CarModelsController_update_v1
       parameters:
@@ -1976,7 +1601,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car model
-      tags: *a4
+      tags: *a3
       security:
         - bearer: []
         - apiKey: []
@@ -2076,7 +1701,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car model
-      tags: *a4
+      tags: *a3
       security:
         - bearer: []
         - apiKey: []
@@ -2162,7 +1787,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car model by it's slug
-      tags: *a4
+      tags: *a3
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.
@@ -2269,169 +1894,6 @@ components:
         - statusCode
         - errorCode
         - message
-    RegisterDto:
-      type: object
-      properties:
-        firstName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        lastName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        username:
-          type: string
-          minLength: 3
-          x-nestjs_zod-parent-additional-properties: false
-        password:
-          type: string
-          minLength: 6
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - firstName
-        - lastName
-        - username
-        - password
-    AccountDto:
-      type: object
-      properties:
-        firstName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        lastName:
-          type: string
-          minLength: 1
-          x-nestjs_zod-parent-additional-properties: false
-        username:
-          type: string
-          minLength: 3
-          x-nestjs_zod-parent-additional-properties: false
-        id:
-          description: The unique identifier of the account
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
-        role:
-          description: The role of the user (admin or user)
-          type: string
-          enum:
-            - admin
-            - user
-          x-nestjs_zod-parent-additional-properties: false
-        hasApiKey:
-          description: Indicates whether or not the user has generated an API key
-          type: boolean
-          x-nestjs_zod-parent-additional-properties: false
-        createdAt:
-          description: The create date of the account
-          type: string
-          format: date-time
-          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
-        updatedAt:
-          description: The last time the account was updated
-          type: string
-          format: date-time
-          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - firstName
-        - lastName
-        - username
-        - id
-        - role
-        - hasApiKey
-        - createdAt
-        - updatedAt
-    AccountResponseDto:
-      type: object
-      properties:
-        apiVersion:
-          type: string
-          description: The version of the API
-          example: 1.0.0
-        data:
-          description: The data of the response
-          allOf:
-            - $ref: "#/components/schemas/AccountDto"
-      required:
-        - apiVersion
-        - data
-    LoginDto:
-      type: object
-      properties:
-        username:
-          description: The username of the user
-          type: string
-          minLength: 1
-          maxLength: 80
-        password:
-          description: The password of the user
-          type: string
-          minLength: 5
-          maxLength: 255
-      required:
-        - username
-        - password
-    JwtDto:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          format: jwt
-        refreshToken:
-          type: string
-          format: jwt
-      required:
-        - accessToken
-        - refreshToken
-    JwtResponseDto:
-      type: object
-      properties:
-        apiVersion:
-          type: string
-          description: The version of the API
-          example: 1.0.0
-        data:
-          description: The data of the response
-          allOf:
-            - $ref: "#/components/schemas/JwtDto"
-      required:
-        - apiVersion
-        - data
-    RefreshTokenDto:
-      type: object
-      properties:
-        refreshToken:
-          type: string
-          format: jwt
-      required:
-        - refreshToken
-    ApiKeyDto:
-      type: object
-      properties:
-        apiKey:
-          description: The generated apiKey
-          type: string
-      required:
-        - apiKey
-    ApiKeyResponseDto:
-      type: object
-      properties:
-        apiVersion:
-          type: string
-          description: The version of the API
-          example: 1.0.0
-        data:
-          description: The data of the response
-          allOf:
-            - $ref: "#/components/schemas/ApiKeyDto"
-      required:
-        - apiVersion
-        - data
     CreateCarDto:
       type: object
       properties:

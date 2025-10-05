@@ -39,12 +39,9 @@ export default function Navbar() {
     try {
       const result = await loginMutation.mutateAsync({ username, password });
 
-      // Store tokens in cookies
-      const { setAccessToken, setRefreshToken } = await import(
-        "../../lib/cookies"
-      );
+      // Store access token (refresh token set by API via httpOnly cookie)
+      const { setAccessToken } = await import("../../lib/cookies");
       setAccessToken(result.accessToken);
-      setRefreshToken(result.refreshToken);
 
       // Get user info using utils to fetch fresh data
       const userInfo = await utils.accounts.getMe.fetch();

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { setAccessToken, setRefreshToken } from "../../lib/cookies";
+import { setAccessToken } from "../../lib/cookies";
 import { trpc } from "../_trpc/client";
 import { User } from "../_trpc/types";
 interface LoginFormProps {
@@ -26,9 +26,8 @@ export function LoginForm({
     try {
       const result = await login.mutateAsync({ username, password });
 
-      // Store tokens in cookies
+      // Store access token in cookie (refresh token is set by API in cookie)
       setAccessToken(result.accessToken);
-      setRefreshToken(result.refreshToken);
 
       // Get user info using utils to fetch fresh data
       const userInfo = await utils.accounts.getMe.fetch();

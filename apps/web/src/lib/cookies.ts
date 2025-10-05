@@ -1,11 +1,14 @@
 /**
  * Cookie utilities for secure token storage using js-cookie
+ *
+ * Note: Refresh tokens are managed server-side via httpOnly cookies
+ * and cannot be accessed from client-side JavaScript.
  */
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
 export const cookieConfig = {
-  // Cookie options
+  // Cookie options for client-managed cookies
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
@@ -23,13 +26,9 @@ const getTokenExpiry = (token: string): Date | null => {
   }
 };
 
-// Token-specific utilities using js-cookie
+// Access token utilities (client-managed)
 export const getAccessToken = (): string | undefined => {
   return Cookies.get("accessToken");
-};
-
-export const getRefreshToken = (): string | undefined => {
-  return Cookies.get("refreshToken");
 };
 
 export const setAccessToken = (token: string): void => {
@@ -42,17 +41,13 @@ export const setAccessToken = (token: string): void => {
   });
 };
 
-export const setRefreshToken = (token: string): void => {
-  const expiry = getTokenExpiry(token);
-  Cookies.set("refreshToken", token, {
-    expires: expiry || 7, // Use JWT expiry or fallback to 7 days
-    secure: cookieConfig.secure,
-    sameSite: cookieConfig.sameSite,
-    path: cookieConfig.path,
-  });
+export const removeAccessToken = (): void => {
+  Cookies.remove("accessToken", { path: cookieConfig.path });
 };
 
+// Remove all auth tokens (client-managed only - server httpOnly cookies handled separately)
 export const removeAuthTokens = (): void => {
-  Cookies.remove("accessToken", { path: cookieConfig.path });
-  Cookies.remove("refreshToken", { path: cookieConfig.path });
+  removeAccessToken();
+  // Note: refreshToken is httpOnly and managed by the server
+  // The server will clear it when needed via Set-Cookie headers
 };

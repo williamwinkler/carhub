@@ -16,18 +16,15 @@ export default function UserFavoritesPage() {
   const [page, setPage] = useState(0);
   const limit = 12;
 
-  const userId = params.userId as string;
-  const isOwnProfile = user?.id === userId;
-
   // Get user info to display their name
   const { data: userProfile } = trpc.accounts.getMe.useQuery(undefined, {
-    enabled: isOwnProfile,
+    enabled: !!user,
   });
 
   // Get user's favorite cars
   const favoritesQuery = trpc.cars.getFavorites.useQuery(
     { skip: page * limit, limit },
-    { enabled: isOwnProfile },
+    { enabled: !!user },
   );
 
   // Only allow viewing your own favorites for privacy
@@ -47,29 +44,6 @@ export default function UserFavoritesPage() {
             className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200"
           >
             Go Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isOwnProfile) {
-    return (
-      <div className="min-h-screen">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-4xl font-bold text-slate-400 mb-4">
-            Private Content
-          </h1>
-          <p className="text-slate-500 mb-8">
-            You can only view your own favorites for privacy reasons.
-          </p>
-          <Link
-            href="/favorites"
-            className="px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 inline-flex items-center gap-2"
-          >
-            <FaHeart className="w-4 h-4" />
-            View Your Favorites
           </Link>
         </div>
       </div>

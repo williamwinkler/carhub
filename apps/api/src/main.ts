@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Logger, VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import cookieParser from "cookie-parser";
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { ZodValidationPipe } from "nestjs-zod";
@@ -20,7 +21,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: "*",
+    origin:
+      configService.get("NODE_ENV") === "development"
+        ? ["http://localhost:3000", "http://localhost:3001"]
+        : "*",
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
       "Content-Type",
@@ -31,6 +36,7 @@ async function bootstrap() {
       "x-trpc-source",
       "x-trpc-batch",
       "x-api-key",
+      "refresh_token",
     ],
     optionsSuccessStatus: 200,
   });
@@ -43,6 +49,7 @@ async function bootstrap() {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser()); // Parse cookies for httpOnly refresh tokens
 
   app.useGlobalPipes(new ZodValidationPipe()); // for tRPC
 

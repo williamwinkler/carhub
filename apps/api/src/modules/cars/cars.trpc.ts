@@ -114,12 +114,14 @@ export class CarsTrpc {
       .query(async ({ input }) => {
         const userId = Ctx.userIdRequired();
 
-        return await this.carsService.getFavoritesByUser({
+        const favoritedCars = await this.carsService.getFavoritesByUser({
           userId,
           skip: 0,
           limit: 10,
           ...input,
         });
+
+        const favoritedCarsDto = this.carsAdapter.getListDto(favoritedCars);
       }),
 
     // Authenticated route - get current user's own cars

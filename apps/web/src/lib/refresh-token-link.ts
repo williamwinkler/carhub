@@ -1,6 +1,6 @@
 /**
  * Custom tRPC link for automatic token refresh on 401 responses
- * Compatible with tRPC v11
+ * Compatible with tRPC v11 and httpOnly refresh tokens
  *
  * This link pauses all requests during token refresh and retries them
  * with the new access token after successful refresh.
@@ -11,25 +11,15 @@ import type { AnyRouter } from "@trpc/server";
 
 interface RefreshTokenLinkOptions {
   /**
-   * Get the current refresh token from storage
+   * Fetch new access token using httpOnly refresh token cookie
+   * Server will read refresh token from cookie automatically
    */
-  getRefreshToken: () => string | null;
+  refreshAccessToken: () => Promise<{ accessToken: string }>;
 
   /**
-   * Fetch new JWT pair using the refresh token
-   * This should use a separate tRPC client without auth/interceptors
+   * Called when new access token is successfully fetched
    */
-  fetchJwtPairByRefreshToken: (
-    refreshToken: string,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
-
-  /**
-   * Called when new JWT pair is successfully fetched
-   */
-  onJwtPairFetched: (tokens: {
-    accessToken: string;
-    refreshToken: string;
-  }) => void;
+  onAccessTokenRefreshed: (accessToken: string) => void;
 
   /**
    * Called when token refresh fails
@@ -38,10 +28,7 @@ interface RefreshTokenLinkOptions {
 }
 
 // Track ongoing refresh attempts to prevent concurrent refreshes
-let refreshPromise: Promise<{
-  accessToken: string;
-  refreshToken: string;
-} | null> | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 export function refreshTokenLink<TRouter extends AnyRouter>(
   options: RefreshTokenLinkOptions,
@@ -49,7 +36,7 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
   return () => {
     return ({ next, op }) => {
       return observable((observer) => {
-        const { getRefreshToken, fetchJwtPairByRefreshToken, onJwtPairFetched, onRefreshFailed } = options;
+        const { refreshAccessToken, onAccessTokenRefreshed, onRefreshFailed } = options;
 
         // Execute the operation
         const subscription = next(op).subscribe({
@@ -63,7 +50,6 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
               err.data?.httpStatus === 401;
 
             if (!is401) {
-              // Not a 401, pass through the error
               observer.error(err);
               return;
             }
@@ -73,9 +59,8 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
               try {
                 // If already refreshing, wait for existing refresh
                 if (refreshPromise) {
-                  const tokens = await refreshPromise;
-                  if (!tokens) {
-                    // Refresh failed
+                  const accessToken = await refreshPromise;
+                  if (!accessToken) {
                     observer.error(err);
                     return;
                   }
@@ -95,21 +80,10 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
                 }
 
                 // Start new refresh
-                const currentRefreshToken = getRefreshToken();
-                if (!currentRefreshToken) {
-                  // No refresh token available
-                  if (onRefreshFailed) {
-                    onRefreshFailed();
-                  }
-                  observer.error(err);
-                  return;
-                }
-
-                // Create refresh promise
-                refreshPromise = fetchJwtPairByRefreshToken(currentRefreshToken)
-                  .then((tokens) => {
-                    onJwtPairFetched(tokens);
-                    return tokens;
+                refreshPromise = refreshAccessToken()
+                  .then(({ accessToken }) => {
+                    onAccessTokenRefreshed(accessToken);
+                    return accessToken;
                   })
                   .catch((refreshError) => {
                     console.error("Token refresh failed:", refreshError);
@@ -119,14 +93,12 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
                     return null;
                   })
                   .finally(() => {
-                    // Clear the promise after refresh completes
                     refreshPromise = null;
                   });
 
-                const tokens = await refreshPromise;
+                const accessToken = await refreshPromise;
 
-                if (!tokens) {
-                  // Refresh failed
+                if (!accessToken) {
                   observer.error(err);
                   return;
                 }
