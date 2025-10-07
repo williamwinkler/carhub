@@ -3,7 +3,7 @@ import { usersFields } from "../users.schema";
 import { createZodDto } from "nestjs-zod";
 
 export const userSchema = z.object({
-  id: usersFields.id,
+  username: usersFields.username,
   firstName: usersFields.firstName,
   lastName: usersFields.lastName,
 });

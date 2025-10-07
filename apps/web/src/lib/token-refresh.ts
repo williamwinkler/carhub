@@ -2,7 +2,7 @@
  * Token refresh utilities for handling expired access tokens
  */
 import toast from "react-hot-toast";
-import { removeAuthTokens } from "./cookies";
+import { removeUserCookies } from "./cookies";
 
 // Global logout callback - set by the auth provider
 let globalLogoutCallback: (() => void) | null = null;
@@ -16,7 +16,7 @@ export const setLogoutCallback = (callback: () => void) => {
  * This is now used by the refreshTokenLink in Provider.tsx
  */
 export const triggerLogout = () => {
-  removeAuthTokens();
+  removeUserCookies();
   if (globalLogoutCallback) {
     globalLogoutCallback();
   }

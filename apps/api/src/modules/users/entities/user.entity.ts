@@ -8,7 +8,6 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
-  Unique,
   UpdateDateColumn,
 } from "typeorm";
 
@@ -19,7 +18,6 @@ export const Role = {
 export type RoleType = (typeof Role)[keyof typeof Role];
 
 @Entity({ name: "users" })
-@Unique("users_username_unique", ["username"])
 export class User extends AbstractEntity {
   @Column({
     type: "enum",
@@ -33,7 +31,7 @@ export class User extends AbstractEntity {
   @Column()
   lastName!: string;
 
-  @Column()
+  @Column({ unique: true })
   username!: string;
 
   @Column()

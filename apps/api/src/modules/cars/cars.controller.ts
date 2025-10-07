@@ -115,7 +115,7 @@ export class CarsController {
     summary: "Update a car",
     successText: "Car was successfully updated",
     type: CarDto,
-    errors: [Errors.CAR_NOT_FOUND],
+    errors: [Errors.CAR_NOT_FOUND, Errors.CAR_MODEL_NOT_FOUND],
   })
   async update(
     @zParam("id", carFields.id) id: UUID,

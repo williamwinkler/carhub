@@ -1,12 +1,11 @@
 "use client";
 
-import { useAuth } from "@web/src/lib/auth-context";
+import { useAuth } from "../../lib/auth-context";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { FaHeart } from "react-icons/fa";
 import CarGrid from "../_components/cars/CarGrid";
-import Navbar from "../_components/Navbar";
 import Pagination from "../_components/ui/Pagination";
 import { trpc } from "../_trpc/client";
 
@@ -31,22 +30,19 @@ export default function UserFavoritesPage() {
   // Only allow viewing your own favorites for privacy
   if (!user) {
     return (
-      <div className="min-h-screen">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-4xl font-bold text-slate-400 mb-4">
-            Access Denied
-          </h1>
-          <p className="text-slate-500 mb-8">
-            Please log in to view your favorites.
-          </p>
-          <Link
-            href="/"
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200"
-          >
-            Go Home
-          </Link>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-4xl font-bold text-slate-400 mb-4">
+          Access Denied
+        </h1>
+        <p className="text-slate-500 mb-8">
+          Please log in to view your favorites.
+        </p>
+        <Link
+          href="/"
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200"
+        >
+          Go Home
+        </Link>
       </div>
     );
   }
@@ -57,10 +53,7 @@ export default function UserFavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
@@ -160,6 +153,5 @@ export default function UserFavoritesPage() {
           />
         )}
       </div>
-    </div>
   );
 }

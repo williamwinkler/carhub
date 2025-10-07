@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { trpc } from "../app/_trpc/client";
-import { getAccessToken, removeAuthTokens } from "./cookies";
+import { getAccessToken, getUser, removeUserCookies, setUserCookie } from "./cookies";
 import { setLogoutCallback } from "./token-refresh";
 
 type RouterOutput = inferRouterOutputs<AppRouter>;
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const utils = trpc.useUtils();
 
   const handleLogout = useCallback(() => {
-    removeAuthTokens();
+    removeUserCookies();
     setUser(null);
     utils.invalidate();
   }, [utils]);
@@ -65,19 +65,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLogoutCallback(handleLogout);
 
     const checkAuthState = async () => {
-      if (!getAccessToken()) {
+      const cachedUser = getUser();
+
+      // If we have a cached user, use it immediately
+      if (cachedUser) {
+        setUser(cachedUser);
         setIsLoading(false);
         return;
       }
 
-      try {
-        const userInfo = await utils.accounts.getMe.fetch();
-        setUser(userInfo);
-      } catch (error) {
-        console.error("Failed to fetch user info:", error);
-      } finally {
-        setIsLoading(false);
+      // Only fetch from API if we have an access token but no cached user
+      const accessToken = getAccessToken();
+      if (accessToken) {
+        try {
+          const userInfo = await utils.accounts.getMe.fetch();
+          setUserCookie(userInfo);
+          setUser(userInfo);
+        } catch (error) {
+          console.error("Failed to fetch user info:", error);
+        }
       }
+
+      setIsLoading(false);
     };
 
     checkAuthState();

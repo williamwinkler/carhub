@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "../lib/auth-context";
+import Navbar from "./_components/Navbar";
 import Provider from "./_trpc/Provider";
 import "./globals.css";
 
@@ -95,6 +96,7 @@ export default function RootLayout({
       >
         <Provider>
           <AuthProvider>
+            <Navbar />
             <NuqsAdapter>{children}</NuqsAdapter>
             <Toaster
               position="bottom-center"

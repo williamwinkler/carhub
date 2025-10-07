@@ -52,6 +52,10 @@ export class TrpcService {
     createAuthMiddleware(this.authService),
   );
 
+  adminProcedure = this.procedure.use(
+    createAuthMiddleware(this.authService, "admin"),
+  );
+
   // Helper method to create custom rate limit configurations
   createCustomRateLimit = (
     tier: keyof typeof RateLimitTiers,

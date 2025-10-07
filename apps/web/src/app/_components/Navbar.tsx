@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { FaCar, FaHeart, FaUser } from "react-icons/fa";
+import { FaHeart, FaUser } from "react-icons/fa";
 import { useAuth } from "../../lib/auth-context";
 import { trpc } from "../_trpc/client";
 import { User } from "../_trpc/types";
@@ -32,8 +32,12 @@ export default function Navbar() {
     setHasError(false);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
+    // Don't submit if fields are empty
+    if (!username.trim() || !password.trim()) {
+      return;
+    }
+
     setHasError(false);
 
     try {
@@ -149,17 +153,16 @@ export default function Navbar() {
                 pathname === "/cars" ? "text-blue-400" : ""
               }`}
             >
-              Cars
+              All Cars
             </Link>
 
             {user && (
               <Link
-                href={`/${user.id}/cars`}
+                href={`/${user.username}/cars`}
                 className={`text-slate-300 hover:text-blue-400 transition-colors duration-200 font-medium flex items-center gap-2 ${
-                  pathname === `/${user.id}/cars` ? "text-blue-400" : ""
+                  pathname === `/${user.username}/cars` ? "text-blue-400" : ""
                 }`}
               >
-                <FaCar className="w-4 h-4" />
                 My Cars
               </Link>
             )}
@@ -213,7 +216,12 @@ export default function Navbar() {
             ) : (
               <form
                 ref={formRef}
-                onSubmit={handleLogin}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (isLoginOpen) {
+                    handleLogin();
+                  }
+                }}
                 className="flex items-center space-x-2"
               >
                 {/* Username Input - slides in first */}
@@ -232,6 +240,13 @@ export default function Navbar() {
                       setUsername(e.target.value);
                       if (hasError) setHasError(false);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && isLoginOpen) {
+                        e.preventDefault();
+                        handleLogin();
+                      }
+                    }}
+                    autoComplete="off"
                     className={`w-[140px] px-3 py-2 text-sm bg-slate-700/50 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                       hasError
                         ? "border border-red-500/70 focus:border-red-400/70 focus:ring-red-400/20"
@@ -257,6 +272,13 @@ export default function Navbar() {
                       setPassword(e.target.value);
                       if (hasError) setHasError(false);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && isLoginOpen) {
+                        e.preventDefault();
+                        handleLogin();
+                      }
+                    }}
+                    autoComplete="off"
                     className={`w-[140px] px-3 py-2 text-sm bg-slate-700/50 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                       hasError
                         ? "border border-red-500/70 focus:border-red-400/70 focus:ring-red-400/20"
@@ -268,8 +290,14 @@ export default function Navbar() {
 
                 {/* Login Button */}
                 <button
-                  type={isLoginOpen ? "submit" : "button"}
-                  onClick={isLoginOpen ? undefined : () => setIsLoginOpen(true)}
+                  type="button"
+                  onClick={() => {
+                    if (isLoginOpen) {
+                      handleLogin();
+                    } else {
+                      setIsLoginOpen(true);
+                    }
+                  }}
                   disabled={isLoginOpen && loginMutation.isPending}
                   className="bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-500 hover:to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 border border-blue-500/30 hover:border-blue-400/50 disabled:opacity-50"
                 >

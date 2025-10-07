@@ -2,9 +2,10 @@
 
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createTRPCProxyClient } from "@trpc/client";
+import { createTRPCProxyClient, TRPCClientError } from "@trpc/client";
 import { httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { getAccessToken, setAccessToken } from "../../lib/cookies";
 import { refreshTokenLink } from "../../lib/refresh-token-link";
 import { triggerLogout } from "../../lib/token-refresh";
@@ -33,6 +34,17 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             placeholderData: (prev: never) => prev,
             staleTime: 30_000,
             refetchOnWindowFocus: false,
+          },
+          mutations: {
+            onError: (error) => {
+              // Show toast for all tRPC errors except UNAUTHORIZED
+              if (error instanceof TRPCClientError) {
+                const errorCode = error.data?.code;
+                if (errorCode !== "UNAUTHORIZED") {
+                  toast.error(error.message || "An error occurred");
+                }
+              }
+            },
           },
         },
       }),

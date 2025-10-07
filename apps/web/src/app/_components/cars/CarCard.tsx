@@ -1,5 +1,6 @@
 "use client";
 
+import { UUID } from "crypto";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -74,6 +75,10 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
 
   const handleCardClick = () => {
     router.push(`/cars/${car.id}`);
+  };
+
+  const handleDelete = (id: UUID) => {
+    
   };
 
   return (

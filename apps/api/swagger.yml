@@ -54,7 +54,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -65,7 +65,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "409":
           description: Car model already exists. Ensure the model name is new and unqiue
           content:
@@ -317,6 +317,8 @@ paths:
           errors:
             - status: 404
               message: Car not found
+            - status: 404
+              message: Car model not found
           description: Car was successfully updated
           content:
             application/json:
@@ -356,7 +358,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -367,7 +369,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car not found
           content:
@@ -375,12 +377,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
               examples:
-                default:
+                CAR_NOT_FOUND:
                   summary: CAR_NOT_FOUND Error
                   value:
                     statusCode: 404
                     errorCode: CAR_NOT_FOUND
                     message: Car not found
+                CAR_MODEL_NOT_FOUND:
+                  summary: CAR_MODEL_NOT_FOUND Error
+                  value:
+                    statusCode: 404
+                    errorCode: CAR_MODEL_NOT_FOUND
+                    message: Car model not found
         "429":
           description: Too many requests, try again later
           content:
@@ -456,7 +464,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -467,7 +475,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car not found
           content:
@@ -557,7 +565,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -568,7 +576,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car not found
           content:
@@ -672,7 +680,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -683,7 +691,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "429":
           description: Too many requests, try again later
           content:
@@ -769,7 +777,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -780,7 +788,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "409":
           description: Car manufacturer already exists
           content:
@@ -1050,7 +1058,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -1061,7 +1069,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car manufacturer not found
           content:
@@ -1150,7 +1158,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -1161,7 +1169,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car manufacturer not found
           content:
@@ -1260,7 +1268,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -1271,7 +1279,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car manufacturer not found
           content:
@@ -1549,7 +1557,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -1560,7 +1568,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car model not found
           content:
@@ -1649,7 +1657,7 @@ paths:
                     errorCode: UNAUTHORIZED
                     message: You need to be authorized to perform this action
         "403":
-          description: Forbidden
+          description: You don't have permission to perform this action
           content:
             application/json:
               schema:
@@ -1660,7 +1668,7 @@ paths:
                   value:
                     statusCode: 403
                     errorCode: FORBIDDEN
-                    message: Forbidden
+                    message: You don't have permission to perform this action
         "404":
           description: Car model not found
           content:
@@ -1969,11 +1977,9 @@ components:
         createdBy:
           type: object
           properties:
-            id:
-              description: The ID of the user
+            username:
+              description: The username of the user
               type: string
-              format: uuid
-              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
             firstName:
               description: First name of the user
               type: string
@@ -1981,7 +1987,7 @@ components:
               description: Last name of the user
               type: string
           required:
-            - id
+            - username
             - firstName
             - lastName
           x-nestjs_zod-parent-additional-properties: false

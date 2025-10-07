@@ -7,16 +7,19 @@ import {
   applyDecorators,
 } from "@nestjs/common";
 import {
+  ApiExtraModels,
   ApiOperation,
   ApiProperty,
   ApiResponse,
   ApiResponseOptions,
+  getSchemaPath,
 } from "@nestjs/swagger";
 import z from "zod";
 import { SwaggerError } from "../decorators/swagger-responses.decorator";
 import { GeneralResponseDto } from "../dto/general-response.dto";
 import { PaginationDto } from "../dto/pagination.dto";
-import { ErrorEntry } from "../errors/errors";
+import { ErrorDto } from "../errors/error.dto";
+import { EntryToKey, ErrorEntry } from "../errors/errors";
 
 export const RESPONSE_DTO_KEY = "responseDto";
 
@@ -166,6 +169,73 @@ export function SwaggerInfo<T>(
     schema = (classRef as any)?.schema;
   }
 
+  // Group errors by status code to create single ApiResponse with multiple examples
+  const errorsByStatus = new Map<number, ErrorEntry[]>();
+  options?.errors?.forEach((error) => {
+    const existing = errorsByStatus.get(error.status) ?? [];
+    existing.push(error);
+    errorsByStatus.set(error.status, existing);
+  });
+
+  const errorDecorators: MethodDecorator[] = [];
+  errorsByStatus.forEach((errors, status) => {
+    if (errors.length === 1) {
+      // Single error for this status - use simple decorator
+      errorDecorators.push(SwaggerError(errors[0]));
+    } else {
+      // Multiple errors for same status - merge examples
+      const examples: Record<string, any> = {};
+      errors.forEach((error) => {
+        const errorCode = EntryToKey.get(error);
+        if (errorCode) {
+          const exampleValue: any = {
+            statusCode: error.status,
+            errorCode,
+            message: error.message,
+          };
+
+          // Add validation errors example for VALIDATION_ERROR
+          if (errorCode === "VALIDATION_ERROR") {
+            exampleValue.errors = [
+              {
+                field: "email",
+                message: "Invalid email format",
+                code: "invalid_string",
+              },
+              {
+                field: "age",
+                message: "Must be at least 18",
+                code: "too_small",
+              },
+            ];
+          }
+
+          examples[errorCode] = {
+            summary: `${errorCode} Error`,
+            value: exampleValue,
+          };
+        }
+      });
+
+      // Use first error's message as description
+      const description = errors[0].message;
+
+      errorDecorators.push(
+        applyDecorators(
+          ApiExtraModels(ErrorDto),
+          ApiResponse({
+            status,
+            description,
+            schema: {
+              $ref: getSchemaPath(ErrorDto),
+            },
+            examples,
+          }),
+        ),
+      );
+    }
+  });
+
   const base = applyDecorators(
     HttpCode(options.status),
     ...(summary ? [ApiOperation({ summary: summary })] : []),
@@ -179,7 +249,7 @@ export function SwaggerInfo<T>(
           } as ResponseDtoMeta<T>),
         ]
       : []),
-    ...(options?.errors?.map((e) => SwaggerError(e)) ?? []),
+    ...errorDecorators,
   );
 
   if (isList) {

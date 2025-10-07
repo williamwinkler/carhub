@@ -153,5 +153,24 @@ export class CarsTrpc {
           return this.carsAdapter.getListDto(cars);
         },
       ),
+
+    // Public route - get any user's cars by user ID
+    getCarsByUserId: this.trpc.procedure
+      .input(
+        z.object({
+          userId: uuidSchema,
+          skip: z.number().int().min(0).default(0),
+          limit: z.number().int().min(0).max(100).optional().default(10),
+        }),
+      )
+      .query(async ({ input }): Promise<PaginationDto<CarDto>> => {
+        const cars = await this.carsService.getCarsByUser({
+          userId: input.userId,
+          limit: input.limit,
+          skip: input.skip,
+        });
+
+        return this.carsAdapter.getListDto(cars);
+      }),
   });
 }

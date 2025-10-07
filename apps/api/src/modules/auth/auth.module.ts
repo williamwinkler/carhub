@@ -20,7 +20,7 @@ import { AccountsAdapter } from "../accounts/acounts.adapter";
       useFactory: async (config: ConfigService) => ({
         global: true,
         secret: config.get("JWT_ACCESS_SECRET"),
-        signOptions: { expiresIn: "15s", algorithm: "HS256" },
+        signOptions: { expiresIn: "5m", algorithm: "HS256" },
       }),
     }),
   ],

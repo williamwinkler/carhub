@@ -106,7 +106,7 @@ export function setupSwagger(app: INestApplication) {
           },
         };
         method.responses["403"] = {
-          description: "Forbidden",
+          description: Errors.FORBIDDEN.message,
           content: {
             "application/json": {
               schema: { $ref: getSchemaPath(ErrorDto) },
@@ -114,9 +114,9 @@ export function setupSwagger(app: INestApplication) {
                 default: {
                   summary: "FORBIDDEN Error",
                   value: {
-                    statusCode: 403,
+                    statusCode: Errors.FORBIDDEN.status,
                     errorCode: "FORBIDDEN",
-                    message: "Forbidden",
+                    message: Errors.FORBIDDEN.message,
                   },
                 },
               },

@@ -6,6 +6,7 @@
  */
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
+import { User } from "../app/_trpc/types";
 
 export const cookieConfig = {
   // Cookie options for client-managed cookies
@@ -31,6 +32,12 @@ export const getAccessToken = (): string | undefined => {
   return Cookies.get("accessToken");
 };
 
+export const getUser = (): User | null => {
+  const userStr = Cookies.get("user");
+  // Ideally we would validate the user object with zod here, but demo...
+  return (userStr && JSON.parse(userStr)) ?? null;
+};
+
 export const setAccessToken = (token: string): void => {
   const expiry = getTokenExpiry(token);
   Cookies.set("accessToken", token, {
@@ -41,13 +48,11 @@ export const setAccessToken = (token: string): void => {
   });
 };
 
-export const removeAccessToken = (): void => {
-  Cookies.remove("accessToken", { path: cookieConfig.path });
+export const removeUserCookies = (): void => {
+  Cookies.remove("accessToken");
+  Cookies.remove("user");
 };
 
-// Remove all auth tokens (client-managed only - server httpOnly cookies handled separately)
-export const removeAuthTokens = (): void => {
-  removeAccessToken();
-  // Note: refreshToken is httpOnly and managed by the server
-  // The server will clear it when needed via Set-Cookie headers
+export const setUserCookie = (user: User) => {
+  Cookies.set("user", JSON.stringify(user));
 };

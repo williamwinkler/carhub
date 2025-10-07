@@ -2,7 +2,6 @@
 
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import { Suspense, useCallback } from "react";
-import Navbar from "../_components/Navbar";
 import CarFilters from "../_components/cars/CarFilters";
 import CarGrid from "../_components/cars/CarGrid";
 import Pagination from "../_components/ui/Pagination";
@@ -118,10 +117,7 @@ function CarsPageContent() {
   }, [utils.cars.list]);
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
@@ -186,7 +182,6 @@ function CarsPageContent() {
           />
         )}
       </div>
-    </div>
   );
 }
 
@@ -194,11 +189,8 @@ export default function CarsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen">
-          <Navbar />
-          <div className="max-w-7xl mx-auto px-4 py-8">
-            <div className="text-center text-slate-400">Loading...</div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center text-slate-400">Loading...</div>
         </div>
       }
     >

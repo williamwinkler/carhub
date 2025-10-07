@@ -66,7 +66,10 @@ export const errorMiddleware = t.middleware(async ({ next }) => {
 });
 
 // Authentication middleware factory
-export const createAuthMiddleware = (authService: AuthService) => {
+export const createAuthMiddleware = (
+  authService: AuthService,
+  role?: RoleType,
+) => {
   return t.middleware(async ({ ctx, next }) => {
     const authorization = ctx.req.headers.authorization;
 
@@ -77,26 +80,23 @@ export const createAuthMiddleware = (authService: AuthService) => {
       });
     }
 
-    try {
-      if (!authorization.startsWith("Bearer ")) {
-        throw new AppError(Errors.UNAUTHORIZED);
-      }
+    if (!authorization.startsWith("Bearer ")) {
+      throw new AppError(Errors.UNAUTHORIZED);
+    }
 
-      const token = authorization.slice(7);
-      const payload = await authService.verifyAccessToken(token);
-      Ctx.principal = authService.principalFromJwt(payload);
-    } catch (error) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid credentials",
-        cause: error,
-      });
+    const token = authorization.slice(7);
+    const payload = await authService.verifyAccessToken(token);
+    Ctx.principal = authService.principalFromJwt(payload);
+
+    if (role && Ctx.role !== role) {
+      throw new AppError(Errors.FORBIDDEN);
     }
 
     return next();
   });
 };
 
+import type { RoleType } from "../users/entities/user.entity";
 import type { TrpcRateLimitService } from "./trpc-rate-limit.service";
 
 // Rate limiting configuration types

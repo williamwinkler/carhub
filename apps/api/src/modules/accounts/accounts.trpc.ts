@@ -1,10 +1,14 @@
+import { Ctx } from "@api/common/ctx";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import { Injectable } from "@nestjs/common";
+import z from "zod";
 import { AuthService } from "../auth/auth.service";
 import { TrpcService } from "../trpc/trpc.service";
+import { usersFields } from "../users/users.schema";
 import { UsersService } from "../users/users.service";
 import { AccountsAdapter } from "./acounts.adapter";
-import { Ctx } from "@api/common/ctx";
-import z from "zod";
+import { AccountDto } from "./dto/account.dto";
 
 @Injectable()
 export class AccountsTrpc {
@@ -60,5 +64,16 @@ export class AccountsTrpc {
         hasApiKey: !!user?.apiKeyLookupHash,
       };
     }),
+
+    getByUsername: this.trpc.procedure
+      .input(z.object({ username: usersFields.username }))
+      .query(async ({ input: { username } }): Promise<AccountDto> => {
+        const user = await this.usersService.findByUsername(username);
+        if (!user) {
+          throw new AppError(Errors.USER_NOT_FOUND);
+        }
+
+        return this.accountsAdapter.getDto(user);
+      }),
   });
 }
