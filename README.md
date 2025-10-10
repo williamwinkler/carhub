@@ -16,8 +16,10 @@ The project demonstrates **end-to-end type safety** and **auto-generated documen
 - Compile time error if the Swagger specified DTO and actual DTO are different!
 - Custom decorators (`@zQuery`, `@zParam`) for endpoint parameter validation - automatically shows up in swagger too.
 - Specified errors your app can throw and each will show up in the documentation.
-- If the endpoint performs any validation, `400 Valiation Error` is automatically added to the swagger docs for that endpoint.
-- Each endpoint automatically gets `403` (if not an public endpoint), `429` and `500` error examples added.
+- Common errors are automatically derived in the swagger docs:
+  - Each endpoint automatically gets `429` and `500` error examples added.
+  - If the endpoint performs any validation, `400 Valiation Error` is automatically added.
+  - Protected endpoints gets the `401 Unauthorized` and `403 Forbidden` automatically added.
 - [See code examples below!](#-code-examples)
 
 
