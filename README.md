@@ -1,65 +1,33 @@
-# NestJS + tRPC + Zod + Swagger Demo 🚀
+# Carhub
 
-> **A demonstration project showcasing modern API development patterns for inspiration**
+Carhub is a simple demo project allowing users to create and view cars, but the interesting part is the tech stack used.
 
-This project demonstrates **end-to-end type safety** and **auto-generated documentation** using NestJS, tRPC, and Zod. Perfect for developers looking to build production-ready APIs with excellent developer experience.
+The project demonstrates **end-to-end type safety** and **auto-generated documentation** using NestJS, tRPC, Swagger and Zod. The project's goal is to have top tier DX when working with APIs - both in the front and backend.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Key Highlights
-
-### 🔥 Schema-First Development with Zod
-- **Single source of truth** for validation, types, and documentation
-- **Custom decorators** (`@zQuery`, `@zParam`) for automatic parameter validation
-- **Auto-generated DTOs** from Zod schemas for Swagger
-
-### 🛡️ Dual API Architecture
-- **REST API** with full OpenAPI/Swagger docs for external integrations
-- **tRPC endpoints** for type-safe frontend communication
-- **Same business logic** powering both APIs
-
-### 📚 Auto-Generated Documentation
-- **Interactive Swagger UI** at `/docs` (development)
-- **OpenAPI YAML** export for external tools
-- **Parameter docs** auto-generated from Zod schemas
-- **Consistent response** format across all endpoints
-
-### 🔒 Production-Ready Features
-- **JWT authentication** with refresh tokens
-- **Role-based authorization** (`@Roles()` decorator)
-- **Tiered rate limiting** (public, auth, strict, burst protection)
-- **TypeORM integration** with PostgreSQL
-- **Comprehensive error handling**
-
 ## 🏗️ Architecture Overview
+![test](/docs/architecture.png)
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   NestJS API     │    │   Database      │
-│   (Next.js)     │◄──►│   + tRPC         │◄──►│   (PostgreSQL)  │
-│                 │    │   + Swagger      │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
+## 🧑‍💻 Improved DX
 
-## 🚗 Demo: Car Dealership API
+### Improved Nestjs Swagger Documentation
+- Auto-generated DTOs from Zod schemas
+- Compile time error if the Swagger specified DTO and actual DTO are different!
+- Custom decorators (`@zQuery`, `@zParam`) for endpoint parameter validation - automatically shows up in swagger too.
+- Specified errors your app can throw and each will show up in the documentation.
+- If the endpoint performs any validation, `400 Valiation Error` is automatically added to the swagger docs for that endpoint.
+- Each endpoint automatically gets `403` (if not an public endpoint), `429` and `500` error examples added.
+- [See code examples below!](#-code-examples)
 
-The demo implements a car dealership management system with:
 
-- **Authentication**: JWT login/logout with role-based access
-- **User Management**: Admin and regular user roles
-- **Car Manufacturers**: Toyota, BMW, Mercedes-Benz, etc.
-- **Car Models**: Camry, X5, C-Class, etc. (with URL-friendly slugs)
-- **Car Listings**: Full CRUD with owner restrictions and favorites
-- **Advanced Filtering**: Search by model, color, price range, etc.
-
-## 🛠️ Tech Stack
-
-- **Backend**: NestJS + tRPC + TypeORM + PostgreSQL
-- **Validation**: Zod schemas (single source of truth)
-- **Documentation**: Auto-generated Swagger/OpenAPI
-- **Authentication**: JWT with refresh tokens & API keys
-- **Database**: TypeORM with PostgreSQL
-- **Testing**: Jest with test coverage
+### Better feature development loop
+- It's faster and more reliable with tRPC.
+  - Types are procedures are immediately updated in the frontend - no codegen needed.
+  - Jump between frontend and backend code easily.
+  - No more "Where is this endpoint used?" - see directly where each tRPC prodecure is used in the frontend.
+  - Backend errors are automatically converted to tRPC errors in middleware.
+- A postgres DB and pgadmin are automatically started when starting to develop with `pnpm dev`.
 
 ## ⚡ Quick Start
 
@@ -72,21 +40,21 @@ The demo implements a car dealership management system with:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/williamwinkler/trpc-nestjs-nextjs-demo.git
-cd trpc-nestjs-nextjs-demo
+git clone https://github.com/williamwinkler/carhub.git
+cd carhub
 
 # 2. Install dependencies
 pnpm install
 
 # 3. Setup database environment
-cp apps/api/.env.example apps/api/.env.local
+cp apps/api/.env.test.example apps/api/.env.local
 # Edit .env.local with your PostgreSQL credentials
 
-# 5. Seed with sample data
+# 4. Seed with sample data
 pnpm --filter api seed
 
-# 6. Start the API server
-pnpm dev:api
+# 5. Start both the frontend and backend with
+pnpm dev
 ```
 
 ### Sample Data Created
@@ -95,7 +63,7 @@ pnpm dev:api
 - **50 Car Models**: 5 models per manufacturer with slugs
 - **Full Relationships**: Proper foreign keys and cascading
 
-## 📖 API Documentation
+## 📖 API Swagger Documentation
 
 Once running, visit:
 - **Swagger UI**: http://localhost:3001/docs
@@ -118,9 +86,12 @@ export class CreateCarDto extends createZodDto(createCarSchema) {}
 
 // 3. Use in controller with automatic validation
 @Post()
-@ApiEndpoint({
+@SwaggerInfo({
+  status: 201,
   summary: "Create a car",
-  type: CarDto,
+  successText: "Car was succesfully created",
+  type: CarDto, // <- Won't compile if a CarDto is not returned!
+  errors: [Errors.SOME_ERROR]
 })
 async create(@Body() dto: CreateCarDto) {
   // dto is validated and typed automatically!
@@ -129,71 +100,40 @@ async create(@Body() dto: CreateCarDto) {
 
 ### Custom Validation Decorators
 ```typescript
-@Get()
+@Get(":carId")
 async findCars(
+  @zParam("carId", z.uuid()) carId: UUID,
   @zQuery("color", z.string().optional()) color?: string,
   @zQuery("minPrice", z.number().min(0).optional()) minPrice?: number,
   @zQuery("skip", z.number().int().gte(0).default(0)) skip = 0,
 ) {
   // All parameters validated automatically
   // Swagger docs generated automatically
-  // TypeScript types inferred automatically
 }
 ```
 
 ### tRPC Type Safety
 ```typescript
 // Backend tRPC procedure
-findAll: procedure
-  .input(carQuerySchema)
-  .query(async ({ input }) => {
-    return carsService.findAll(input);
+getById: procedure
+  .input(z.object({ id: z.uuid() })) // id as UUID required
+  .query(async ({ input: { id } }) => {
+    const car = await this.carsService.findById(id);
+
+    if (!car) {
+      // API specific errors are automatically converted to tRPC errors
+      throw new AppError(Errors.CAR_NOT_FOUND)
+    }
+
+    return this.carsAdapter.getDto(car);
   });
 
 // Frontend usage (fully typed!)
-const cars = await trpc.cars.findAll.query({
-  color: "red",     // ✅ Typed
-  minPrice: 20000,  // ✅ Typed
-  skip: 0           // ✅ Typed
+const cars = await trpc.cars.getById.query({
+  id: "<UUID>",     // ✅ Typed
 });
-// Response is automatically typed!
+// Response is automatically typed as well!
 ```
-
-## 🔥 What Makes This Special?
-
-1. **Zero Code Generation**: Types flow naturally from Zod schemas
-2. **DRY Principle**: Write validation once, get types + docs + runtime validation
-3. **Developer Experience**: Full IntelliSense from database to frontend
-4. **Production Ready**: Authentication, rate limiting, error handling built-in
-5. **Dual API Strategy**: REST for integrations, tRPC for type safety
-6. **Auto Documentation**: Always up-to-date API specs
-
-## 📁 Project Structure
-
-```
-├── apps/
-│   ├── api/                    # NestJS API
-│   │   ├── src/
-│   │   │   ├── common/         # Shared utilities, guards, decorators
-│   │   │   ├── modules/        # Feature modules (auth, cars, etc.)
-│   │   │   └── main.ts         # App bootstrap
-│   │   └── swagger.yml         # Generated OpenAPI spec
-│   └── web/                    # Next.js frontend (in development)
-└── packages/
-    └── shared/                 # Shared types and utilities
-```
-
-## 🎨 Use as Inspiration
-
-This project demonstrates patterns for:
-- **Schema-driven development** with Zod
-- **Automatic API documentation** from schemas
-- **Type-safe APIs** with tRPC
-- **Production-ready security** and rate limiting
-- **Clean architecture** with NestJS
-- **Database integration** with TypeORM
-
-Perfect starting point for building modern, type-safe APIs with excellent developer experience!
 
 ## 📄 License
 

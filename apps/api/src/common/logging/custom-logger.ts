@@ -3,6 +3,7 @@ import { ConsoleLogger } from "@nestjs/common";
 import { NestLoggerAdapter } from "@repo/logging";
 import { Ctx } from "../ctx";
 
+// OBS: this logger could definitely be improved
 export class CustomLogger extends ConsoleLogger {
   private static core = new NestLoggerAdapter("api", () => ({
     requestId: Ctx.requestId,
