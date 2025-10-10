@@ -28,12 +28,3 @@ export const getServerTrpc = cache(async () => {
     ],
   });
 });
-
-// Legacy export for backward compatibility
-export const serverTrpc = trpc.createClient({
-  links: [
-    httpBatchLink({
-      url: `${apiUrl}/trpc`,
-    }),
-  ],
-});

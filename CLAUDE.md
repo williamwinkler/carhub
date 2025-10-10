@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **demonstration project** showcasing modern full-stack patterns with **end-to-end type safety** between a NestJS backend and Next.js frontend using tRPC. The project highlights advanced Swagger documentation generation from Zod schemas and serves as an **inspiration source** for building production-ready applications.
+**CarHub** is a **demonstration project** showcasing modern full-stack patterns with **end-to-end type safety** between a NestJS backend and Next.js frontend using tRPC. The project highlights advanced Swagger documentation generation from Zod schemas and serves as an **inspiration source** for building production-ready applications.
 
 ## Architecture
 

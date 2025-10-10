@@ -1,4 +1,4 @@
-import { serverTrpc } from "../../_trpc/server";
+import { getServerTrpc } from "../../_trpc/server";
 import type { Car } from "../../_trpc/types";
 import CarDetailClient from "./CarDetailClient";
 
@@ -12,7 +12,9 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const { id } = await params;
 
   try {
+    const serverTrpc = await getServerTrpc();
     const car = await serverTrpc.cars.getById.query({ id });
+    console.log(car);
 
     return <CarDetailClient initialCar={car} />;
   } catch (error: any) {
