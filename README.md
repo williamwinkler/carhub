@@ -46,14 +46,26 @@ cd carhub
 # 2. Install dependencies
 pnpm install
 
-# 3. Setup database environment
-cp apps/api/.env.test.example apps/api/.env.local
-# Edit .env.local with your PostgreSQL credentials
+# 3. Setup environment files
+cp apps/api/.env.example apps/api/.env.local
+cp apps/web/.env.example apps/web/.env.local
 
-# 4. Seed with sample data
+# 4. Configure your environment (optional)
+# Edit apps/api/.env.local if you need to change:
+# - Database credentials (default: admin/admin)
+# - JWT secrets (generate with: openssl rand -hex 32)
+# - Port or CORS settings
+
+# 5. Start the development database
+docker compose up -d
+
+# 6. Run database migrations
+pnpm --filter api migrations:run
+
+# 7. Seed with sample data
 pnpm --filter api seed
 
-# 5. Start both the frontend and backend with
+# 8. Start both the frontend and backend
 pnpm dev
 ```
 

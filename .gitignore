@@ -79,3 +79,4 @@ apps/*/.next/
 *.local
 swagger.yml
 __mocks__
+.claude

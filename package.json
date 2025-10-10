@@ -2,7 +2,7 @@
   "name": "carhub",
   "private": true,
   "version": "1.0.0",
-  "auther": "William Winkler",
+  "author": "William Winkler",
   "license": "MIT",
   "scripts": {
     "build:packages": "pnpm --filter \"./packages/*\" build",

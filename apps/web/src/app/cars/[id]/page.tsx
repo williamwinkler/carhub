@@ -14,7 +14,6 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   try {
     const serverTrpc = await getServerTrpc();
     const car = await serverTrpc.cars.getById.query({ id });
-    console.log(car);
 
     return <CarDetailClient initialCar={car} />;
   } catch (error: any) {
