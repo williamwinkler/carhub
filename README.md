@@ -143,7 +143,7 @@ getById: procedure
   });
 
 // Frontend usage (fully typed!)
-const cars = await trpc.cars.getById.query({
+const car = await trpc.cars.getById.query({
   id: "<UUID>",     // ✅ Typed
 });
 // Response is automatically typed as well!
