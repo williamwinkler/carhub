@@ -88,12 +88,18 @@ export class CarsService {
       queryBuilder.andWhere("LOWER(car.color) = :color", { color });
     }
 
-    // Apply sorting
+    // Apply sorting - default to createdAt DESC if no sort specified
     if (sortField && sortDirection) {
       queryBuilder.orderBy(
         `car.${sortField}`,
         sortDirection.toUpperCase() as "ASC" | "DESC",
       );
+      // Add secondary sort by ID for stable ordering
+      queryBuilder.addOrderBy("car.id", "ASC");
+    } else {
+      // Default sort: newest cars first, with ID as tiebreaker for stable ordering
+      queryBuilder.orderBy("car.createdAt", "DESC");
+      queryBuilder.addOrderBy("car.id", "ASC");
     }
 
     // Apply pagination
@@ -131,7 +137,7 @@ export class CarsService {
     const [cars, totalItems] = await this.carsRepo.findAndCount({
       where: { createdBy: { id: userId } },
       relations: ["model", "model.manufacturer", "favoritedBy"],
-      order: { createdAt: "DESC" },
+      order: { createdAt: "DESC", id: "ASC" },
       skip,
       take: limit,
     });
@@ -242,6 +248,10 @@ export class CarsService {
     if (Ctx.userId) {
       queryBuilder.leftJoinAndSelect("car.favoritedBy", "favoritedBy");
     }
+
+    // Default sort: newest cars first, with ID as tiebreaker for stable ordering
+    queryBuilder.orderBy("car.createdAt", "DESC");
+    queryBuilder.addOrderBy("car.id", "ASC");
 
     // Apply pagination
     if (skip) {
