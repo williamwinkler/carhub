@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { parseAsInteger, useQueryStates } from "nuqs";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import AddCarModal from "../../_components/cars/AddCarModal";
 import CarGrid from "../../_components/cars/CarGrid";
 import Pagination from "../../_components/ui/Pagination";
 import { trpc } from "../../_trpc/client";
@@ -29,6 +31,8 @@ export default function UserCarsClient({
   initialCars,
   totalItems,
 }: UserCarsClientProps) {
+  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
+
   const [{ page }, setQuery] = useQueryStates(
     {
       page: parseAsInteger.withDefault(0),
@@ -88,18 +92,37 @@ export default function UserCarsClient({
     }
   }, [isOwnProfile, utils.cars.getMyCars, utils.cars.getCarsByUserId]);
 
+  const handleCarAdded = useCallback(() => {
+    if (isOwnProfile) {
+      utils.cars.getMyCars.invalidate();
+    } else {
+      utils.cars.getCarsByUserId.invalidate();
+    }
+  }, [isOwnProfile, utils.cars.getMyCars, utils.cars.getCarsByUserId]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            {isOwnProfile ? "My Cars" : `${profileUser.firstName}'s Cars`}
-          </h1>
-          <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg">
-            <span className="text-slate-300 text-sm">
-              {profileUser.firstName} {profileUser.lastName}
-            </span>
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              {isOwnProfile ? "My Cars" : `${profileUser.firstName}'s Cars`}
+            </h1>
+            <div className="px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+              <span className="text-slate-300 text-sm">
+                {profileUser.firstName} {profileUser.lastName}
+              </span>
+            </div>
           </div>
+          {isOwnProfile && (
+            <button
+              onClick={() => setIsAddCarModalOpen(true)}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+            >
+              <FaPlus className="w-4 h-4" />
+              Add Car
+            </button>
+          )}
         </div>
         <p className="text-slate-400 text-lg">
           {isOwnProfile
@@ -169,6 +192,13 @@ export default function UserCarsClient({
           onPageChange={handleSetPage}
         />
       )}
+
+      {/* Add Car Modal */}
+      <AddCarModal
+        isOpen={isAddCarModalOpen}
+        onClose={() => setIsAddCarModalOpen(false)}
+        onSuccess={handleCarAdded}
+      />
     </div>
   );
 }
