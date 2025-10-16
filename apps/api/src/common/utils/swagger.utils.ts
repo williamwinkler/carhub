@@ -81,6 +81,81 @@ function createResponseListDto<T>(classRef: new () => T) {
   };
 }
 
+function createErrorExamples(errors?: ErrorEntry[]): MethodDecorator[] {
+  if (!errors || errors.length === 0) {
+    return [];
+  }
+
+  // Group errors by status code to create single ApiResponse with multiple examples
+  const errorsByStatus = new Map<number, ErrorEntry[]>();
+  errors?.forEach((error) => {
+    const existing = errorsByStatus.get(error.status) ?? [];
+    existing.push(error);
+    errorsByStatus.set(error.status, existing);
+  });
+
+  const errorDecorators: MethodDecorator[] = [];
+  errorsByStatus.forEach((errors, status) => {
+    if (errors.length === 1) {
+      // Single error for this status - use simple decorator
+      errorDecorators.push(SwaggerError(errors[0]));
+    } else {
+      // Multiple errors for same status - merge examples
+      const examples: Record<string, any> = {};
+      errors.forEach((error) => {
+        const errorCode = EntryToKey.get(error);
+        if (errorCode) {
+          const exampleValue: any = {
+            statusCode: error.status,
+            errorCode,
+            message: error.message,
+          };
+
+          // Add validation errors example for VALIDATION_ERROR
+          if (errorCode === "VALIDATION_ERROR") {
+            exampleValue.errors = [
+              {
+                field: "email",
+                message: "Invalid email format",
+                code: "invalid_string",
+              },
+              {
+                field: "age",
+                message: "Must be at least 18",
+                code: "too_small",
+              },
+            ];
+          }
+
+          examples[errorCode] = {
+            summary: `${errorCode} Error`,
+            value: exampleValue,
+          };
+        }
+      });
+
+      // Use first error's message as description
+      const description = errors[0].message;
+
+      errorDecorators.push(
+        applyDecorators(
+          ApiExtraModels(ErrorDto),
+          ApiResponse({
+            status,
+            description,
+            schema: {
+              $ref: getSchemaPath(ErrorDto),
+            },
+            examples,
+          }),
+        ),
+      );
+    }
+  });
+
+  return errorDecorators;
+}
+
 // Strongly-typed overloads
 export function SwaggerInfo<T>(
   options: Omit<ApiResponseOptions, "description"> & {
@@ -169,73 +244,6 @@ export function SwaggerInfo<T>(
     schema = (classRef as any)?.schema;
   }
 
-  // Group errors by status code to create single ApiResponse with multiple examples
-  const errorsByStatus = new Map<number, ErrorEntry[]>();
-  options?.errors?.forEach((error) => {
-    const existing = errorsByStatus.get(error.status) ?? [];
-    existing.push(error);
-    errorsByStatus.set(error.status, existing);
-  });
-
-  const errorDecorators: MethodDecorator[] = [];
-  errorsByStatus.forEach((errors, status) => {
-    if (errors.length === 1) {
-      // Single error for this status - use simple decorator
-      errorDecorators.push(SwaggerError(errors[0]));
-    } else {
-      // Multiple errors for same status - merge examples
-      const examples: Record<string, any> = {};
-      errors.forEach((error) => {
-        const errorCode = EntryToKey.get(error);
-        if (errorCode) {
-          const exampleValue: any = {
-            statusCode: error.status,
-            errorCode,
-            message: error.message,
-          };
-
-          // Add validation errors example for VALIDATION_ERROR
-          if (errorCode === "VALIDATION_ERROR") {
-            exampleValue.errors = [
-              {
-                field: "email",
-                message: "Invalid email format",
-                code: "invalid_string",
-              },
-              {
-                field: "age",
-                message: "Must be at least 18",
-                code: "too_small",
-              },
-            ];
-          }
-
-          examples[errorCode] = {
-            summary: `${errorCode} Error`,
-            value: exampleValue,
-          };
-        }
-      });
-
-      // Use first error's message as description
-      const description = errors[0].message;
-
-      errorDecorators.push(
-        applyDecorators(
-          ApiExtraModels(ErrorDto),
-          ApiResponse({
-            status,
-            description,
-            schema: {
-              $ref: getSchemaPath(ErrorDto),
-            },
-            examples,
-          }),
-        ),
-      );
-    }
-  });
-
   const base = applyDecorators(
     HttpCode(options.status),
     ...(summary ? [ApiOperation({ summary: summary })] : []),
@@ -248,8 +256,16 @@ export function SwaggerInfo<T>(
             schema,
           } as ResponseDtoMeta<T>),
         ]
-      : []),
-    ...errorDecorators,
+      : options.type === null
+        ? [
+            ApiResponse({
+              status: options.status,
+              description: (options as any).description,
+              type: undefined,
+            }),
+          ]
+        : []),
+    ...createErrorExamples(options.errors),
   );
 
   if (isList) {

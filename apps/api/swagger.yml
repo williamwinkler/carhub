@@ -430,6 +430,8 @@ paths:
           schema:
             type: string
       responses:
+        "204":
+          description: Car deleted successfully
         "400":
           description: Validation failed
           content:
@@ -531,6 +533,8 @@ paths:
           schema:
             type: string
       responses:
+        "204":
+          description: Car favorite status toggled successfully
         "400":
           description: Validation failed
           content:
@@ -1124,6 +1128,8 @@ paths:
           schema:
             type: string
       responses:
+        "204":
+          description: Car manufacturer deleted successfully
         "400":
           description: Validation failed
           content:
@@ -1623,6 +1629,8 @@ paths:
           schema:
             type: string
       responses:
+        "204":
+          description: Car model deleted successfully
         "400":
           description: Validation failed
           content:
