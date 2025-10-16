@@ -52,18 +52,13 @@ pnpm install
 cp apps/api/.env.example apps/api/.env.local
 cp apps/web/.env.example apps/web/.env.local
 
-# 4. Configure your environment (optional)
-# Edit apps/api/.env.local if you need to change:
-# - Database credentials (default: admin/admin)
-# - JWT secrets (generate with: openssl rand -hex 32)
-# - Port or CORS settings
+# 4. Configure your environment files (recommended)
+pnpm build:packages
 
-pnpm build
-
-# Start the development database
+# 5. Start the development database
 docker compose up -d
 
-# Run database migrations
+# 6. Run database migrations
 pnpm --filter api migrations:run
 
 # (optional) Seed with sample data
