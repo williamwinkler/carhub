@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
   FaCalendar,
@@ -40,12 +41,22 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
   const router = useRouter();
   const { user } = useAuth();
   const utils = trpc.useUtils();
+  const [optimisticFavorite, setOptimisticFavorite] = useState(car.isFavorite);
 
   const toggleFavoriteMutation = trpc.cars.toggleFavorite.useMutation({
+    onMutate: () => {
+      // Immediately update UI
+      setOptimisticFavorite(!optimisticFavorite);
+    },
     onSuccess: ({ favorited }) => {
-      utils.cars.list.invalidate();
-      utils.cars.getFavorites.invalidate();
-      utils.cars.getMyCars.invalidate();
+      // Mark queries as stale but don't refetch - prevents list reordering
+      // The next time the user navigates or explicitly refreshes, data will be up-to-date
+      utils.cars.list.invalidate({ refetchType: 'none' });
+      utils.cars.getFavorites.invalidate({ refetchType: 'none' });
+      utils.cars.getMyCars.invalidate({ refetchType: 'none' });
+
+      // Update optimistic state to match server response
+      setOptimisticFavorite(!favorited);
       onFavoriteUpdate?.();
 
       if (!favorited) {
@@ -59,6 +70,8 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
       }
     },
     onError: (error) => {
+      // Revert optimistic update
+      setOptimisticFavorite(car.isFavorite);
       toast.error(error.message || "Failed to update favorite");
     },
   });
@@ -85,7 +98,7 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-700/50 transition-all duration-200 z-10 bg-slate-800/80"
           disabled={toggleFavoriteMutation.isPending}
         >
-          {car.isFavorite ? (
+          {optimisticFavorite ? (
             <FaHeart className="w-5 h-5 text-pink-400" />
           ) : (
             <FaRegHeart className="w-5 h-5 text-slate-400 hover:text-pink-400" />
