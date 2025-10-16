@@ -1,5 +1,14 @@
 import { config } from "dotenv";
 import { DataSource } from "typeorm";
+import { register } from "tsconfig-paths";
+import * as path from "path";
+
+// Register tsconfig paths for TypeORM CLI
+const tsConfig = require("./tsconfig.json");
+register({
+  baseUrl: path.resolve(__dirname),
+  paths: tsConfig.compilerOptions.paths,
+});
 
 // Load environment variables
 config({ path: '.env.local', quiet: true });

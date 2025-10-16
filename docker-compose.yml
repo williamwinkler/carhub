@@ -7,8 +7,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: carhub
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
@@ -20,7 +20,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # Optional: pgAdmin UI at http://localhost:5050
   pgadmin:
     image: dpage/pgadmin4:9
     container_name: pgadmin
