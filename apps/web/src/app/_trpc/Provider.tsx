@@ -2,6 +2,7 @@
 
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createTRPCProxyClient, TRPCClientError } from "@trpc/client";
 import { httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
@@ -57,7 +58,8 @@ export default function Provider({ children }: { children: React.ReactNode }) {
         refreshTokenLink<AppRouter>({
           refreshAccessToken: async () => {
             // Server reads httpOnly refresh token cookie automatically
-            const { accessToken } = await refreshClient.auth.refreshToken.mutate();
+            const { accessToken } =
+              await refreshClient.auth.refreshToken.mutate();
             return { accessToken };
           },
           onAccessTokenRefreshed: setAccessToken,
@@ -81,7 +83,10 @@ export default function Provider({ children }: { children: React.ReactNode }) {
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </trpc.Provider>
   );
 }
