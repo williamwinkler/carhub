@@ -19,7 +19,7 @@ export default async function Home() {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <HomePage
         initialManufacturers={manufacturers.items}
-        initialFeaturedCars={featuredCars.it ems}
+        initialFeaturedCars={featuredCars.items}
       />
     </HydrationBoundary>
   );
