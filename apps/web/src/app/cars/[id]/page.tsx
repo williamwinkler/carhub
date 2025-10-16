@@ -16,9 +16,12 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
     const car = await serverTrpc.cars.getById.query({ id });
 
     return <CarDetailClient initialCar={car} />;
-  } catch (error: any) {
-    if (error?.data?.code === "NOT_FOUND") {
-      return <div>Car not found</div>;
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "data" in error) {
+      const trpcError = error as { data?: { code?: string } };
+      if (trpcError.data?.code === "NOT_FOUND") {
+        return <div>Car not found</div>;
+      }
     }
     throw error;
   }

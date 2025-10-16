@@ -58,16 +58,18 @@ cp apps/web/.env.example apps/web/.env.local
 # - JWT secrets (generate with: openssl rand -hex 32)
 # - Port or CORS settings
 
-# 5. Start the development database
+pnpm build
+
+# Start the development database
 docker compose up -d
 
-# 6. Run database migrations
+# Run database migrations
 pnpm --filter api migrations:run
 
-# 7. Seed with sample data
+# (optional) Seed with sample data
 pnpm --filter api seed
 
-# 8. Start both the frontend and backend
+# Start both the frontend and backend
 pnpm dev
 ```
 

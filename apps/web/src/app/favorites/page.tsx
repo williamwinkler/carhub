@@ -2,7 +2,6 @@
 
 import { useAuth } from "../../lib/auth-context";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useState } from "react";
 import { FaHeart } from "react-icons/fa";
 import CarGrid from "../_components/cars/CarGrid";
@@ -10,7 +9,6 @@ import Pagination from "../_components/ui/Pagination";
 import { trpc } from "../_trpc/client";
 
 export default function UserFavoritesPage() {
-  const params = useParams();
   const { user } = useAuth();
   const [page, setPage] = useState(0);
   const limit = 12;

@@ -20,12 +20,6 @@ interface UserCarsClientProps {
   isOwnProfile: boolean;
   initialCars: Car[];
   totalItems: number;
-  currentUser: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-  } | null;
 }
 
 export default function UserCarsClient({
@@ -34,7 +28,6 @@ export default function UserCarsClient({
   isOwnProfile,
   initialCars,
   totalItems,
-  currentUser,
 }: UserCarsClientProps) {
   const [{ page }, setQuery] = useQueryStates(
     {
@@ -53,8 +46,13 @@ export default function UserCarsClient({
       initialCars.length > 0 && {
         initialData: {
           items: initialCars,
-          meta: { totalItems },
-        } as any,
+          meta: {
+            totalItems,
+            limit: LIMIT,
+            skipped: 0,
+            count: initialCars.length,
+          },
+        },
       }),
   };
 

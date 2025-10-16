@@ -22,7 +22,15 @@ export default function HomePage({
   const { data: manufacturers } = trpc.carManufacturers.list.useQuery(
     undefined,
     {
-      initialData: { items: initialManufacturers, meta: {} as any },
+      initialData: {
+        items: initialManufacturers,
+        meta: {
+          totalItems: initialManufacturers.length,
+          limit: initialManufacturers.length,
+          skipped: 0,
+          count: initialManufacturers.length,
+        },
+      },
       staleTime: Infinity,
     },
   );
@@ -32,7 +40,12 @@ export default function HomePage({
     {
       initialData: {
         items: initialFeaturedCars,
-        meta: {} as any,
+        meta: {
+          totalItems: initialFeaturedCars.length,
+          limit: 6,
+          skipped: 0,
+          count: initialFeaturedCars.length,
+        },
       },
       staleTime: 60000,
     },

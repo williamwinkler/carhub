@@ -107,8 +107,8 @@ function CarsPageContent() {
     ...(manufacturer && { manufacturerSlug: manufacturer }),
     ...(model && { modelSlug: model }),
     ...(color && { color }),
-    sortBy: (sortBy as any) || "createdAt",
-    sortDirection: (sortDirection as any) || "desc",
+    sortBy: (sortBy || "createdAt") as "createdAt" | "price" | "year" | "kmDriven",
+    sortDirection: (sortDirection || "desc") as "asc" | "desc",
   });
 
   const utils = trpc.useUtils();

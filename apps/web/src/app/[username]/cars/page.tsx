@@ -42,7 +42,6 @@ export default async function UserCarsPage({
       isOwnProfile={isOwnProfile}
       initialCars={carsData.items}
       totalItems={carsData.meta.totalItems}
-      currentUser={currentUser}
     />
   );
 }
