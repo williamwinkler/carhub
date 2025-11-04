@@ -1,3 +1,13 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@tailwindcss/oxide'
+  - bcrypt
+  - esbuild
+  - sharp
+  - sqlite3
+  - unrs-resolver
