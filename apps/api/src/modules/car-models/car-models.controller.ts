@@ -36,7 +36,7 @@ export class CarModelsController {
   constructor(
     private readonly carModelsService: CarModelsService,
     private readonly carModelsAdapter: CarModelsAdapter,
-  ) {}
+  ) { }
 
   @Post()
   @Roles("admin")
@@ -79,9 +79,7 @@ export class CarModelsController {
       sortField,
       sortDirection,
     });
-    const data = this.carModelsAdapter.getListDto(carModels);
-
-    return data;
+    return this.carModelsAdapter.getListDto(carModels);
   }
 
   @Get(":id")

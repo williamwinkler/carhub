@@ -90,7 +90,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car
-      tags: &a1
+      tags:
         - Cars
       security:
         - bearer: []
@@ -199,7 +199,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List cars
-      tags: *a1
+      tags:
+        - Cars
   /v1/cars/{id}:
     get:
       operationId: CarsController_findOne_v1
@@ -212,9 +213,6 @@ paths:
             type: string
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car not found
           description: Car successfully retrieved
           content:
             application/json:
@@ -280,7 +278,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car
-      tags: *a1
+      tags:
+        - Cars
     put:
       operationId: CarsController_update_v1
       parameters:
@@ -298,11 +297,6 @@ paths:
               $ref: "#/components/schemas/UpdateCarDto"
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car not found
-            - status: 404
-              message: Car model not found
           description: Car was successfully updated
           content:
             application/json:
@@ -400,7 +394,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car
-      tags: *a1
+      tags:
+        - Cars
       security:
         - bearer: []
         - apiKey: []
@@ -502,7 +497,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car
-      tags: *a1
+      tags:
+        - Cars
       security:
         - bearer: []
         - apiKey: []
@@ -605,7 +601,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Toggle favorite status for a car
-      tags: *a1
+      tags:
+        - Cars
       security:
         - bearer: []
         - apiKey: []
@@ -707,7 +704,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get user's favorite cars
-      tags: *a1
+      tags:
+        - Cars
       security:
         - bearer: []
         - apiKey: []
@@ -723,9 +721,6 @@ paths:
               $ref: "#/components/schemas/CreateCarManufacturerDto"
       responses:
         "201":
-          errors:
-            - status: 409
-              message: Car manufacturer already exists
           description: Car manufacturer created successfully
           content:
             application/json:
@@ -817,7 +812,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car manufacturer
-      tags: &a2
+      tags:
         - CarManufacturers
       security:
         - bearer: []
@@ -905,7 +900,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List car manufacturers
-      tags: *a2
+      tags:
+        - CarManufacturers
   /v1/car-manufacturers/{id}:
     get:
       operationId: CarManufacturersController_findOne_v1
@@ -918,9 +914,6 @@ paths:
             type: string
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car manufacturer not found
           description: Car manufacturer successfully retrieved
           content:
             application/json:
@@ -986,7 +979,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car manufacturer
-      tags: *a2
+      tags:
+        - CarManufacturers
     put:
       operationId: CarManufacturersController_update_v1
       parameters:
@@ -1004,9 +998,6 @@ paths:
               $ref: "#/components/schemas/UpdateCarManufacturerDto"
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car manufacturer not found
           description: Car manufacturer was successfully updated
           content:
             application/json:
@@ -1098,7 +1089,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car manufacturer
-      tags: *a2
+      tags:
+        - CarManufacturers
       security:
         - bearer: []
         - apiKey: []
@@ -1200,7 +1192,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car manufacturer
-      tags: *a2
+      tags:
+        - CarManufacturers
       security:
         - bearer: []
         - apiKey: []
@@ -1216,9 +1209,6 @@ paths:
               $ref: "#/components/schemas/CreateCarModelDto"
       responses:
         "201":
-          errors:
-            - status: 404
-              message: Car manufacturer not found
           description: Car model created successfully
           content:
             application/json:
@@ -1310,7 +1300,7 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Create a car model
-      tags: &a3
+      tags:
         - CarModels
       security:
         - bearer: []
@@ -1406,7 +1396,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: List car models
-      tags: *a3
+      tags:
+        - CarModels
   /v1/car-models/{id}:
     get:
       operationId: CarModelsController_findOne_v1
@@ -1419,9 +1410,6 @@ paths:
             type: string
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car model not found
           description: Car model successfully retrieved
           content:
             application/json:
@@ -1487,7 +1475,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car model
-      tags: *a3
+      tags:
+        - CarModels
     put:
       operationId: CarModelsController_update_v1
       parameters:
@@ -1505,9 +1494,6 @@ paths:
               $ref: "#/components/schemas/UpdateCarModelDto"
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car model not found
           description: Car model was successfully updated
           content:
             application/json:
@@ -1599,7 +1585,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Update a car model
-      tags: *a3
+      tags:
+        - CarModels
       security:
         - bearer: []
         - apiKey: []
@@ -1701,7 +1688,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Delete a car model
-      tags: *a3
+      tags:
+        - CarModels
       security:
         - bearer: []
         - apiKey: []
@@ -1719,9 +1707,6 @@ paths:
             maxLength: 255
       responses:
         "200":
-          errors:
-            - status: 404
-              message: Car model not found
           description: Car model succesfully retrieved
           content:
             application/json:
@@ -1787,7 +1772,8 @@ paths:
                     errorCode: UNEXPECTED_ERROR
                     message: An unexpected error occurred
       summary: Get a car model by it's slug
-      tags: *a3
+      tags:
+        - CarModels
 info:
   title: 🔥 Next Gen Nestjs API
   description: Demo API to showcase autogenerated Swagger docs from Zod schemas and tRPC.
@@ -1902,37 +1888,97 @@ components:
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the car was manufactured
           type: integer
           minimum: 1886
-          maximum: 2026
-          x-nestjs_zod-parent-additional-properties: false
+          maximum: 2027
         color:
           description: The color of the car
           type: string
           minLength: 1
           maxLength: 100
-          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
-          x-nestjs_zod-parent-additional-properties: false
         price:
           description: Price of the car in €
           type: integer
           minimum: 0
           maximum: 9007199254740991
-          x-nestjs_zod-parent-additional-properties: false
       required:
         - modelId
         - year
         - color
         - kmDriven
         - price
+      additionalProperties: false
+    UserDto:
+      type: object
+      properties:
+        username:
+          description: The username of the user
+          type: string
+        firstName:
+          description: First name of the user
+          type: string
+        lastName:
+          description: Last name of the user
+          type: string
+      required:
+        - username
+        - firstName
+        - lastName
+    CarModelDto:
+      type: object
+      properties:
+        id:
+          description: The unique id of the car model (UUID)
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        name:
+          description: The name of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
+        slug:
+          description: The slug of the car model
+          type: string
+          minLength: 1
+          maxLength: 255
+        manufacturer:
+          $ref: "#/components/schemas/CarManufacturerDto"
+      required:
+        - id
+        - name
+        - slug
+      additionalProperties: false
+    CarManufacturerDto:
+      type: object
+      properties:
+        id:
+          description: The unique id of the car manufacturer (UUID)
+          type: string
+          format: uuid
+          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+        name:
+          description: The name of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+        slug:
+          description: The slug of the car manufacturer
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+        - id
+        - name
+        - slug
+      additionalProperties: false
     CarDto:
       type: object
       properties:
@@ -1941,111 +1987,43 @@ components:
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the car was manufactured
           type: integer
           minimum: 1886
-          maximum: 2026
-          x-nestjs_zod-parent-additional-properties: false
+          maximum: 2027
         color:
           description: The color of the car
           type: string
           minLength: 1
           maxLength: 100
-          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
-          x-nestjs_zod-parent-additional-properties: false
         price:
           description: Price of the car in €
           type: integer
           minimum: 0
           maximum: 9007199254740991
-          x-nestjs_zod-parent-additional-properties: false
         createdBy:
-          type: object
-          properties:
-            username:
-              description: The username of the user
-              type: string
-            firstName:
-              description: First name of the user
-              type: string
-            lastName:
-              description: Last name of the user
-              type: string
-          required:
-            - username
-            - firstName
-            - lastName
-          x-nestjs_zod-parent-additional-properties: false
+          $ref: "#/components/schemas/UserDto"
         createdAt:
           description: When the car record was created
           type: string
           format: date-time
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
         updatedAt:
           description: When the car record was last updated
           type: string
           format: date-time
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-          x-nestjs_zod-parent-additional-properties: false
         isFavorite:
           description: Indicates if the user has favorited the car or not
           type: boolean
-          x-nestjs_zod-parent-additional-properties: false
         model:
-          type: object
-          properties:
-            id:
-              description: The unique id of the car model (UUID)
-              type: string
-              format: uuid
-              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-            name:
-              description: The name of the car model
-              type: string
-              minLength: 1
-              maxLength: 255
-            slug:
-              description: The slug of the car model
-              type: string
-              minLength: 1
-              maxLength: 255
-            manufacturer:
-              type: object
-              properties:
-                id:
-                  description: The unique id of the car manufacturer (UUID)
-                  type: string
-                  format: uuid
-                  pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-                name:
-                  description: The name of the car manufacturer
-                  type: string
-                  minLength: 1
-                  maxLength: 255
-                slug:
-                  description: The slug of the car manufacturer
-                  type: string
-                  minLength: 1
-                  maxLength: 255
-              required:
-                - id
-                - name
-                - slug
-              additionalProperties: false
-          required:
-            - id
-            - name
-            - slug
-          additionalProperties: false
-          x-nestjs_zod-parent-additional-properties: false
+          $ref: "#/components/schemas/CarModelDto"
       required:
         - id
         - year
@@ -2054,6 +2032,7 @@ components:
         - price
         - createdAt
         - updatedAt
+      additionalProperties: false
     CarResponseDto:
       type: object
       properties:
@@ -2125,31 +2104,27 @@ components:
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
         year:
           description: The year the car was manufactured
           type: integer
           minimum: 1886
-          maximum: 2026
-          x-nestjs_zod-parent-additional-properties: false
+          maximum: 2027
         color:
           description: The color of the car
           type: string
           minLength: 1
           maxLength: 100
-          x-nestjs_zod-parent-additional-properties: false
         kmDriven:
           description: The amount of kilometers the car has driven
           type: integer
           minimum: 0
           maximum: 10000000
-          x-nestjs_zod-parent-additional-properties: false
         price:
           description: Price of the car in €
           type: integer
           minimum: 0
           maximum: 9007199254740991
-          x-nestjs_zod-parent-additional-properties: false
+      additionalProperties: false
     CreateCarManufacturerDto:
       type: object
       properties:
@@ -2158,34 +2133,9 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
       required:
         - name
-    CarManufacturerDto:
-      type: object
-      properties:
-        id:
-          description: The unique id of the car manufacturer (UUID)
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
-        name:
-          description: The name of the car manufacturer
-          type: string
-          minLength: 1
-          maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
-        slug:
-          description: The slug of the car manufacturer
-          type: string
-          minLength: 1
-          maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - id
-        - name
-        - slug
+      additionalProperties: false
     CarManufacturerResponseDto:
       type: object
       properties:
@@ -2222,7 +2172,7 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
+      additionalProperties: false
     CreateCarModelDto:
       type: object
       properties:
@@ -2231,65 +2181,15 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
         manufacturerId:
           description: The manufacturer ID this model belongs to
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
       required:
         - name
         - manufacturerId
-    CarModelDto:
-      type: object
-      properties:
-        id:
-          description: The unique id of the car model (UUID)
-          type: string
-          format: uuid
-          pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
-        name:
-          description: The name of the car model
-          type: string
-          minLength: 1
-          maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
-        slug:
-          description: The slug of the car model
-          type: string
-          minLength: 1
-          maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
-        manufacturer:
-          type: object
-          properties:
-            id:
-              description: The unique id of the car manufacturer (UUID)
-              type: string
-              format: uuid
-              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-            name:
-              description: The name of the car manufacturer
-              type: string
-              minLength: 1
-              maxLength: 255
-            slug:
-              description: The slug of the car manufacturer
-              type: string
-              minLength: 1
-              maxLength: 255
-          required:
-            - id
-            - name
-            - slug
-          additionalProperties: false
-          x-nestjs_zod-parent-additional-properties: false
-      required:
-        - id
-        - name
-        - slug
+      additionalProperties: false
     CarModelResponseDto:
       type: object
       properties:
@@ -2326,10 +2226,9 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          x-nestjs_zod-parent-additional-properties: false
         manufacturerId:
           description: The manufacturer ID this model belongs to
           type: string
           format: uuid
           pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
-          x-nestjs_zod-parent-additional-properties: false
+      additionalProperties: false

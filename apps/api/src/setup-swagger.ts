@@ -2,12 +2,45 @@
 import type { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule, getSchemaPath } from "@nestjs/swagger";
 import { writeFileSync } from "fs";
+import { cleanupOpenApiDoc } from "nestjs-zod";
 import { resolve } from "path";
 import YAML from "yaml";
 import pkg from "../package.json";
 import { ErrorDto } from "./common/errors/error.dto";
 import { Errors } from "./common/errors/errors";
 import { ConfigService } from "./modules/config/config.service";
+
+function stripSchemaIds(value: unknown): void {
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      stripSchemaIds(item);
+    }
+
+    return;
+  }
+
+  const record = value as Record<string, unknown>;
+  const looksLikeSchemaObject =
+    "type" in record ||
+    "properties" in record ||
+    "items" in record ||
+    "allOf" in record ||
+    "anyOf" in record ||
+    "oneOf" in record ||
+    "enum" in record;
+
+  if (looksLikeSchemaObject && typeof record.id === "string") {
+    delete record.id;
+  }
+
+  for (const nested of Object.values(record)) {
+    stripSchemaIds(nested);
+  }
+}
 
 export function setupSwagger(app: INestApplication) {
   // Always generate Swagger documentation for external tools
@@ -30,7 +63,9 @@ export function setupSwagger(app: INestApplication) {
     )
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const rawDocument = SwaggerModule.createDocument(app, config);
+  const document = cleanupOpenApiDoc(rawDocument, { version: "3.0" });
+  stripSchemaIds(document.components?.schemas);
   for (const path of Object.values(document.paths)) {
     for (const method of Object.values(path)) {
       // Add base error responses with concrete examples

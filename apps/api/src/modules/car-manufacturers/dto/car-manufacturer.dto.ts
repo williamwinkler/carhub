@@ -8,6 +8,7 @@ export const carManufacturerSchema = z
     name: carManufacturerFields.name,
     slug: carManufacturerFields.slug,
   })
-  .strict();
+  .strict()
+  .meta({ id: "CarManufacturerDto" });
 
 export class CarManufacturerDto extends createZodDto(carManufacturerSchema) {}

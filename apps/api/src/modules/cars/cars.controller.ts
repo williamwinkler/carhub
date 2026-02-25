@@ -14,7 +14,7 @@ import {
   HttpStatus,
   Patch,
   Post,
-  Put,
+  Put
 } from "@nestjs/common";
 import { UUID } from "crypto";
 import {
@@ -37,7 +37,7 @@ export class CarsController {
   constructor(
     private readonly carsService: CarsService,
     private readonly carsAdapter: CarsAdapter,
-  ) {}
+  ) { }
 
   @Post()
   @Roles("user")

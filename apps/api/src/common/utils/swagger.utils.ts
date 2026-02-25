@@ -14,6 +14,11 @@ import {
   ApiResponseOptions,
   getSchemaPath,
 } from "@nestjs/swagger";
+import {
+  ZodSerializerDto,
+  createZodDto,
+  type ZodDto,
+} from "nestjs-zod";
 import z from "zod";
 import { SwaggerError } from "../decorators/swagger-responses.decorator";
 import { GeneralResponseDto } from "../dto/general-response.dto";
@@ -28,6 +33,21 @@ export interface ResponseDtoMeta<T = any> {
   isList: boolean; // whether it's a list response
   schema?: z.ZodTypeAny; // Zod schema from createZodDto
 }
+
+const paginationMetaSchema = z.object({
+  totalItems: z.number(),
+  limit: z.number(),
+  skipped: z.number(),
+  count: z.number(),
+});
+
+const serializerDtoCache = new WeakMap<
+  Type<unknown>,
+  {
+    single?: ZodDto<z.ZodTypeAny>;
+    list?: ZodDto<z.ZodTypeAny>;
+  }
+>();
 
 type SingleResponse<T> = Promise<T>;
 type ListResponse<T> = Promise<PaginationDto<T>>;
@@ -76,9 +96,49 @@ function createResponseListDto<T>(classRef: new () => T) {
   });
 
   return ResponseListDto as unknown as {
-    new (): GeneralResponseDto<PaginationDto<T>>;
+    new(): GeneralResponseDto<PaginationDto<T>>;
     PaginatedItemsDto: new () => PaginationDto<T>;
   };
+}
+
+function createSerializerResponseDto<T>(
+  classRef: Type<T>,
+  isList: boolean,
+  schema: z.ZodTypeAny | undefined,
+): ZodDto<z.ZodTypeAny> | undefined {
+  if (!schema) {
+    return undefined;
+  }
+
+  const cacheEntry = serializerDtoCache.get(classRef);
+  const cached = isList ? cacheEntry?.list : cacheEntry?.single;
+  if (cached) {
+    return cached;
+  }
+
+  const dataSchema = isList
+    ? z.object({
+      items: z.array(schema),
+      meta: paginationMetaSchema,
+    })
+    : schema;
+
+  const responseSchema = z.object({
+    apiVersion: z.string(),
+    data: dataSchema,
+  });
+
+  class SerializerResponseDto extends createZodDto(responseSchema) { }
+  Object.defineProperty(SerializerResponseDto, "name", {
+    value: `${getDtoName(classRef, isList)}SerializerDto`,
+  });
+
+  serializerDtoCache.set(classRef, {
+    single: isList ? cacheEntry?.single : SerializerResponseDto,
+    list: isList ? SerializerResponseDto : cacheEntry?.list,
+  });
+
+  return SerializerResponseDto as ZodDto<z.ZodTypeAny>;
 }
 
 function createErrorExamples(errors?: ErrorEntry[]): MethodDecorator[] {
@@ -219,6 +279,9 @@ export function SwaggerInfo<T>(
     errors?: ErrorEntry[];
   },
 ) {
+  const errorEntries = options.errors;
+  delete options.errors;
+
   const summary = options.summary;
   delete options.summary;
   options.status = options.status ?? HttpStatus.OK;
@@ -226,6 +289,7 @@ export function SwaggerInfo<T>(
   delete options.successText;
 
   let dtoClass: Type<unknown> | undefined = undefined;
+  let serializerDtoClass: ZodDto<z.ZodTypeAny> | undefined = undefined;
   let classRef: Type<T> | undefined = undefined;
   let schema: any = undefined;
 
@@ -242,6 +306,7 @@ export function SwaggerInfo<T>(
 
     // Grab zod schema if the DTO was made with createZodDto
     schema = (classRef as any)?.schema;
+    serializerDtoClass = createSerializerResponseDto(classRef, isList, schema);
   }
 
   const base = applyDecorators(
@@ -249,23 +314,24 @@ export function SwaggerInfo<T>(
     ...(summary ? [ApiOperation({ summary: summary })] : []),
     ...(dtoClass
       ? [
-          ApiResponse({ ...options, type: dtoClass }),
-          SetMetadata(RESPONSE_DTO_KEY, {
-            classRef,
-            isList,
-            schema,
-          } as ResponseDtoMeta<T>),
-        ]
+        ApiResponse({ ...options, type: dtoClass }),
+        ...(serializerDtoClass ? [ZodSerializerDto(serializerDtoClass)] : []),
+        SetMetadata(RESPONSE_DTO_KEY, {
+          classRef,
+          isList,
+          schema,
+        } as ResponseDtoMeta<T>),
+      ]
       : options.type === null
         ? [
-            ApiResponse({
-              status: options.status,
-              description: (options as any).description,
-              type: undefined,
-            }),
-          ]
+          ApiResponse({
+            status: options.status,
+            description: (options as any).description,
+            type: undefined,
+          }),
+        ]
         : []),
-    ...createErrorExamples(options.errors),
+    ...createErrorExamples(errorEntries),
   );
 
   if (isList) {

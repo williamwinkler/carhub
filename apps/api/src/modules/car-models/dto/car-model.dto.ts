@@ -1,7 +1,7 @@
+import { carManufacturerSchema } from "@api/modules/car-manufacturers/dto/car-manufacturer.dto";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 import { carModelFields } from "../car-models.schema";
-import { carManufacturerSchema } from "@api/modules/car-manufacturers/dto/car-manufacturer.dto";
 
 // Full schema with manufacturerId for creation/updates
 export const carModelSchema = z
@@ -11,6 +11,7 @@ export const carModelSchema = z
     slug: carModelFields.slug,
     manufacturer: carManufacturerSchema.optional(),
   })
-  .strict();
+  .strict()
+  .meta({ id: "CarModelDto" });
 
-export class CarModelDto extends createZodDto(carModelSchema) {}
+export class CarModelDto extends createZodDto(carModelSchema) { }

@@ -9,7 +9,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ClsModule } from "nestjs-cls";
-import { ZodValidationPipe } from "nestjs-zod";
+import { ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod";
 import { HttpErrorFilter } from "./common/filters/http-error.filter";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
@@ -71,6 +71,10 @@ import { UsersModule } from "./modules/users/users.module";
     {
       provide: APP_INTERCEPTOR,
       useClass: TrafficInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ZodSerializerInterceptor, // Runtime response validation/serialization
     },
     {
       provide: APP_INTERCEPTOR,

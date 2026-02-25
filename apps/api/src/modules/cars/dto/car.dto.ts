@@ -17,6 +17,7 @@ export const carResponseSchema = z
     isFavorite: carFields.isFavorite.optional(), // Only when logged in
     model: carModelSchema.optional(),
   })
-  .strict();
+  .strict()
+  .meta({ id: "CarDto" });
 
 export class CarDto extends createZodDto(carResponseSchema) {}
