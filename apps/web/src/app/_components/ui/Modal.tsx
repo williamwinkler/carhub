@@ -44,6 +44,9 @@ export default function Modal({
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <div
         className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
@@ -53,14 +56,17 @@ export default function Modal({
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div className="flex items-center gap-3">
             {icon}
-            <h2 className="text-2xl font-semibold text-slate-200">{title}</h2>
+            <h2 id="modal-title" className="text-2xl font-semibold text-slate-200">
+              {title}
+            </h2>
           </div>
           <button
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-slate-300 hover:bg-slate-700/50 rounded-lg transition-all duration-200"
             title="Close"
+            aria-label="Close modal"
           >
-            <FaTimes className="w-5 h-5" />
+            <FaTimes className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

@@ -4,14 +4,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../lib/auth-context";
 import { trpc } from "../../_trpc/client";
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  role: string;
-}
+import { User } from "../../_trpc/types";
 
 interface ProfileFormProps {
   user: User;
@@ -93,6 +86,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
               placeholder="Enter your first name"
               required
+              aria-label="First name"
+              aria-required="true"
             />
           </div>
 
@@ -108,6 +103,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
               placeholder="Enter your last name"
               required
+              aria-label="Last name"
+              aria-required="true"
             />
           </div>
         </div>

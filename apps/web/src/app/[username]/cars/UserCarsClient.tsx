@@ -9,8 +9,7 @@ import CarGrid from "../../_components/cars/CarGrid";
 import Pagination from "../../_components/ui/Pagination";
 import { trpc } from "../../_trpc/client";
 import type { Car } from "../../_trpc/types";
-
-const LIMIT = 12;
+import { DEFAULT_PAGE_LIMIT } from "../../../constants";
 
 interface UserCarsClientProps {
   userId: string;
@@ -52,7 +51,7 @@ export default function UserCarsClient({
           items: initialCars,
           meta: {
             totalItems,
-            limit: LIMIT,
+            limit: DEFAULT_PAGE_LIMIT,
             skipped: 0,
             count: initialCars.length,
           },
@@ -64,16 +63,16 @@ export default function UserCarsClient({
   const { data: carsData, isLoading: carsLoading } = isOwnProfile
     ? trpc.cars.getMyCars.useQuery(
         {
-          skip: page * LIMIT,
-          limit: LIMIT,
+          skip: page * DEFAULT_PAGE_LIMIT,
+          limit: DEFAULT_PAGE_LIMIT,
         },
         queryOptions,
       )
     : trpc.cars.getCarsByUserId.useQuery(
         {
           userId,
-          skip: page * LIMIT,
-          limit: LIMIT,
+          skip: page * DEFAULT_PAGE_LIMIT,
+          limit: DEFAULT_PAGE_LIMIT,
         },
         queryOptions,
       );
@@ -188,7 +187,7 @@ export default function UserCarsClient({
         <Pagination
           currentPage={page}
           totalItems={carsData.meta.totalItems}
-          itemsPerPage={LIMIT}
+          itemsPerPage={DEFAULT_PAGE_LIMIT}
           onPageChange={handleSetPage}
         />
       )}

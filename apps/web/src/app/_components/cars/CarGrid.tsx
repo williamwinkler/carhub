@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Car } from "../../_trpc/types";
 import CarCard from "./CarCard";
 
@@ -9,7 +10,7 @@ interface CarGridProps {
   onFavoriteUpdate?: () => void;
 }
 
-export default function CarGrid({
+function CarGrid({
   cars,
   isLoading,
   onFavoriteUpdate,
@@ -49,3 +50,5 @@ export default function CarGrid({
     </div>
   );
 }
+
+export default memo(CarGrid);

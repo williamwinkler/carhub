@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { trpc } from "../app/_trpc/client";
+import { handleError } from "../utils/error-handling";
 import { getAccessToken, getUser, removeUserCookies, setUserCookie } from "./cookies";
 import { setLogoutCallback } from "./token-refresh";
 
@@ -82,7 +83,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUserCookie(userInfo);
           setUser(userInfo);
         } catch (error) {
-          console.error("Failed to fetch user info:", error);
+          handleError(error, {
+            component: "AuthContext",
+            action: "fetchUserInfo",
+          });
         }
       }
 

@@ -7,7 +7,51 @@ The project demonstrates **end-to-end type safety** and **auto-generated documen
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🏗️ Architecture Overview
-![test](/docs/architecture.png)
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        Web[Next.js App<br/>Port 3000]
+    end
+    
+    subgraph "Backend API"
+        API[NestJS API<br/>Port 3001]
+        REST[REST Endpoints<br/>Swagger Docs]
+        TRPC[tRPC Procedures<br/>Type-Safe]
+    end
+    
+    subgraph "Data Layer"
+        DB[(PostgreSQL<br/>Database)]
+        TypeORM[TypeORM<br/>Entities]
+    end
+    
+    subgraph "Schema & Validation"
+        Zod[Zod Schemas<br/>Single Source of Truth]
+        DTOs[Auto-Generated DTOs]
+    end
+    
+    subgraph "Shared Packages"
+        Shared[Common Types<br/>& Utilities]
+    end
+    
+    Web -->|tRPC<br/>Type-Safe| TRPC
+    Web -->|REST API<br/>Swagger| REST
+    TRPC --> API
+    REST --> API
+    API --> TypeORM
+    TypeORM --> DB
+    API --> Zod
+    Zod --> DTOs
+    API --> Shared
+    Web --> Shared
+    
+    style Web fill:#0066cc,color:#fff
+    style API fill:#e0234e,color:#fff
+    style DB fill:#336791,color:#fff
+    style Zod fill:#1a1a8e,color:#fff
+    style TRPC fill:#0066cc,color:#fff
+    style REST fill:#2d5016,color:#fff
+```
 
 ## 🧑‍💻 Improved DX
 
@@ -42,8 +86,8 @@ The project demonstrates **end-to-end type safety** and **auto-generated documen
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/williamwinkler/carhub.git
-cd carhub
+gh repo clone rubinlake/rl-academy-carhub
+cd rl-academy-carhub
 
 # 2. Install dependencies
 pnpm install

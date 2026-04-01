@@ -17,6 +17,7 @@ import {
 import { useAuth } from "../../../lib/auth-context";
 import { trpc } from "../../_trpc/client";
 import { Car } from "../../_trpc/types";
+import { getColorClass } from "../../../utils/color-classes";
 
 type CarDetailClientProps = {
   initialCar: Car;
@@ -153,7 +154,7 @@ export default function CarDetailClient({ initialCar }: CarDetailClientProps) {
             {/* Color */}
             <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg">
               <FaPalette
-                className={`w-6 h-6 text-${car.color.toLowerCase()}-400`}
+                className={`w-6 h-6 ${getColorClass(car.color)}`}
               />
               <div>
                 <p className="text-slate-400 text-sm">Color</p>

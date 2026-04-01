@@ -84,10 +84,11 @@ async function bootstrap() {
   await app.listen(port);
   if (configService.get("NODE_ENV") === "development") {
     console.log(`✨ Application started (v${pkg.version}) ✨`);
+    console.log(`🌐 Web UI:          http://localhost:3000`);
     console.log(`🚀 Server ready on: http://localhost:${port}`);
     console.log(`📡 tRPC ready on:   http://localhost:${port}/trpc`);
     console.log(`📚 Swagger UI:      http://localhost:${port}/docs`);
-    console.log(`🐘 PG Admin:        http://localhost:${5050}`);
+    console.log(`🐘 PG Admin:        http://localhost:5050`);
   }
 }
 

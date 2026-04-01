@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import {
   FaCalendar,
@@ -17,6 +17,7 @@ import {
 import { useAuth } from "../../../lib/auth-context";
 import { trpc } from "../../_trpc/client";
 import { Car } from "../../_trpc/types";
+import { getColorClass } from "../../../utils/color-classes";
 
 interface CarCardProps {
   car: Car;
@@ -37,7 +38,7 @@ const formatDate = (dateString: string) => {
   return `${Math.ceil(diffDays / 365)} years ago`;
 };
 
-export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
+function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
   const router = useRouter();
   const { user } = useAuth();
   const utils = trpc.useUtils();
@@ -76,18 +77,21 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
     },
   });
 
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user) {
-      toast.error("Please log in to save favorites");
-      return;
-    }
-    await toggleFavoriteMutation.mutateAsync({ id: car.id });
-  };
+  const handleToggleFavorite = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!user) {
+        toast.error("Please log in to save favorites");
+        return;
+      }
+      await toggleFavoriteMutation.mutateAsync({ id: car.id });
+    },
+    [user, car.id, toggleFavoriteMutation],
+  );
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     router.push(`/cars/${car.id}`);
-  };
+  }, [router, car.id]);
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg overflow-hidden hover:bg-slate-800/70 transition-all duration-200 group relative">
@@ -97,16 +101,39 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
           onClick={handleToggleFavorite}
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-700/50 transition-all duration-200 z-10 bg-slate-800/80"
           disabled={toggleFavoriteMutation.isPending}
+          aria-label={
+            optimisticFavorite
+              ? `Remove ${car.model?.manufacturer?.name} ${car.model?.name} from favorites`
+              : `Add ${car.model?.manufacturer?.name} ${car.model?.name} to favorites`
+          }
+          title={
+            optimisticFavorite ? "Remove from favorites" : "Add to favorites"
+          }
         >
           {optimisticFavorite ? (
-            <FaHeart className="w-5 h-5 text-pink-400" />
+            <FaHeart className="w-5 h-5 text-pink-400" aria-hidden="true" />
           ) : (
-            <FaRegHeart className="w-5 h-5 text-slate-400 hover:text-pink-400" />
+            <FaRegHeart
+              className="w-5 h-5 text-slate-400 hover:text-pink-400"
+              aria-hidden="true"
+            />
           )}
         </button>
       )}
 
-      <div className="cursor-pointer" onClick={handleCardClick}>
+      <div
+        className="cursor-pointer"
+        onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${car.model?.manufacturer?.name} ${car.model?.name}`}
+      >
         {/* Header Section */}
         <div className="p-6 pb-4">
           <div className="flex items-start justify-between pr-12">
@@ -146,7 +173,7 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
 
             <div className="flex items-center gap-2 p-2 bg-slate-700/20 rounded">
               <FaPalette
-                className={`w-3 h-3 text-${car.color.toLowerCase()}-400`}
+                className={`w-3 h-3 ${getColorClass(car.color)}`}
               />
               <div>
                 <p className="text-slate-400 text-xs">Color</p>
@@ -197,11 +224,16 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
 
         {/* Action Button */}
         <div className="px-6 pb-6">
-          <button className="w-full py-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-400 rounded-lg font-medium hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50 transition-all duration-200">
+          <span
+            className="w-full block py-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 text-blue-400 rounded-lg font-medium group-hover:from-blue-600/30 group-hover:to-purple-600/30 group-hover:border-blue-400/50 transition-all duration-200 text-center"
+            aria-label={`View details for ${car.model?.manufacturer?.name} ${car.model?.name}`}
+          >
             View Details
-          </button>
+          </span>
         </div>
       </div>
     </div>
   );
 }
+
+export default memo(CarCard);

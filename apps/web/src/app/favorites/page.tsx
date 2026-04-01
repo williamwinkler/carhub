@@ -7,11 +7,11 @@ import { FaHeart } from "react-icons/fa";
 import CarGrid from "../_components/cars/CarGrid";
 import Pagination from "../_components/ui/Pagination";
 import { trpc } from "../_trpc/client";
+import { DEFAULT_PAGE_LIMIT } from "../../constants";
 
 export default function UserFavoritesPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(0);
-  const limit = 12;
   const utils = trpc.useUtils();
 
   // Get user info to display their name
@@ -21,7 +21,7 @@ export default function UserFavoritesPage() {
 
   // Get user's favorite cars
   const favoritesQuery = trpc.cars.getFavorites.useQuery(
-    { skip: page * limit, limit },
+    { skip: page * DEFAULT_PAGE_LIMIT, limit: DEFAULT_PAGE_LIMIT },
     { enabled: !!user },
   );
 
@@ -146,7 +146,7 @@ export default function UserFavoritesPage() {
           <Pagination
             currentPage={page}
             totalItems={favoritesQuery.data.meta.totalItems}
-            itemsPerPage={limit}
+            itemsPerPage={DEFAULT_PAGE_LIMIT}
             onPageChange={setPage}
           />
         )}

@@ -1,8 +1,6 @@
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { setAccessToken } from "../../lib/cookies";
-import { trpc } from "../_trpc/client";
+import { useLogin } from "../../hooks/useLogin";
 import { User } from "../_trpc/types";
+
 interface LoginFormProps {
   onLoginSuccess?: (user: User) => void;
   onClose?: () => void;
@@ -14,42 +12,27 @@ export function LoginForm({
   onClose,
   standalone = false,
 }: LoginFormProps) {
-  const login = trpc.auth.login.useMutation();
-  const utils = trpc.useUtils();
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    try {
-      const result = await login.mutateAsync({ username, password });
-
-      // Store access token in cookie (refresh token is set by API in cookie)
-      setAccessToken(result.accessToken);
-
-      // Get user info using utils to fetch fresh data
-      const userInfo = await utils.accounts.getMe.fetch();
-
-      // Call success callback if provided
+  const {
+    username,
+    setUsername,
+    password,
+    setPassword,
+    handleLogin,
+    isLoading,
+  } = useLogin({
+    onSuccess: (userInfo) => {
       if (onLoginSuccess) {
         onLoginSuccess(userInfo);
       }
-
-      // Reset form
-      setUsername("");
-      setPassword("");
-
-      toast.success(`Welcome back, ${userInfo.firstName}!`);
-
-      // Close modal/form if close callback provided
       if (onClose) {
         onClose();
       }
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Login failed");
-    }
+    },
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await handleLogin();
   }
 
   return (
@@ -101,10 +84,10 @@ export function LoginForm({
 
         <button
           type="submit"
-          disabled={login.isPending}
+          disabled={isLoading}
           className="w-full rounded-lg bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-500 hover:to-purple-500 px-4 py-3 text-white font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed border border-blue-500/30 hover:border-blue-400/50"
         >
-          {login.isPending ? "Logging in..." : "Login"}
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
         <div className="mt-6 text-xs text-slate-400 bg-slate-700/30 rounded-lg p-3 border border-slate-600/30">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "react-hot-toast";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { AuthProvider } from "../lib/auth-context";
 import Navbar from "./_components/Navbar";
 import Provider from "./_trpc/Provider";
@@ -95,21 +96,23 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800`}
       >
         <Provider>
-          <AuthProvider>
-            <Navbar />
-            <NuqsAdapter>{children}</NuqsAdapter>
-            <Toaster
-              position="bottom-center"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: "#1e293b",
-                  color: "#f1f5f9",
-                  border: "1px solid #475569",
-                },
-              }}
-            />
-          </AuthProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <Navbar />
+              <NuqsAdapter>{children}</NuqsAdapter>
+              <Toaster
+                position="bottom-center"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: "#1e293b",
+                    color: "#f1f5f9",
+                    border: "1px solid #475569",
+                  },
+                }}
+              />
+            </AuthProvider>
+          </ErrorBoundary>
         </Provider>
       </body>
     </html>

@@ -9,7 +9,9 @@ import {
   FaEyeSlash,
   FaKey,
 } from "react-icons/fa";
+import Modal from "../ui/Modal";
 import { trpc } from "../../_trpc/client";
+import { API_DOCS_URL } from "../../../constants";
 
 export default function ApiKeyManager() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -106,7 +108,7 @@ export default function ApiKeyManager() {
                 Learn how to use your API key with our REST API endpoints.
               </p>
               <a
-                href="http://localhost:3001/docs"
+                href={API_DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300 text-sm font-medium underline underline-offset-4"
@@ -119,123 +121,111 @@ export default function ApiKeyManager() {
       </div>
 
       {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <FaExclamationTriangle className="w-6 h-6 text-amber-400" />
-              <h3 className="text-xl font-semibold text-slate-200">
-                {apiKeyStatus?.hasApiKey
-                  ? "Generate New API Key"
-                  : "Generate API Key"}
-              </h3>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              {apiKeyStatus?.hasApiKey && (
-                <p className="text-amber-300 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                  ⚠️ This will overwrite your existing API key. Any applications
-                  using the old key will stop working.
-                </p>
-              )}
-              <p className="text-slate-400">
-                {apiKeyStatus?.hasApiKey
-                  ? "Are you sure you want to generate a new API key? This action cannot be undone."
-                  : "This will generate a new API key for accessing the CarHub API."}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition-all duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleGenerateApiKey}
-                disabled={generateApiKeyMutation.isPending}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-medium rounded-lg transition-all duration-200"
-              >
-                {generateApiKeyMutation.isPending
-                  ? "Generating..."
-                  : "Generate"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title={
+          apiKeyStatus?.hasApiKey
+            ? "Generate New API Key"
+            : "Generate API Key"
+        }
+        icon={<FaExclamationTriangle className="w-6 h-6 text-amber-400" />}
+      >
+        <div className="space-y-3 mb-6">
+          {apiKeyStatus?.hasApiKey && (
+            <p className="text-amber-300 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+              ⚠️ This will overwrite your existing API key. Any applications
+              using the old key will stop working.
+            </p>
+          )}
+          <p className="text-slate-400">
+            {apiKeyStatus?.hasApiKey
+              ? "Are you sure you want to generate a new API key? This action cannot be undone."
+              : "This will generate a new API key for accessing the CarHub API."}
+          </p>
         </div>
-      )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowConfirmModal(false)}
+            className="flex-1 px-4 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition-all duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleGenerateApiKey}
+            disabled={generateApiKeyMutation.isPending}
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-medium rounded-lg transition-all duration-200"
+          >
+            {generateApiKeyMutation.isPending ? "Generating..." : "Generate"}
+          </button>
+        </div>
+      </Modal>
 
       {/* API Key Display Modal */}
-      {newApiKey && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-lg mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <FaKey className="w-6 h-6 text-green-400" />
-              <h3 className="text-xl font-semibold text-slate-200">
-                API Key Generated
-              </h3>
-            </div>
+      <Modal
+        isOpen={!!newApiKey}
+        onClose={closeApiKeyModal}
+        title="API Key Generated"
+        icon={<FaKey className="w-6 h-6 text-green-400" />}
+      >
+        <div className="space-y-4 mb-6">
+          <p className="text-green-300 text-sm bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+            ✅ Your new API key has been generated successfully!
+          </p>
 
-            <div className="space-y-4 mb-6">
-              <p className="text-green-300 text-sm bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                ✅ Your new API key has been generated successfully!
-              </p>
-
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Your API Key
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg font-mono text-sm">
-                    <input
-                      type={showApiKey ? "text" : "password"}
-                      value={newApiKey}
-                      readOnly
-                      className="w-full bg-transparent text-slate-200 focus:outline-none"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="p-2 text-slate-400 hover:text-slate-300 transition-colors"
-                    title={showApiKey ? "Hide API key" : "Show API key"}
-                  >
-                    {showApiKey ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                  <button
-                    onClick={handleCopyApiKey}
-                    className="p-2 text-slate-400 hover:text-blue-400 transition-colors"
-                    title="Copy to clipboard"
-                  >
-                    <FaCopy />
-                  </button>
-                </div>
+          <div>
+            <label className="text-sm font-medium text-slate-300 mb-2 block">
+              Your API Key
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg font-mono text-sm">
+                <input
+                  type={showApiKey ? "text" : "password"}
+                  value={newApiKey || ""}
+                  readOnly
+                  className="w-full bg-transparent text-slate-200 focus:outline-none"
+                />
               </div>
-
-              <p className="text-amber-300 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                ⚠️ Make sure to copy and store this API key securely. You
-                won&apos;t be able to see it again.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
               <button
-                onClick={handleCopyApiKey}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="p-2 text-slate-400 hover:text-slate-300 transition-colors"
+                title={showApiKey ? "Hide API key" : "Show API key"}
               >
-                <FaCopy className="w-4 h-4" />
-                Copy API Key
+                {showApiKey ? <FaEyeSlash /> : <FaEye />}
               </button>
               <button
-                onClick={closeApiKeyModal}
-                className="px-4 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition-all duration-200"
+                onClick={handleCopyApiKey}
+                className="p-2 text-slate-400 hover:text-blue-400 transition-colors"
+                title="Copy to clipboard"
               >
-                Done
+                <FaCopy />
               </button>
             </div>
           </div>
+
+          <p className="text-amber-300 text-sm bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+            ⚠️ Make sure to copy and store this API key securely. You
+            won&apos;t be able to see it again.
+          </p>
         </div>
-      )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleCopyApiKey}
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            <FaCopy className="w-4 h-4" />
+            Copy API Key
+          </button>
+          <button
+            onClick={closeApiKeyModal}
+            className="px-4 py-2 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition-all duration-200"
+          >
+            Done
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

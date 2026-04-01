@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { getServerTrpc } from "../../_trpc/server";
+import { DEFAULT_PAGE_LIMIT } from "../../../constants";
 import UserCarsClient from "./UserCarsClient";
-
-const LIMIT = 12;
 
 export default async function UserCarsPage({
   params,
@@ -32,7 +31,7 @@ export default async function UserCarsPage({
   const carsData = await serverTrpc.cars.getCarsByUserId.query({
     userId: profileUser.id,
     skip: 0,
-    limit: LIMIT,
+    limit: DEFAULT_PAGE_LIMIT,
   });
 
   return (

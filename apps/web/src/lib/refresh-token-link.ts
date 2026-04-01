@@ -8,6 +8,7 @@
 import { TRPCClientError, TRPCLink } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import type { AnyRouter } from "@trpc/server";
+import { handleError } from "../utils/error-handling";
 
 interface RefreshTokenLinkOptions {
   /**
@@ -86,7 +87,10 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
                     return accessToken;
                   })
                   .catch((refreshError) => {
-                    console.error("Token refresh failed:", refreshError);
+                    handleError(refreshError, {
+                      component: "RefreshTokenLink",
+                      action: "refreshToken",
+                    });
                     if (onRefreshFailed) {
                       onRefreshFailed();
                     }

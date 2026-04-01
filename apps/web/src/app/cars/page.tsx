@@ -6,8 +6,7 @@ import CarFilters from "../_components/cars/CarFilters";
 import CarGrid from "../_components/cars/CarGrid";
 import Pagination from "../_components/ui/Pagination";
 import { trpc } from "../_trpc/client";
-
-const LIMIT = 12;
+import { DEFAULT_PAGE_LIMIT } from "../../constants";
 
 function CarsPageContent() {
   const [{ manufacturer, model, color, sortBy, sortDirection, page }, setQuery] =
@@ -102,8 +101,8 @@ function CarsPageContent() {
   );
 
   const carsQuery = trpc.cars.list.useQuery({
-    skip: page * LIMIT,
-    limit: LIMIT,
+    skip: page * DEFAULT_PAGE_LIMIT,
+    limit: DEFAULT_PAGE_LIMIT,
     ...(manufacturer && { manufacturerSlug: manufacturer }),
     ...(model && { modelSlug: model }),
     ...(color && { color }),
@@ -130,17 +129,21 @@ function CarsPageContent() {
 
         {/* Filters */}
         <CarFilters
-          selectedManufacturer={manufacturer}
-          setSelectedManufacturer={handleSetManufacturer}
-          selectedModel={model}
-          setSelectedModel={handleSetModel}
-          colorFilter={color}
-          setColorFilter={handleSetColor}
-          sortBy={sortBy}
-          setSortBy={handleSetSortBy}
-          sortDirection={sortDirection}
-          setSortDirection={handleSetSortDirection}
-          onClearFilters={handleClear}
+          config={{
+            selectedManufacturer: manufacturer,
+            selectedModel: model,
+            colorFilter: color,
+            sortBy,
+            sortDirection,
+          }}
+          callbacks={{
+            setSelectedManufacturer: handleSetManufacturer,
+            setSelectedModel: handleSetModel,
+            setColorFilter: handleSetColor,
+            setSortBy: handleSetSortBy,
+            setSortDirection: handleSetSortDirection,
+            onClearFilters: handleClear,
+          }}
         />
 
         {/* Results Count */}
@@ -177,7 +180,7 @@ function CarsPageContent() {
           <Pagination
             currentPage={page}
             totalItems={carsQuery.data.meta.totalItems}
-            itemsPerPage={LIMIT}
+            itemsPerPage={DEFAULT_PAGE_LIMIT}
             onPageChange={handleSetPage}
           />
         )}

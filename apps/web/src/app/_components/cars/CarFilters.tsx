@@ -4,33 +4,47 @@ import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { trpc } from "../../_trpc/client";
 
-interface CarFiltersProps {
+export interface CarFiltersConfig {
   selectedManufacturer: string;
-  setSelectedManufacturer: (value: string) => void;
   selectedModel: string;
-  setSelectedModel: (value: string) => void;
   colorFilter: string;
-  setColorFilter: (value: string) => void;
   sortBy: string;
-  setSortBy: (value: string) => void;
   sortDirection: string;
+}
+
+export interface CarFiltersCallbacks {
+  setSelectedManufacturer: (value: string) => void;
+  setSelectedModel: (value: string) => void;
+  setColorFilter: (value: string) => void;
+  setSortBy: (value: string) => void;
   setSortDirection: (value: string) => void;
   onClearFilters: () => void;
 }
 
+interface CarFiltersProps {
+  config: CarFiltersConfig;
+  callbacks: CarFiltersCallbacks;
+}
+
 export default function CarFilters({
-  selectedManufacturer,
-  setSelectedManufacturer,
-  selectedModel,
-  setSelectedModel,
-  colorFilter,
-  setColorFilter,
-  sortBy,
-  setSortBy,
-  sortDirection,
-  setSortDirection,
-  onClearFilters,
+  config,
+  callbacks,
 }: CarFiltersProps) {
+  const {
+    selectedManufacturer,
+    selectedModel,
+    colorFilter,
+    sortBy,
+    sortDirection,
+  } = config;
+  const {
+    setSelectedManufacturer,
+    setSelectedModel,
+    setColorFilter,
+    setSortBy,
+    setSortDirection,
+    onClearFilters,
+  } = callbacks;
   // Local state for color input to debounce
   const [localColorFilter, setLocalColorFilter] = useState(colorFilter);
   const debouncedColorFilter = useDebounce(localColorFilter, 200);

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Car, CarManufacturer } from "../_trpc/types";
 import { trpc } from "../_trpc/client";
+import { HOME_PAGE_CAR_LIMIT } from "../../constants";
 
 interface HomePageProps {
   initialManufacturers?: CarManufacturer[];
@@ -36,13 +37,13 @@ export default function HomePage({
   );
 
   const { data: featuredCars } = trpc.cars.list.useQuery(
-    { limit: 6, skip: 0 },
+    { limit: HOME_PAGE_CAR_LIMIT, skip: 0 },
     {
       initialData: {
         items: initialFeaturedCars,
         meta: {
           totalItems: initialFeaturedCars.length,
-          limit: 6,
+          limit: HOME_PAGE_CAR_LIMIT,
           skipped: 0,
           count: initialFeaturedCars.length,
         },

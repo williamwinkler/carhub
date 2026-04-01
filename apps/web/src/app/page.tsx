@@ -1,6 +1,7 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import HomePage from "./_components/HomePage";
 import { getQueryClient, getServerTrpc } from "./_trpc/server";
+import { HOME_PAGE_CAR_LIMIT } from "../constants";
 
 // Revalidate every 60 seconds for ISR
 export const revalidate = 60;
@@ -12,7 +13,7 @@ export default async function Home() {
   const serverTrpc = await getServerTrpc();
   const [manufacturers, featuredCars] = await Promise.all([
     serverTrpc.carManufacturers.list.query(),
-    serverTrpc.cars.list.query({ limit: 6, skip: 0 }),
+    serverTrpc.cars.list.query({ limit: HOME_PAGE_CAR_LIMIT, skip: 0 }),
   ]);
 
   return (
