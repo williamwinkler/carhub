@@ -2,10 +2,23 @@ packages:
   - apps/*
   - packages/*
 
+allowBuilds:
+  "@nestjs/core": true
+  "@scarf/scarf": true
+  "@tailwindcss/oxide": true
+  bcrypt: true
+  esbuild: true
+  sharp: true
+  sqlite3: true
+  unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - nestjs-trpc@2.11.0
+
 onlyBuiltDependencies:
-  - '@nestjs/core'
-  - '@scarf/scarf'
-  - '@tailwindcss/oxide'
+  - "@nestjs/core"
+  - "@scarf/scarf"
+  - "@tailwindcss/oxide"
   - bcrypt
   - esbuild
   - sharp

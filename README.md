@@ -1,39 +1,65 @@
 # Carhub
 
-Carhub is a simple demo project allowing users to create and view cars, but the interesting part is the tech stack used.
+Carhub is a simple demo project allowing users to create and view cars, but the
+interesting part is the tech stack used.
 
-The project demonstrates **end-to-end type safety** and **auto-generated documentation** using NestJS, tRPC, Swagger and Zod. The project's goal is to have top tier DX when working with APIs - both in the front and backend.
+The project demonstrates **end-to-end type safety** and **auto-generated
+documentation** using NestJS, tRPC, Swagger and Zod. The project's goal is to
+have top tier DX when working with APIs - both in the front and backend.
+
+## API Consumer Strategy
+
+Carhub exposes two intentional API surfaces:
+
+- **TypeScript + user/session flow:** use tRPC with JWT bearer auth.
+  TypeScript consumers import router types from the type-only
+  `@repo/api-contract` package.
+- **Non-TypeScript or external programmatic integration:** use REST/OpenAPI with
+  `x-api-key` auth and generate clients from the Swagger/OpenAPI document when
+  needed.
+
+Do not generate or add a TypeScript Swagger client for the web app by default.
+If a reusable runtime tRPC client package is needed later, keep it separate from
+`@repo/api-contract`. If a REST/OpenAPI client is needed later, create a
+separate runtime package for that REST surface.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🏗️ Architecture Overview
+
 ![test](/docs/architecture.png)
 
 ## 🧑‍💻 Improved DX
 
 ### Improved Nestjs Swagger Documentation
+
 - Auto-generated DTOs from Zod schemas
 - Compile time error if the Swagger specified DTO and actual DTO are different!
-- Custom decorators (`@zQuery`, `@zParam`) for endpoint parameter validation - automatically shows up in swagger too.
-- Specified errors your app can throw and each will show up in the documentation.
+- Query and path parameter DTOs from `createZodDto` are validated by
+  `ZodValidationPipe` and show up in Swagger/OpenAPI.
+- Specified errors your app can throw and each will show up in the
+  documentation.
 - Common errors are automatically derived in the swagger docs:
   - Each endpoint automatically gets `429` and `500` error examples added.
-  - If the endpoint performs any validation, `400 Valiation Error` is automatically added.
-  - Protected endpoints gets the `401 Unauthorized` and `403 Forbidden` automatically added.
+  - If the endpoint performs any validation, `400 Valiation Error` is added.
+  - Protected endpoints get the `401 Unauthorized` and `403 Forbidden`
+    examples automatically.
 - [See code examples below!](#-code-examples)
 
-
 ### Better feature development loop
+
 - It's faster and more reliable with tRPC.
-  - Types are procedures are immediately updated in the frontend - no codegen needed.
+  - Procedure types are immediately updated in the frontend - no codegen needed.
   - Jump between frontend and backend code easily.
-  - No more "Where is this endpoint used?" - see directly where each tRPC prodecure is used in the frontend.
+  - See directly where each tRPC procedure is used in the frontend.
   - Backend errors are automatically converted to tRPC errors in middleware.
-- A postgres DB and pgadmin are automatically started when starting to develop with `pnpm dev`.
+- A postgres DB and pgadmin are automatically started when running
+  `pnpm dev`.
 
 ## ⚡ Quick Start
 
 ### Prerequisites
+
 - Node.js 24+
 - Docker installed and running
 - pnpm (`npm install -g pnpm`)
@@ -69,6 +95,7 @@ pnpm dev
 ```
 
 ### Sample Data Created
+
 - **2 Users**: `admin`/`admin` and `jondoe`/`jondoe`
 - **10 Manufacturers**: Toyota, Honda, Ford, BMW, Mercedes-Benz, etc.
 - **50 Car Models**: 5 models per manufacturer with slugs
@@ -77,12 +104,14 @@ pnpm dev
 ## 📖 API Swagger Documentation
 
 Once running, visit:
-- **Swagger UI**: http://localhost:3001/docs
-- **OpenAPI Spec**: http://localhost:3001/swagger.yml
+
+- **Swagger UI**: <http://localhost:3001/docs>
+- **OpenAPI Spec**: <http://localhost:3001/swagger.yml>
 
 ## 🎯 Code Examples
 
 ### Schema-First Development
+
 ```typescript
 // 1. Define Zod schema (single source of truth)
 export const createCarSchema = z.object({
@@ -109,42 +138,47 @@ async create(@Body() dto: CreateCarDto) {
 }
 ```
 
-### Custom Validation Decorators
+### Query and Path Parameter DTOs
+
 ```typescript
+const findCarsQuerySchema = z.object({
+  color: z.string().optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  skip: z.coerce.number().int().min(0).default(0),
+});
+
+const carIdParamSchema = z.object({
+  carId: z.uuid(),
+});
+
+class FindCarsQueryDto extends createZodDto(findCarsQuerySchema) {}
+class CarIdParamDto extends createZodDto(carIdParamSchema) {}
+
 @Get(":carId")
 async findCars(
-  @zParam("carId", z.uuid()) carId: UUID,
-  @zQuery("color", z.string().optional()) color?: string,
-  @zQuery("minPrice", z.number().min(0).optional()) minPrice?: number,
-  @zQuery("skip", z.number().int().gte(0).default(0)) skip = 0,
+  @Param() params: CarIdParamDto,
+  @Query() query: FindCarsQueryDto,
 ) {
-  // All parameters validated automatically
-  // Swagger docs generated automatically
+  // params and query are validated by ZodValidationPipe.
+  // nestjs-zod exposes the DTO schemas to Swagger/OpenAPI.
 }
 ```
 
 ### tRPC Type Safety
+
 ```typescript
-// Backend tRPC procedure
-getById: procedure
-  .input(z.object({ id: z.uuid() })) // id as UUID required
-  .query(async ({ input: { id } }) => {
-    const car = await this.carsService.findById(id);
+// Frontend/runtime client setup uses the stable type-only contract package.
+import type { AppRouter } from "@repo/api-contract";
 
-    if (!car) {
-      // API specific errors are automatically converted to tRPC errors
-      throw new AppError(Errors.CAR_NOT_FOUND)
-    }
-
-    return this.carsAdapter.getDto(car);
-  });
-
-// Frontend usage (fully typed!)
 const car = await trpc.cars.getById.query({
-  id: "<UUID>",     // ✅ Typed
+  id: "<UUID>", // ✅ typed input
 });
-// Response is automatically typed as well!
+// Response is automatically typed as well.
 ```
+
+On the API side, tRPC procedures live in `apps/api/src/modules/**/*.trpc.ts`,
+use Zod input/output schemas, apply shared tRPC auth/context/error/rate-limit
+middlewares, and delegate business logic to Nest services.
 
 ## 📄 License
 

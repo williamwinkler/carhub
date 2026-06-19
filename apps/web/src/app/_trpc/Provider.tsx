@@ -1,6 +1,6 @@
 "use client";
 
-import type { AppRouter } from "@api/modules/trpc/trpc.router";
+import type { AppRouter } from "@repo/api-contract";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createTRPCProxyClient, TRPCClientError } from "@trpc/client";

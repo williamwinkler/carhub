@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@api/*": ["./src/*"],
+      "@repo/logging": ["../../packages/logging/src/index.ts"]
+    },
+    "noEmit": true
+  },
+  "include": ["../src/**/*", "./**/*"],
+  "exclude": ["../node_modules", "../dist"]
+}

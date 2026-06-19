@@ -80,3 +80,5 @@ apps/*/.next/
 swagger.yml
 __mocks__
 .claude
+# Local Pi runtime state
+.atl/

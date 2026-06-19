@@ -51,9 +51,9 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
     onSuccess: ({ favorited }) => {
       // Mark queries as stale but don't refetch - prevents list reordering
       // The next time the user navigates or explicitly refreshes, data will be up-to-date
-      utils.cars.list.invalidate({ refetchType: 'none' });
-      utils.cars.getFavorites.invalidate({ refetchType: 'none' });
-      utils.cars.getMyCars.invalidate({ refetchType: 'none' });
+      utils.cars.list.invalidate(undefined, { refetchType: "none" });
+      utils.cars.getFavorites.invalidate(undefined, { refetchType: "none" });
+      utils.cars.getMyCars.invalidate(undefined, { refetchType: "none" });
 
       // Update optimistic state to match server response
       setOptimisticFavorite(!favorited);

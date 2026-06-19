@@ -9,7 +9,6 @@ import pkg from "../package.json";
 import { AppModule } from "./app.module";
 import { CustomLogger } from "./common/logging/custom-logger";
 import { ConfigService } from "./modules/config/config.service";
-import { TrpcRouter } from "./modules/trpc/trpc.router";
 import { setupSwagger } from "./setup-swagger";
 
 async function bootstrap() {
@@ -51,7 +50,7 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser()); // Parse cookies for httpOnly refresh tokens
 
-  app.useGlobalPipes(new ZodValidationPipe()); // for tRPC
+  app.useGlobalPipes(new ZodValidationPipe());
 
   if (configService.get("NODE_ENV") === "development") {
     const trpcLogger = new Logger("tRPC");
@@ -74,9 +73,6 @@ async function bootstrap() {
       },
     );
   }
-
-  const trpcRouter = app.get(TrpcRouter);
-  await trpcRouter.applyMiddleware(app);
 
   setupSwagger(app);
 

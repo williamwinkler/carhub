@@ -1,4 +1,22 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { z } from "zod";
+
+export const paginationMetaSchema = z
+  .object({
+    totalItems: z.number().int().min(0),
+    limit: z.number().int().min(0),
+    skipped: z.number().int().min(0),
+    count: z.number().int().min(0),
+  })
+  .strict();
+
+export const createPaginationSchema = <T extends z.ZodType>(itemSchema: T) =>
+  z
+    .object({
+      items: z.array(itemSchema),
+      meta: paginationMetaSchema,
+    })
+    .strict();
 
 class MetaPaginationDto {
   @ApiProperty({

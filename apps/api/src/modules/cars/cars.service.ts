@@ -1,16 +1,16 @@
 import { Ctx } from "@api/common/ctx";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UUID } from "crypto";
-import { Repository } from "typeorm";
-import { Pagination } from "../../common/types/common.types";
+import type { UUID } from "crypto";
+import type { Repository } from "typeorm";
+import type { Pagination } from "../../common/types/common.types";
 import { CarModelsService } from "../car-models/car-models.service";
-import { User } from "../users/entities/user.entity";
-import { FindAllByUserOptions, FindAllCarsOptions } from "./cars.types";
-import { CreateCarDto } from "./dto/create-car.dto";
-import { UpdateCarDto } from "./dto/update-car.dto";
+import type { User } from "../users/entities/user.entity";
+import type { FindAllByUserOptions, FindAllCarsOptions } from "./cars.types";
+import type { CreateCarDto } from "./dto/create-car.dto";
+import type { UpdateCarDto } from "./dto/update-car.dto";
 import { Car } from "./entities/car.entity";
 
 @Injectable()
@@ -20,6 +20,7 @@ export class CarsService {
   constructor(
     @InjectRepository(Car)
     private readonly carsRepo: Repository<Car>,
+    @Inject(CarModelsService)
     private readonly modelsService: CarModelsService,
   ) {}
 
@@ -225,11 +226,12 @@ export class CarsService {
     }
 
     await this.carsRepo.save(car);
+    const favorited = !isFavorited;
     this.logger.log(
-      `User ${userId} toggled favorite for car ${id} to ${!isFavorited}`,
+      `User ${userId} toggled favorite for car ${id} to ${favorited}`,
     );
 
-    return isFavorited;
+    return favorited;
   }
 
   async getFavoritesByUser(

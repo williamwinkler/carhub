@@ -17,6 +17,8 @@
     "resolveJsonModule": true,
     "paths": {
       "@api/*": ["./apps/api/src/*"],
+      "@repo/api-contract": ["./packages/api-contract/src/index.ts"],
+      "@repo/api-contract/*": ["./packages/api-contract/src/*"],
       "@web/*": ["./apps/web/*"]
     }
   }

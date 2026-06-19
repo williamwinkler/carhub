@@ -1,4 +1,4 @@
-import { Ctx, Principal } from "@api/common/ctx";
+import { Ctx, type Principal } from "@api/common/ctx";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
 import { hash } from "@api/common/utils/common.utils";
@@ -7,13 +7,13 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import type { Cache } from "cache-manager";
-import { randomBytes, UUID } from "crypto";
+import { randomBytes, type UUID } from "crypto";
 import ms from "ms";
 import { ConfigService } from "../config/config.service";
-import { RoleType, User } from "../users/entities/user.entity";
+import type { RoleType, User } from "../users/entities/user.entity";
 import { UsersService } from "./../users/users.service";
-import { JwtTokens } from "./auth.types";
-import { RegisterDto } from "./dto/register.dto";
+import type { JwtTokens } from "./auth.types";
+import type { RegisterDto } from "./dto/register.dto";
 
 export type TokenPayload = {
   iss: string;
@@ -38,9 +38,9 @@ export class AuthService {
   private readonly isProduction: boolean;
 
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private configService: ConfigService,
+    @Inject(UsersService) private usersService: UsersService,
+    @Inject(JwtService) private jwtService: JwtService,
+    @Inject(ConfigService) private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.isProduction = this.configService.get("NODE_ENV") === "production";
@@ -73,7 +73,7 @@ export class AuthService {
     // Verify user exists and the apiKey is valid
     if (
       !foundUser?.apiKeySecret ||
-      (await bcrypt.compare(foundUser.apiKeySecret, apiKey))
+      !(await bcrypt.compare(apiKey, foundUser.apiKeySecret))
     ) {
       throw new AppError(Errors.UNAUTHORIZED);
     }

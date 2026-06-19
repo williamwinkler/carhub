@@ -3,7 +3,7 @@ import { Role } from "@api/modules/users/entities/user.entity";
 import { createZodDto } from "nestjs-zod";
 import z from "zod";
 
-const accountSchema = registerSchema
+export const accountSchema = registerSchema
   .omit({ password: true })
   .extend({
     id: z.uuid().describe("The unique identifier of the account"),

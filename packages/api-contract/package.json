@@ -1,0 +1,24 @@
+{
+  "name": "@repo/api-contract",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Type-only API contracts for TypeScript consumers.",
+  "sideEffects": false,
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@trpc/server": "^11.5.1"
+  },
+  "devDependencies": {
+    "@trpc/server": "^11.5.1",
+    "typescript": "^5.9.2"
+  }
+}

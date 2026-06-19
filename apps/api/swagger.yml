@@ -93,7 +93,6 @@ paths:
       tags:
         - Cars
       security:
-        - bearer: []
         - apiKey: []
     get:
       operationId: CarsController_findAll_v1
@@ -115,7 +114,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -131,7 +130,7 @@ paths:
             type: string
             minLength: 1
             maxLength: 100
-        - name: manufacturerId
+        - name: manufacturerSlug
           required: false
           in: query
           description: The slug of the car manufacturer
@@ -142,9 +141,11 @@ paths:
         - name: modelSlug
           required: false
           in: query
-          description: The unique id of the car model (UUID)
+          description: The slug of the car model
           schema:
             type: string
+            minLength: 1
+            maxLength: 255
       responses:
         "200":
           description: List of cars
@@ -397,7 +398,6 @@ paths:
       tags:
         - Cars
       security:
-        - bearer: []
         - apiKey: []
     delete:
       operationId: CarsController_remove_v1
@@ -500,7 +500,6 @@ paths:
       tags:
         - Cars
       security:
-        - bearer: []
         - apiKey: []
   /v1/cars/{id}/favorite:
     patch:
@@ -604,7 +603,6 @@ paths:
       tags:
         - Cars
       security:
-        - bearer: []
         - apiKey: []
   /v1/cars/favorites:
     get:
@@ -616,7 +614,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -707,7 +705,6 @@ paths:
       tags:
         - Cars
       security:
-        - bearer: []
         - apiKey: []
   /v1/car-manufacturers:
     post:
@@ -815,7 +812,6 @@ paths:
       tags:
         - CarManufacturers
       security:
-        - bearer: []
         - apiKey: []
     get:
       operationId: CarManufacturersController_findAll_v1
@@ -838,7 +834,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -1092,7 +1088,6 @@ paths:
       tags:
         - CarManufacturers
       security:
-        - bearer: []
         - apiKey: []
     delete:
       operationId: CarManufacturersController_remove_v1
@@ -1195,7 +1190,6 @@ paths:
       tags:
         - CarManufacturers
       security:
-        - bearer: []
         - apiKey: []
   /v1/car-models:
     post:
@@ -1303,7 +1297,6 @@ paths:
       tags:
         - CarModels
       security:
-        - bearer: []
         - apiKey: []
     get:
       operationId: CarModelsController_findAll_v1
@@ -1326,7 +1319,7 @@ paths:
           description: The limit of items to be returned.
           schema:
             type: number
-            default: 0
+            default: 20
         - name: skip
           required: false
           in: query
@@ -1337,7 +1330,7 @@ paths:
         - name: manufacturerSlug
           required: false
           in: query
-          description: The slug of the car model
+          description: The slug of the car manufacturer
           schema:
             type: string
             minLength: 1
@@ -1588,7 +1581,6 @@ paths:
       tags:
         - CarModels
       security:
-        - bearer: []
         - apiKey: []
     delete:
       operationId: CarModelsController_remove_v1
@@ -1691,7 +1683,6 @@ paths:
       tags:
         - CarModels
       security:
-        - bearer: []
         - apiKey: []
   /v1/car-models/slug/{slug}:
     get:
@@ -1783,10 +1774,6 @@ tags: []
 servers: []
 components:
   securitySchemes:
-    bearer:
-      scheme: bearer
-      bearerFormat: JWT
-      type: http
     apiKey:
       type: apiKey
       in: header

@@ -1,0 +1,10 @@
+process.env.NODE_ENV = "test";
+process.env.JWT_ACCESS_SECRET = "__test_only_jwt_access_secret__";
+process.env.JWT_REFRESH_SECRET = "__test_only_jwt_refresh_secret__";
+process.env.PORT = "3001";
+process.env.CORS_ORIGINS = "http://localhost:3000";
+process.env.POSTGRES_HOST = "localhost";
+process.env.POSTGRES_PORT = "5432";
+process.env.POSTGRES_DATABASE = "carhub_test";
+process.env.POSTGRES_USERNAME = "postgres";
+process.env.POSTGRES_PASSWORD = "__test_only_unused_password__";

@@ -1,24 +1,24 @@
 import { AuthService } from "@api/modules/auth/auth.service";
 import {
-  CanActivate,
-  ExecutionContext,
+  type CanActivate,
+  type ExecutionContext,
+  Inject,
   Injectable,
   Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { Request } from "express";
+import type { Request } from "express";
 import { Ctx } from "../ctx";
+import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { AppError } from "../errors/app-error";
 import { Errors } from "../errors/errors";
-
-const IS_PUBLIC_KEY = "isPublic";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
   constructor(
-    private authService: AuthService,
-    private reflector: Reflector,
+    @Inject(AuthService) private authService: AuthService,
+    @Inject(Reflector) private reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,37 +30,26 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const request = context.switchToHttp().getRequest<Request>();
     const apiKey = this.extractApiKeyFromHeader(request);
-    if (!token && !apiKey) {
-      this.logger.debug("No credentials for user");
+    if (!apiKey) {
+      this.logger.debug("No API key for controller request");
       throw new AppError(Errors.UNAUTHORIZED);
     }
 
-    if (token) {
-      const payload = await this.authService.verifyAccessToken(token);
-      Ctx.principal = this.authService.principalFromJwt(payload);
-      request.user = { ...payload, roles: [payload.role] };
-
-      return true;
+    if (!this.authService.isApiKeyValid(apiKey)) {
+      this.logger.debug("Invalid API key format");
+      throw new AppError(Errors.UNAUTHORIZED);
     }
 
-    if (apiKey && this.authService.isApiKeyValid(apiKey)) {
-      const user = await this.authService.findUserByApiKey(apiKey);
-      Ctx.principal = this.authService.principalFromUser(user);
-      request.user = { id: user.id, roles: [user.role] };
+    const user = await this.authService.findUserByApiKey(apiKey);
+    Ctx.principal = this.authService.principalFromUser(user);
+    const authenticatedRequest = request as Request & {
+      user: { id: string; roles: string[] };
+    };
+    authenticatedRequest.user = { id: user.id, roles: [user.role] };
 
-      return true;
-    }
-
-    throw new AppError(Errors.UNAUTHORIZED);
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(" ") ?? [];
-
-    return type === "Bearer" ? token : undefined;
+    return true;
   }
 
   private extractApiKeyFromHeader(request: Request): string | undefined {

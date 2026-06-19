@@ -1,9 +1,7 @@
 import { Public } from "@api/common/decorators/public.decorator";
 import { Roles } from "@api/common/decorators/roles.decorator";
-import { zParam, zQuery } from "@api/common/decorators/zod.decorator";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
-import { SortDirection } from "@api/common/types/common.types";
 import { SwaggerInfo } from "@api/common/utils/swagger.utils";
 import {
   Body,
@@ -11,31 +9,29 @@ import {
   Delete,
   Get,
   HttpStatus,
+  Inject,
+  Param,
   Post,
   Put,
+  Query,
 } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
-import { UUID } from "crypto";
-import {
-  limitSchema,
-  skipSchema,
-  sortDirectionQuerySchema,
-} from "../../common/schemas/common.schema";
 import { CarManufacturersAdapter } from "./car-manufacturers.adapter";
-import {
-  carManufacturerFields,
-  CarManufacturerSortField,
-  carManufacturerSortFieldQuerySchema,
-} from "./car-manufacturers.schema";
 import { CarManufacturersService } from "./car-manufacturers.service";
 import { CarManufacturerDto } from "./dto/car-manufacturer.dto";
-import { CreateCarManufacturerDto } from "./dto/create-car-manufacturer.dto";
-import { UpdateCarManufacturerDto } from "./dto/update-car-manufacturer.dto";
+import type {
+  CarManufacturerIdParamDto,
+  FindCarManufacturersQueryDto,
+} from "./dto/car-manufacturer-query.dto";
+import type { CreateCarManufacturerDto } from "./dto/create-car-manufacturer.dto";
+import type { UpdateCarManufacturerDto } from "./dto/update-car-manufacturer.dto";
 
 @Controller("car-manufacturers")
 export class CarManufacturersController {
   constructor(
+    @Inject(CarManufacturersService)
     private readonly manufacturersService: CarManufacturersService,
+    @Inject(CarManufacturersAdapter)
     private readonly manufacturersAdapter: CarManufacturersAdapter,
   ) {}
 
@@ -63,20 +59,8 @@ export class CarManufacturersController {
     successText: "List of car manufacturers",
     type: [CarManufacturerDto],
   })
-  async findAll(
-    @zQuery("skip", skipSchema.optional()) skip = 0,
-    @zQuery("limit", limitSchema.optional()) limit = 20,
-    @zQuery("sortField", carManufacturerSortFieldQuerySchema)
-    sortField?: CarManufacturerSortField,
-    @zQuery("sortDirection", sortDirectionQuerySchema)
-    sortDirection?: SortDirection,
-  ) {
-    const carManufacturers = await this.manufacturersService.findAll({
-      skip,
-      limit,
-      sortField,
-      sortDirection,
-    });
+  async findAll(@Query() query: FindCarManufacturersQueryDto) {
+    const carManufacturers = await this.manufacturersService.findAll(query);
     const data = this.manufacturersAdapter.getListDto(carManufacturers);
 
     return data;
@@ -90,8 +74,8 @@ export class CarManufacturersController {
     type: CarManufacturerDto,
     errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
-  async findOne(@zParam("id", carManufacturerFields.id) id: UUID) {
-    const carManufacturer = await this.manufacturersService.findById(id);
+  async findOne(@Param() params: CarManufacturerIdParamDto) {
+    const carManufacturer = await this.manufacturersService.findById(params.id);
     if (!carManufacturer) {
       throw new AppError(Errors.CAR_MANUFACTURER_NOT_FOUND);
     }
@@ -110,10 +94,13 @@ export class CarManufacturersController {
     errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
   async update(
-    @zParam("id", carManufacturerFields.id) id: UUID,
+    @Param() params: CarManufacturerIdParamDto,
     @Body() dto: UpdateCarManufacturerDto,
   ) {
-    const carManufacturer = await this.manufacturersService.update(id, dto);
+    const carManufacturer = await this.manufacturersService.update(
+      params.id,
+      dto,
+    );
 
     return this.manufacturersAdapter.getDto(carManufacturer);
   }
@@ -127,7 +114,7 @@ export class CarManufacturersController {
     type: null,
     errors: [Errors.CAR_MANUFACTURER_NOT_FOUND],
   })
-  async remove(@zParam("id", carManufacturerFields.id) id: UUID) {
-    await this.manufacturersService.delete(id);
+  async remove(@Param() params: CarManufacturerIdParamDto) {
+    await this.manufacturersService.delete(params.id);
   }
 }

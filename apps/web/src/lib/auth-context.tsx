@@ -1,7 +1,6 @@
 "use client";
 
-import type { AppRouter } from "@api/modules/trpc/trpc.router";
-import type { inferRouterOutputs } from "@trpc/server";
+import type { RouterOutputs } from "@repo/api-contract";
 import {
   createContext,
   ReactNode,
@@ -11,11 +10,15 @@ import {
   useState,
 } from "react";
 import { trpc } from "../app/_trpc/client";
-import { getAccessToken, getUser, removeUserCookies, setUserCookie } from "./cookies";
+import {
+  getAccessToken,
+  getUser,
+  removeUserCookies,
+  setUserCookie,
+} from "./cookies";
 import { setLogoutCallback } from "./token-refresh";
 
-type RouterOutput = inferRouterOutputs<AppRouter>;
-type User = RouterOutput["accounts"]["getMe"];
+type User = RouterOutputs["accounts"]["getMe"];
 
 interface AuthContextType {
   user: User | null;

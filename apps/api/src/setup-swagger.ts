@@ -48,11 +48,6 @@ export function setupSwagger(app: INestApplication) {
     .setTitle("🔥 Next Gen Nestjs API")
     .setDescription(pkg.description)
     .setVersion(pkg.version)
-    .addBearerAuth({
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
-    })
     .addApiKey(
       {
         type: "apiKey",
@@ -111,13 +106,11 @@ export function setupSwagger(app: INestApplication) {
         delete method.security;
         delete (method as any)["x-public"];
       } else {
-        // Not public → need security
+        // Not public → REST/OpenAPI uses API keys only.
         if (!method.security) {
-          // If no decorator already set → default to both
-          method.security = [{ bearer: [] }, { apiKey: [] }];
+          method.security = [{ apiKey: [] }];
         }
-        // else: keep whatever @ApiBearerAuth() / @ApiSecurity("apiKey") already put there
-        // (so only apiKey or only bearer if explicitly decorated)
+        // else: keep explicit @ApiSecurity("apiKey") metadata if present.
       }
 
       // Add 401/403 only to secured endpoints with concrete examples
