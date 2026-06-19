@@ -30,13 +30,16 @@ interface RefreshTokenLinkOptions {
 // Track ongoing refresh attempts to prevent concurrent refreshes
 let refreshPromise: Promise<string | null> | null = null;
 
+const refreshBypassPaths = new Set(["auth.login", "auth.refreshToken"]);
+
 export function refreshTokenLink<TRouter extends AnyRouter>(
   options: RefreshTokenLinkOptions,
 ): TRPCLink<TRouter> {
   return () => {
     return ({ next, op }) => {
       return observable((observer) => {
-        const { refreshAccessToken, onAccessTokenRefreshed, onRefreshFailed } = options;
+        const { refreshAccessToken, onAccessTokenRefreshed, onRefreshFailed } =
+          options;
 
         // Execute the operation
         const subscription = next(op).subscribe({
@@ -46,10 +49,9 @@ export function refreshTokenLink<TRouter extends AnyRouter>(
           error(err) {
             // Check if error is 401 Unauthorized
             const is401 =
-              err instanceof TRPCClientError &&
-              err.data?.httpStatus === 401;
+              err instanceof TRPCClientError && err.data?.httpStatus === 401;
 
-            if (!is401) {
+            if (!is401 || refreshBypassPaths.has(op.path)) {
               observer.error(err);
               return;
             }

@@ -56,10 +56,10 @@ export default function CarCard({ car, onFavoriteUpdate }: CarCardProps) {
       utils.cars.getMyCars.invalidate(undefined, { refetchType: "none" });
 
       // Update optimistic state to match server response
-      setOptimisticFavorite(!favorited);
+      setOptimisticFavorite(favorited);
       onFavoriteUpdate?.();
 
-      if (!favorited) {
+      if (favorited) {
         toast.success(
           `Favorited ${car!.model!.manufacturer!.name} ${car?.model?.name}`,
         );

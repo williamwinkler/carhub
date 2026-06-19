@@ -1,37 +1,26 @@
 import type { Principal } from "@api/common/ctx";
 import { AccountsAdapter } from "@api/modules/accounts/acounts.adapter";
-import { AccountsTrpc } from "@api/modules/accounts/accounts.trpc";
 import { AuthService } from "@api/modules/auth/auth.service";
-import { AuthTrpc } from "@api/modules/auth/auth.trpc";
 import { CarManufacturersAdapter } from "@api/modules/car-manufacturers/car-manufacturers.adapter";
 import { CarManufacturersService } from "@api/modules/car-manufacturers/car-manufacturers.service";
-import { CarManufacturersTrpc } from "@api/modules/car-manufacturers/car-manufacturers.trpc";
 import { CarModelsAdapter } from "@api/modules/car-models/car-models.adapter";
 import { CarModelsService } from "@api/modules/car-models/car-models.service";
-import { CarModelsTrpc } from "@api/modules/car-models/car-models.trpc";
 import { CarsAdapter } from "@api/modules/cars/cars.adapter";
 import { CarsService } from "@api/modules/cars/cars.service";
-import { CarsTrpc } from "@api/modules/cars/cars.trpc";
 import { TrpcRateLimitService } from "@api/modules/trpc/trpc-rate-limit.service";
 import {
   type TrpcContext,
   TrpcContextFactory,
 } from "@api/modules/trpc/trpc.context";
-import {
-  TrpcAuthMiddleware,
-  TrpcErrorMiddleware,
-  TrpcLongRateLimitMiddleware,
-  TrpcMediumRateLimitMiddleware,
-  TrpcRequestContextMiddleware,
-  TrpcShortRateLimitMiddleware,
-} from "@api/modules/trpc/trpc.middlewares";
 import type { AppRouter } from "@api/modules/trpc/trpc.router";
+import { TrpcRouter } from "@api/modules/trpc/trpc.router";
+import { TrpcService } from "@api/modules/trpc/trpc.service";
 import { UsersService } from "@api/modules/users/users.service";
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import cookieParser from "cookie-parser";
 import type { Request, Response } from "express";
 import { ClsModule } from "nestjs-cls";
-import { AppRouterHost, TRPCModule, type TRPCModuleOptions } from "nestjs-trpc";
 
 export type Mocked<T> = {
   [K in keyof T]: T[K] extends (...args: infer A) => infer R
@@ -62,6 +51,16 @@ const defaultPrincipal: Principal = {
 const emptyPage = {
   items: [],
   meta: { totalItems: 0, limit: 10, skipped: 0, count: 0 },
+};
+
+const carDto = {
+  id: "550e8400-e29b-41d4-a716-446655440010",
+  year: 2022,
+  color: "blue",
+  kmDriven: 12_000,
+  price: 25_000,
+  createdAt: new Date(0).toISOString(),
+  updatedAt: new Date(0).toISOString(),
 };
 
 export function createMockPrincipal(
@@ -102,34 +101,13 @@ export async function createTrpcTestApp(): Promise<{
   mocks: TrpcTestMocks;
 }> {
   const mocks = createDefaultMocks();
-  const trpcOptions: TRPCModuleOptions = {
-    basePath: "/trpc",
-    context: TrpcContextFactory,
-    globalMiddlewares: [
-      TrpcRequestContextMiddleware,
-      TrpcErrorMiddleware,
-      TrpcLongRateLimitMiddleware,
-    ],
-  };
 
   const moduleRef = await Test.createTestingModule({
-    imports: [
-      ClsModule.forRoot({ global: true }),
-      TRPCModule.forRoot(trpcOptions),
-    ],
+    imports: [ClsModule.forRoot({ global: true })],
     providers: [
-      AuthTrpc,
-      AccountsTrpc,
-      CarsTrpc,
-      CarModelsTrpc,
-      CarManufacturersTrpc,
+      TrpcService,
+      TrpcRouter,
       TrpcContextFactory,
-      TrpcRequestContextMiddleware,
-      TrpcErrorMiddleware,
-      TrpcAuthMiddleware,
-      TrpcLongRateLimitMiddleware,
-      TrpcMediumRateLimitMiddleware,
-      TrpcShortRateLimitMiddleware,
       { provide: AuthService, useValue: mocks.authService },
       { provide: UsersService, useValue: mocks.usersService },
       { provide: AccountsAdapter, useValue: mocks.accountsAdapter },
@@ -149,12 +127,17 @@ export async function createTrpcTestApp(): Promise<{
     ],
   }).compile();
 
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication({ bodyParser: false });
+  app.use(cookieParser());
+
+  const trpcRouter = app.get(TrpcRouter);
+  trpcRouter.applyMiddleware(app);
+
   await app.init();
 
   return {
     app,
-    appRouter: app.get(AppRouterHost).appRouter as AppRouter,
+    appRouter: trpcRouter.appRouter,
     mocks,
   };
 }
@@ -212,15 +195,15 @@ function createDefaultMocks(): TrpcTestMocks {
     carsService: {
       findAll: jest.fn().mockResolvedValue(emptyPage),
       findById: jest.fn().mockResolvedValue(null),
-      create: jest.fn(),
-      update: jest.fn(),
+      create: jest.fn().mockResolvedValue({ id: carDto.id }),
+      update: jest.fn().mockResolvedValue({ id: carDto.id }),
       softDelete: jest.fn(),
       toggleFavoriteForUser: jest.fn().mockResolvedValue(true),
       getFavoritesByUser: jest.fn().mockResolvedValue(emptyPage),
       getCarsByUser: jest.fn().mockResolvedValue(emptyPage),
     },
     carsAdapter: {
-      getDto: jest.fn(),
+      getDto: jest.fn().mockReturnValue(carDto),
       getListDto: jest.fn().mockReturnValue(emptyPage),
     },
     carModelsService: {

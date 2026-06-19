@@ -12,9 +12,6 @@ allowBuilds:
   sqlite3: true
   unrs-resolver: true
 
-minimumReleaseAgeExclude:
-  - nestjs-trpc@2.11.0
-
 onlyBuiltDependencies:
   - "@nestjs/core"
   - "@scarf/scarf"

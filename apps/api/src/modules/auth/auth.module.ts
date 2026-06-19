@@ -1,13 +1,11 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
+import { AccountsModule } from "../accounts/accounts.module";
+import { ConfigModule } from "../config/config.module";
 import { ConfigService } from "../config/config.service";
 import { UsersModule } from "../users/users.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { AuthTrpc } from "./auth.trpc";
-import { ConfigModule } from "../config/config.module";
-import { AccountsModule } from "../accounts/accounts.module";
-import { AccountsAdapter } from "../accounts/acounts.adapter";
 
 @Module({
   imports: [
@@ -24,8 +22,8 @@ import { AccountsAdapter } from "../accounts/acounts.adapter";
       }),
     }),
   ],
-  providers: [AuthService, AuthTrpc, AccountsAdapter],
+  providers: [AuthService],
   controllers: [AuthController],
-  exports: [AuthService, AuthTrpc],
+  exports: [AuthService],
 })
 export class AuthModule {}

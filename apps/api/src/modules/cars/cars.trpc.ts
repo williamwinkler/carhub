@@ -1,33 +1,22 @@
 // src/modules/cars/cars.trpc.ts
-import { Ctx } from "@api/common/ctx";
-import {
-  createPaginationSchema,
-  type PaginationDto,
-} from "@api/common/dto/pagination.dto";
-import { AppError } from "@api/common/errors/app-error";
-import { Errors } from "@api/common/errors/errors";
+import { createPaginationSchema } from "@api/common/dto/pagination.dto";
 import {
   skipLimitSchema,
   sortDirectionQuerySchema,
   uuidSchema,
 } from "@api/common/schemas/common.schema";
-import { Inject, Injectable } from "@nestjs/common";
-import type { UUID } from "crypto";
-import { Input, Mutation, Query, Router, UseMiddlewares } from "nestjs-trpc";
 import { z } from "zod";
+import { AppError } from "@api/common/errors/app-error";
+import { Errors } from "@api/common/errors/errors";
 import { carManufacturerFields } from "../car-manufacturers/car-manufacturers.schema";
 import { carModelFields } from "../car-models/car-models.schema";
-import {
-  TrpcAuthMiddleware,
-  TrpcMediumRateLimitMiddleware,
-  TrpcShortRateLimitMiddleware,
-} from "../trpc/trpc.middlewares";
-import { CarsAdapter } from "./cars.adapter";
+import type { TrpcService } from "../trpc/trpc.service";
+import type { CarsAdapter } from "./cars.adapter";
 import { carFields, carSortByFieldQuerySchema } from "./cars.schema";
-import { CarsService } from "./cars.service";
-import { carResponseSchema, type CarDto } from "./dto/car.dto";
-import { createCarSchema, type CreateCarDto } from "./dto/create-car.dto";
-import { updateCarSchema, type UpdateCarDto } from "./dto/update-car.dto";
+import type { CarsService } from "./cars.service";
+import { carResponseSchema } from "./dto/car.dto";
+import { createCarSchema } from "./dto/create-car.dto";
+import { updateCarSchema } from "./dto/update-car.dto";
 
 const listCarsSchema = z.object({
   modelSlug: carModelFields.slug.optional(),
@@ -42,6 +31,7 @@ const updateCarInputSchema = z.object({
   id: uuidSchema,
   data: updateCarSchema,
 });
+const idInputSchema = z.object({ id: uuidSchema });
 const optionalSkipLimitSchema = z
   .object({
     skip: z.number().int().min(0).default(0),
@@ -57,139 +47,135 @@ const carListResponseSchema = createPaginationSchema(carResponseSchema);
 const successSchema = z.object({ success: z.boolean() }).strict();
 const favoriteResponseSchema = z.object({ favorited: z.boolean() }).strict();
 
-type ListCarsInput = z.infer<typeof listCarsSchema>;
-type IdInput = { id: UUID };
-type UpdateCarInput = { id: UUID; data: UpdateCarDto };
-type OptionalSkipLimitInput = z.infer<typeof optionalSkipLimitSchema>;
-type GetCarsByUserIdInput = z.infer<typeof getCarsByUserIdSchema>;
+type CarsRouterDeps = {
+  trpc: TrpcService;
+  carsService: CarsService;
+  carsAdapter: CarsAdapter;
+};
 
-@Router({ alias: "cars" })
-@Injectable()
-export class CarsTrpc {
-  constructor(
-    @Inject(CarsService) private readonly carsService: CarsService,
-    @Inject(CarsAdapter) private readonly carsAdapter: CarsAdapter,
-  ) {}
+export function createCarsRouter({
+  trpc,
+  carsService,
+  carsAdapter,
+}: CarsRouterDeps) {
+  return trpc.router({
+    // Public route - anyone can list cars (uses default LONG rate limit)
+    list: trpc.publicProcedure
+      .input(listCarsSchema)
+      .output(carListResponseSchema)
+      .query(async ({ input }) => {
+        const cars = await carsService.findAll({
+          modelSlug: input.modelSlug,
+          manufacturerSlug: input.manufacturerSlug,
+          color: input.color,
+          sortField: input.sortBy,
+          sortDirection: input.sortDirection,
+          skip: input.skip || 0,
+          limit: input.limit || 10,
+        });
 
-  // Public route - anyone can list cars (uses default LONG rate limit)
-  @Query({ input: listCarsSchema, output: carListResponseSchema })
-  async list(@Input() input: ListCarsInput): Promise<PaginationDto<CarDto>> {
-    const cars = await this.carsService.findAll({
-      modelSlug: input.modelSlug,
-      manufacturerSlug: input.manufacturerSlug,
-      color: input.color,
-      sortField: input.sortBy,
-      sortDirection: input.sortDirection,
-      skip: input.skip || 0,
-      limit: input.limit || 10,
-    });
+        return carsAdapter.getListDto(cars);
+      }),
 
-    return this.carsAdapter.getListDto(cars);
-  }
+    // Public route - anyone can view car details (uses default LONG rate limit)
+    getById: trpc.publicProcedure
+      .input(idInputSchema)
+      .output(carResponseSchema)
+      .query(async ({ input }) => {
+        const car = await carsService.findById(input.id);
+        if (!car) {
+          throw new AppError(Errors.CAR_NOT_FOUND);
+        }
 
-  // Public route - anyone can view car details (uses default LONG rate limit)
-  @Query({ input: z.object({ id: uuidSchema }), output: carResponseSchema })
-  async getById(@Input() input: IdInput): Promise<CarDto> {
-    const car = await this.carsService.findById(input.id);
-    if (!car) {
-      throw new AppError(Errors.CAR_NOT_FOUND);
-    }
+        return carsAdapter.getDto(car);
+      }),
 
-    return this.carsAdapter.getDto(car);
-  }
+    // Authenticated route - creating cars with medium rate limiting for protection
+    create: trpc.protectedMediumProcedure
+      .input(createCarSchema)
+      .output(carResponseSchema)
+      .mutation(async ({ input }) => {
+        const car = await carsService.create(input);
 
-  // Authenticated route - creating cars with medium rate limiting for protection
-  @UseMiddlewares(TrpcAuthMiddleware, TrpcMediumRateLimitMiddleware)
-  @Mutation({ input: createCarSchema, output: carResponseSchema })
-  async create(@Input() input: CreateCarDto) {
-    const car = await this.carsService.create(input);
+        return carsAdapter.getDto(car);
+      }),
 
-    return "test";
-  }
+    // Authenticated route - updating cars with medium rate limiting for protection
+    update: trpc.protectedMediumProcedure
+      .input(updateCarInputSchema)
+      .output(carResponseSchema)
+      .mutation(async ({ input }) => {
+        const car = await carsService.update(input.id, input.data);
 
-  // Authenticated route - updating cars with medium rate limiting for protection
-  @UseMiddlewares(TrpcAuthMiddleware, TrpcMediumRateLimitMiddleware)
-  @Mutation({ input: updateCarInputSchema, output: carResponseSchema })
-  async update(@Input() input: UpdateCarInput): Promise<CarDto> {
-    const car = await this.carsService.update(input.id, input.data);
+        return carsAdapter.getDto(car);
+      }),
 
-    return this.carsAdapter.getDto(car);
-  }
+    // Authenticated route - deleting cars with short rate limiting (most restrictive)
+    deleteById: trpc.protectedShortProcedure
+      .input(idInputSchema)
+      .output(successSchema)
+      .mutation(async ({ input }) => {
+        await carsService.softDelete(input.id);
 
-  // Authenticated route - deleting cars with short rate limiting (most restrictive)
-  @UseMiddlewares(TrpcAuthMiddleware, TrpcShortRateLimitMiddleware)
-  @Mutation({ input: z.object({ id: uuidSchema }), output: successSchema })
-  async deleteById(@Input() input: IdInput): Promise<{ success: boolean }> {
-    await this.carsService.softDelete(input.id);
+        return { success: true };
+      }),
 
-    return { success: true };
-  }
+    // Authenticated route - toggle favorite (uses default rate limiting)
+    toggleFavorite: trpc.protectedProcedure
+      .input(idInputSchema)
+      .output(favoriteResponseSchema)
+      .mutation(async ({ input, ctx }) => {
+        const favorited = await carsService.toggleFavoriteForUser(
+          input.id,
+          ctx.principal.id,
+        );
 
-  // Authenticated route - toggle favorite (uses default rate limiting)
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Mutation({
-    input: z.object({ id: uuidSchema }),
-    output: favoriteResponseSchema,
-  })
-  async toggleFavorite(
-    @Input() input: IdInput,
-  ): Promise<{ favorited: boolean }> {
-    const userId = Ctx.userIdRequired();
+        return { favorited };
+      }),
 
-    const favorited = await this.carsService.toggleFavoriteForUser(
-      input.id,
-      userId,
-    );
+    // Authenticated route - get user's favorite cars (uses default rate limiting)
+    getFavorites: trpc.protectedProcedure
+      .input(optionalSkipLimitSchema)
+      .output(carListResponseSchema)
+      .query(async ({ input, ctx }) => {
+        const cars = await carsService.getFavoritesByUser({
+          userId: ctx.principal.id,
+          skip: 0,
+          limit: 10,
+          ...input,
+        });
 
-    return { favorited };
-  }
+        return carsAdapter.getListDto(cars);
+      }),
 
-  // Authenticated route - get user's favorite cars (uses default rate limiting)
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Query({ input: optionalSkipLimitSchema, output: carListResponseSchema })
-  async getFavorites(
-    @Input() input: OptionalSkipLimitInput,
-  ): Promise<PaginationDto<CarDto>> {
-    const userId = Ctx.userIdRequired();
+    // Authenticated route - get current user's own cars
+    getMyCars: trpc.protectedProcedure
+      .input(skipLimitSchema)
+      .output(carListResponseSchema)
+      .query(async ({ input, ctx }) => {
+        const cars = await carsService.getCarsByUser({
+          userId: ctx.principal.id,
+          limit: input.limit,
+          skip: input.skip,
+        });
 
-    const cars = await this.carsService.getFavoritesByUser({
-      userId,
-      skip: 0,
-      limit: 10,
-      ...input,
-    });
+        return carsAdapter.getListDto(cars);
+      }),
 
-    return this.carsAdapter.getListDto(cars);
-  }
+    // Public route - get any user's cars by user ID
+    getCarsByUserId: trpc.publicProcedure
+      .input(getCarsByUserIdSchema)
+      .output(carListResponseSchema)
+      .query(async ({ input }) => {
+        const cars = await carsService.getCarsByUser({
+          userId: input.userId,
+          limit: input.limit,
+          skip: input.skip,
+        });
 
-  // Authenticated route - get current user's own cars
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Query({ input: skipLimitSchema, output: carListResponseSchema })
-  async getMyCars(
-    @Input() input: { limit: number; skip: number },
-  ): Promise<PaginationDto<CarDto>> {
-    const userId = Ctx.userIdRequired();
-
-    const cars = await this.carsService.getCarsByUser({
-      userId,
-      limit: input.limit,
-      skip: input.skip,
-    });
-
-    return this.carsAdapter.getListDto(cars);
-  }
-
-  // Public route - get any user's cars by user ID
-  @Query({ input: getCarsByUserIdSchema, output: carListResponseSchema })
-  async getCarsByUserId(
-    @Input() input: GetCarsByUserIdInput,
-  ): Promise<PaginationDto<CarDto>> {
-    const cars = await this.carsService.getCarsByUser({
-      userId: input.userId,
-      limit: input.limit,
-      skip: input.skip,
-    });
-
-    return this.carsAdapter.getListDto(cars);
-  }
+        return carsAdapter.getListDto(cars);
+      }),
+  });
 }
+
+export type CarsRouter = ReturnType<typeof createCarsRouter>;

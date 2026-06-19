@@ -10,6 +10,11 @@ Use this package when a TypeScript consumer needs the first-party tRPC
 contract. Authenticated tRPC calls use JWT bearer auth. Non-TypeScript or
 external programmatic consumers should use REST/OpenAPI with API keys instead.
 
+This package exists for TS-to-TS DX: it lets first-party clients infer tRPC
+inputs/outputs from the real backend router without generating a Swagger client.
+Swagger/OpenAPI remains the right tool when the goal is generated SDKs,
+language-neutral integration, or public HTTP documentation.
+
 Use type-only imports:
 
 ```ts

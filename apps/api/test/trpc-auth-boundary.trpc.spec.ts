@@ -201,6 +201,42 @@ describe("tRPC auth boundary", () => {
     }
   });
 
+  it("returns a validated car DTO from create mutations", async () => {
+    const { app, appRouter, mocks } = await createTrpcTestApp();
+
+    try {
+      const caller = appRouter.createCaller(
+        createMockTrpcContext({ principal: createMockPrincipal() }),
+      );
+
+      await expect(
+        caller.cars.create({
+          modelId: "550e8400-e29b-41d4-a716-446655440011",
+          year: 2022,
+          color: "blue",
+          kmDriven: 12_000,
+          price: 25_000,
+        }),
+      ).resolves.toMatchObject({
+        id: "550e8400-e29b-41d4-a716-446655440010",
+        year: 2022,
+        color: "blue",
+      });
+      expect(mocks.carsService.create).toHaveBeenCalledWith({
+        modelId: "550e8400-e29b-41d4-a716-446655440011",
+        year: 2022,
+        color: "blue",
+        kmDriven: 12_000,
+        price: 25_000,
+      });
+      expect(mocks.carsAdapter.getDto).toHaveBeenCalledWith({
+        id: "550e8400-e29b-41d4-a716-446655440010",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it("rejects API-key-only tRPC callers", async () => {
     const { app, appRouter } = await createTrpcTestApp();
 

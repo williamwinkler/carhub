@@ -1,16 +1,15 @@
 import { createPaginationSchema } from "@api/common/dto/pagination.dto";
-import { Inject, Injectable } from "@nestjs/common";
-import { Input, Query, Router } from "nestjs-trpc";
 import { z } from "zod";
 import {
   limitSchema,
   skipSchema,
   sortDirectionQuerySchema,
 } from "../../common/schemas/common.schema";
-import { CarManufacturersAdapter } from "./car-manufacturers.adapter";
+import type { TrpcService } from "../trpc/trpc.service";
+import type { CarManufacturersAdapter } from "./car-manufacturers.adapter";
 import { carManufacturerSortFieldQuerySchema } from "./car-manufacturers.schema";
+import type { CarManufacturersService } from "./car-manufacturers.service";
 import { carManufacturerSchema } from "./dto/car-manufacturer.dto";
-import { CarManufacturersService } from "./car-manufacturers.service";
 
 const listCarManufacturersSchema = z
   .object({
@@ -26,31 +25,35 @@ const carManufacturerListResponseSchema = createPaginationSchema(
   carManufacturerSchema,
 );
 
-type ListCarManufacturersInput = z.infer<typeof listCarManufacturersSchema>;
+type CarManufacturersRouterDeps = {
+  trpc: TrpcService;
+  manufacturersService: CarManufacturersService;
+  manufacturersAdapter: CarManufacturersAdapter;
+};
 
-@Router({ alias: "carManufacturers" })
-@Injectable()
-export class CarManufacturersTrpc {
-  constructor(
-    @Inject(CarManufacturersService)
-    private readonly manufacturersService: CarManufacturersService,
-    @Inject(CarManufacturersAdapter)
-    private readonly manufacturersAdapter: CarManufacturersAdapter,
-  ) {}
+export function createCarManufacturersRouter({
+  trpc,
+  manufacturersService,
+  manufacturersAdapter,
+}: CarManufacturersRouterDeps) {
+  return trpc.router({
+    // List car manufacturers (public)
+    list: trpc.publicProcedure
+      .input(listCarManufacturersSchema)
+      .output(carManufacturerListResponseSchema)
+      .query(async ({ input }) => {
+        const carManufacturers = await manufacturersService.findAll({
+          skip: input?.skip ?? 0,
+          limit: input?.limit ?? 100,
+          sortField: input?.sortField,
+          sortDirection: input?.sortDirection,
+        });
 
-  // List car manufacturers (public)
-  @Query({
-    input: listCarManufacturersSchema,
-    output: carManufacturerListResponseSchema,
-  })
-  async list(@Input() input: ListCarManufacturersInput) {
-    const carManufacturers = await this.manufacturersService.findAll({
-      skip: input?.skip ?? 0,
-      limit: input?.limit ?? 100,
-      sortField: input?.sortField,
-      sortDirection: input?.sortDirection,
-    });
-
-    return this.manufacturersAdapter.getListDto(carManufacturers);
-  }
+        return manufacturersAdapter.getListDto(carManufacturers);
+      }),
+  });
 }
+
+export type CarManufacturersRouter = ReturnType<
+  typeof createCarManufacturersRouter
+>;

@@ -1,54 +1,31 @@
 import { Global, Module } from "@nestjs/common";
-import { TRPCModule, type TRPCModuleOptions } from "nestjs-trpc";
 import { AccountsModule } from "../accounts/accounts.module";
 import { AuthModule } from "../auth/auth.module";
 import { CarManufacturersModule } from "../car-manufacturers/car-manufacturers.module";
 import { CarModelsModule } from "../car-models/car-models.module";
 import { CarsModule } from "../cars/cars.module";
+import { UsersModule } from "../users/users.module";
 import { TrpcRateLimitService } from "./trpc-rate-limit.service";
 import { TrpcContextFactory } from "./trpc.context";
-import {
-  TrpcAdminMiddleware,
-  TrpcAuthMiddleware,
-  TrpcErrorMiddleware,
-  TrpcLongRateLimitMiddleware,
-  TrpcMediumRateLimitMiddleware,
-  TrpcRequestContextMiddleware,
-  TrpcShortRateLimitMiddleware,
-} from "./trpc.middlewares";
-
-const trpcModuleOptions: TRPCModuleOptions & { autoSchemaFile: string } = {
-  basePath: "/trpc",
-  context: TrpcContextFactory,
-  autoSchemaFile: "src/@generated",
-  globalMiddlewares: [
-    TrpcRequestContextMiddleware,
-    TrpcErrorMiddleware,
-    TrpcLongRateLimitMiddleware,
-  ],
-};
+import { TrpcRouter } from "./trpc.router";
+import { TrpcService } from "./trpc.service";
 
 @Global()
 @Module({
   imports: [
-    TRPCModule.forRoot(trpcModuleOptions),
     AuthModule,
+    UsersModule,
     CarsModule,
     CarModelsModule,
     CarManufacturersModule,
     AccountsModule,
   ],
   providers: [
+    TrpcService,
+    TrpcRouter,
     TrpcContextFactory,
-    TrpcRequestContextMiddleware,
-    TrpcErrorMiddleware,
-    TrpcAuthMiddleware,
-    TrpcAdminMiddleware,
-    TrpcLongRateLimitMiddleware,
-    TrpcMediumRateLimitMiddleware,
-    TrpcShortRateLimitMiddleware,
     TrpcRateLimitService,
   ],
-  exports: [TrpcRateLimitService],
+  exports: [TrpcRateLimitService, TrpcRouter, TrpcService],
 })
 export class TrpcModule {}

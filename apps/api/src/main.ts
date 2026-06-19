@@ -9,10 +9,12 @@ import pkg from "../package.json";
 import { AppModule } from "./app.module";
 import { CustomLogger } from "./common/logging/custom-logger";
 import { ConfigService } from "./modules/config/config.service";
+import { TrpcRouter } from "./modules/trpc/trpc.router";
 import { setupSwagger } from "./setup-swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
     bufferLogs: true,
     logger: new CustomLogger(),
   });
@@ -46,33 +48,31 @@ async function bootstrap() {
     defaultVersion: "1",
   });
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser()); // Parse cookies for httpOnly refresh tokens
-
-  app.useGlobalPipes(new ZodValidationPipe());
 
   if (configService.get("NODE_ENV") === "development") {
     const trpcLogger = new Logger("tRPC");
 
-    // Ensure body is parsed before logger
-    app.use(
-      "/trpc",
-      express.json(),
-      (req: Request, res: Response, next: NextFunction) => {
-        const start = Date.now();
+    app.use("/trpc", (req: Request, res: Response, next: NextFunction) => {
+      const start = Date.now();
 
-        res.on("finish", () => {
-          const duration = Date.now() - start;
-          trpcLogger.debug(
-            `${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`,
-          );
-        });
+      res.on("finish", () => {
+        const duration = Date.now() - start;
+        trpcLogger.debug(
+          `${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`,
+        );
+      });
 
-        next();
-      },
-    );
+      next();
+    });
   }
+
+  app.get(TrpcRouter).applyMiddleware(app);
+
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  app.useGlobalPipes(new ZodValidationPipe());
 
   setupSwagger(app);
 

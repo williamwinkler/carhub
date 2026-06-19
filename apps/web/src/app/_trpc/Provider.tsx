@@ -3,8 +3,11 @@
 import type { AppRouter } from "@repo/api-contract";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { createTRPCProxyClient, TRPCClientError } from "@trpc/client";
-import { httpBatchLink } from "@trpc/react-query";
+import {
+  createTRPCProxyClient,
+  httpBatchLink,
+  TRPCClientError,
+} from "@trpc/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { getAccessToken, setAccessToken } from "../../lib/cookies";

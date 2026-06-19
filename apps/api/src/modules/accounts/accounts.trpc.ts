@@ -1,15 +1,12 @@
-import { Ctx } from "@api/common/ctx";
 import { AppError } from "@api/common/errors/app-error";
 import { Errors } from "@api/common/errors/errors";
-import { Inject, Injectable } from "@nestjs/common";
-import { Input, Mutation, Query, Router, UseMiddlewares } from "nestjs-trpc";
 import { z } from "zod";
-import { AuthService } from "../auth/auth.service";
-import { TrpcAuthMiddleware } from "../trpc/trpc.middlewares";
+import type { AuthService } from "../auth/auth.service";
+import type { TrpcService } from "../trpc/trpc.service";
 import { usersFields } from "../users/users.schema";
-import { UsersService } from "../users/users.service";
-import { AccountsAdapter } from "./acounts.adapter";
-import { accountSchema, type AccountDto } from "./dto/account.dto";
+import type { UsersService } from "../users/users.service";
+import type { AccountsAdapter } from "./acounts.adapter";
+import { accountSchema } from "./dto/account.dto";
 
 const updateProfileSchema = z.object({
   firstName: z.string().min(1).max(100),
@@ -21,72 +18,77 @@ const apiKeyResponseSchema = z
   .strict();
 const hasApiKeyResponseSchema = z.object({ hasApiKey: z.boolean() }).strict();
 
-type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
-type GetByUsernameInput = z.infer<typeof getByUsernameSchema>;
+type AccountsRouterDeps = {
+  trpc: TrpcService;
+  usersService: UsersService;
+  accountsAdapter: AccountsAdapter;
+  authService: AuthService;
+};
 
-@Router({ alias: "accounts" })
-@Injectable()
-export class AccountsTrpc {
-  constructor(
-    @Inject(UsersService) private readonly usersService: UsersService,
-    @Inject(AccountsAdapter) private readonly accountsAdapter: AccountsAdapter,
-    @Inject(AuthService) private readonly authService: AuthService,
-  ) {}
+export function createAccountsRouter({
+  trpc,
+  usersService,
+  accountsAdapter,
+  authService,
+}: AccountsRouterDeps) {
+  return trpc.router({
+    // Get current user profile
+    getMe: trpc.protectedProcedure.output(accountSchema).query(async ({ ctx }) => {
+      const user = await usersService.findById(ctx.principal.id);
+      if (!user) {
+        throw new AppError(Errors.USER_NOT_FOUND);
+      }
 
-  // Get current user profile
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Query({ output: accountSchema })
-  async getMe() {
-    const userId = Ctx.userIdRequired();
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new AppError(Errors.USER_NOT_FOUND);
-    }
+      return accountsAdapter.getDto(user);
+    }),
 
-    return this.accountsAdapter.getDto(user);
-  }
+    // Update current user profile
+    updateProfile: trpc.protectedProcedure
+      .input(updateProfileSchema)
+      .output(accountSchema)
+      .mutation(async ({ input, ctx }) => {
+        const updatedUser = await usersService.update(ctx.principal.id, input);
 
-  // Update current user profile
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Mutation({ input: updateProfileSchema, output: accountSchema })
-  async updateProfile(@Input() input: UpdateProfileInput) {
-    const userId = Ctx.userIdRequired();
-    const updatedUser = await this.usersService.update(userId, input);
+        return accountsAdapter.getDto(updatedUser);
+      }),
 
-    return this.accountsAdapter.getDto(updatedUser);
-  }
+    // Generate new API key
+    generateApiKey: trpc.protectedProcedure
+      .output(apiKeyResponseSchema)
+      .mutation(async () => {
+        const apiKey = await authService.createApiKey();
 
-  // Generate new API key
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Mutation({ output: apiKeyResponseSchema })
-  async generateApiKey(): Promise<{ apiKey: string; hasApiKey: boolean }> {
-    const apiKey = await this.authService.createApiKey();
+        return {
+          apiKey,
+          hasApiKey: true,
+        };
+      }),
 
-    return {
-      apiKey,
-      hasApiKey: true,
-    };
-  }
+    // Check if user has an API key
+    hasApiKey: trpc.protectedProcedure
+      .output(hasApiKeyResponseSchema)
+      .query(async ({ ctx }) => {
+        const user = await usersService.findById(ctx.principal.id, [
+          "apiKeyLookupHash",
+        ]);
 
-  // Check if user has an API key
-  @UseMiddlewares(TrpcAuthMiddleware)
-  @Query({ output: hasApiKeyResponseSchema })
-  async hasApiKey(): Promise<{ hasApiKey: boolean }> {
-    const userId = Ctx.userIdRequired();
-    const user = await this.usersService.findById(userId, ["apiKeyLookupHash"]);
+        return {
+          hasApiKey: !!user?.apiKeyLookupHash,
+        };
+      }),
 
-    return {
-      hasApiKey: !!user?.apiKeyLookupHash,
-    };
-  }
+    getByUsername: trpc.publicProcedure
+      .input(getByUsernameSchema)
+      .output(accountSchema)
+      .query(async ({ input }) => {
+        const user = await usersService.findByUsername(input.username);
+        if (!user) {
+          throw new AppError(Errors.USER_NOT_FOUND);
+        }
 
-  @Query({ input: getByUsernameSchema, output: accountSchema })
-  async getByUsername(@Input() input: GetByUsernameInput): Promise<AccountDto> {
-    const user = await this.usersService.findByUsername(input.username);
-    if (!user) {
-      throw new AppError(Errors.USER_NOT_FOUND);
-    }
-
-    return this.accountsAdapter.getDto(user);
-  }
+        return accountsAdapter.getDto(user);
+      }),
+  });
 }
+
+export type AccountsRouter = ReturnType<typeof createAccountsRouter>;

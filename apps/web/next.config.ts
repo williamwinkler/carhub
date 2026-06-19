@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
+import { validateWebEnv } from "./env";
+
+const webEnv = validateWebEnv(process.env);
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    NEXT_PUBLIC_API_URL: webEnv.NEXT_PUBLIC_API_URL,
+  },
   async rewrites() {
-    return []
-  }
+    return [];
+  },
 };
 
 export default nextConfig;
