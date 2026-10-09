@@ -14,6 +14,7 @@ Carhub exposes two intentional API surfaces:
 - **TypeScript + user/session flow:** use tRPC with JWT bearer auth.
   TypeScript consumers import router types from the type-only
   `@repo/api-contract` package.
+  > OBS: After working with this, I would not recommend tRPC with a NestJS backend since standard Nest request lifecycle components don't play nicely with tRPC and makes it hard to share stuff like authentication and ratelimiting between standard Nest Controllers and tRPC procedures.
 - **Non-TypeScript or external programmatic integration:** use REST/OpenAPI with
   `x-api-key` auth and generate clients from the Swagger/OpenAPI document when
   needed.
